@@ -1,0 +1,36 @@
+<project
+    name = "tpower"
+    description = "Computes power metrics"
+    script = "zproject.gsl"
+    email = "bios@eaton.com"
+    url = "https://eaton.com/"
+    license = "GPL-2.0+"
+    >
+
+    <target name = "debian" />
+    <target name = "redhat" />
+
+    <include filename = "license.xml" />
+    <version major = "0" minor = "1" patch = "0" />
+    <use project = "malamute" />
+
+    <use project = "biosproto" libname = "libbiosproto" prefix="biosproto"
+        min_major = "0" min_minor = "0" min_patch = "0"
+        repository = "https://stash.mbt.lab.etn.com/BIOS/libbiosproto"
+        test = "bios_proto_test">
+        <use project = "malamute"/>
+    </use>
+
+    <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec"/>
+
+    <class name = "metricinfo" private="1"> Measurement</class>
+    <class name = "calc_power" private="1"> Power calculation</class>
+    <class name = "tpowerconfiguration" private="1"> Configuration</class>
+    <class name = "metriclist" private="1"> metriclist</class>
+    <class name = "tp-unit" private="1"> Power unit </class>
+    <class name = "bios_agent_tpower_server" state = "stable" >Actor generating new metrics</class>
+    <main name = "bios_agent_tpower" service = "1">
+        Evaluates some metrics and produces new power metrics
+    </main>
+
+</project>

@@ -1,0 +1,75 @@
+#
+#    tpower - Computes power metrics
+#
+#    Copyright (C) 2014 - 2015 Eaton                                        
+#                                                                           
+#    This program is free software; you can redistribute it and/or modify   
+#    it under the terms of the GNU General Public License as published by   
+#    the Free Software Foundation; either version 2 of the License, or      
+#    (at your option) any later version.                                    
+#                                                                           
+#    This program is distributed in the hope that it will be useful,        
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of         
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
+#    GNU General Public License for more details.                           
+#                                                                           
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to the Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
+
+Source:         tpower
+Section:        net
+Priority:       optional
+Maintainer:     John Doe <John.Doe@example.com>
+Uploaders:      John Doe <John.Doe@example.com>
+Standards-Version: 3.9.5
+Build-Depends: bison, debhelper (>= 8),
+    pkg-config,
+    automake,
+    autoconf,
+    libtool,
+    libzmq4-dev,
+    uuid-dev,
+    libczmq-dev,
+    libmlm-dev,
+    libbiosproto-dev,
+    libcxxtools-dev,
+    dh-autoreconf,
+    systemd
+
+Package: libtpower0
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: tpower
+ This package contains shared library for tpower: computes power metrics
+
+Package: tpower-dev
+Architecture: all
+Section: libdevel
+Depends:
+    libzmq4-dev,
+    uuid-dev,
+    libczmq-dev,
+    libmlm-dev,
+    libbiosproto-dev,
+    libcxxtools-dev,
+    libtpower0 (= ${binary:Version})
+Description: development files for tpower
+ This package contains development files for tpower: computes power metrics
+
+Package: tpower
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: computes power metrics
+ Main package for tpower: computes power metrics
+
+Package: tpower-dbg
+Architecture: any
+Section: debug
+Priority: extra
+Depends:
+    tpower (= ${binary:Version}),
+    ${misc:Depends}
+Description: debugging symbols for tpower
+ This package contains the debugging symbols for tpower : computes power metrics.
+

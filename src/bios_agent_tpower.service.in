@@ -1,0 +1,11 @@
+[Unit]
+Description=bios_agent_tpower service
+After=network.target
+
+[Service]
+Type=simple
+Environment="prefix=@prefix@"
+ExecStart=@prefix@/bin/bios_agent_tpower @sysconfdir@/@PACKAGE@/bios_agent_tpower.cfg
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,25 @@
+Name(7)
+=======
+
+
+NAME
+----
+tpower - Computes power metrics
+
+
+SYNOPSIS
+--------
+----
+#include <tpower.h>
+
+cc ['flags'] 'files' -ltpower ['libraries']
+----
+
+
+DESCRIPTION
+-----------
+
+Classes
+~~~~~~~
+
+Something.
