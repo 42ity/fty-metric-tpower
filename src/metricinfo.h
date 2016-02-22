@@ -19,8 +19,8 @@
     =========================================================================
 */
 
-#ifndef METRICINFO_H_INCLUDED
-#define METRICINFO_H_INCLUDED
+#ifndef SRC_METRICINFO_H_
+#define SRC_METRICINFO_H_
 
 #include <string>
 #include <ctime>
@@ -131,4 +131,4 @@ inline bool operator!=( const MetricInfo &lhs, const MetricInfo &rhs ) {
     return ! ( lhs == rhs );
 }
 
-#endif
+#endif // SRC_METRICINFO_H_

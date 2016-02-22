@@ -22,8 +22,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
     \author Michal Vyskocil  <MichalVyskocil@Eaton.com>
 */
 
-#ifndef SRC_PERSIST_CALC_POWER_H_
-#define SRC_PERSIST_CALC_POWER_H_
+#ifndef SRC_CALC_POWER_H_
+#define SRC_CALC_POWER_H_
 
 #include <map>
 #include <vector>
@@ -147,4 +147,5 @@ db_reply <std::map<std::string, std::vector<std::string> > >
         (tntdb::Connection  &conn);
 
 void calc_power_test(bool);
-#endif //SRC_PERSIST_CALC_POWER_H_
+
+#endif //SRC_CALC_POWER_H_

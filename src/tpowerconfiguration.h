@@ -97,4 +97,4 @@ class TotalPowerConfiguration {
     time_t getPollInterval();
 };
 
-#endif
+#endif // TPOWERCONFIGURATION_H_INCLUDED
