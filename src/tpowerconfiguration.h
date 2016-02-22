@@ -19,6 +19,11 @@
     =========================================================================
 */
 
+/*! \file   tpowerconfiguration.h
+    \brief  Configuration of the power computation
+    \author Tomas Halman <TomasHalman@Eaton.com>
+*/
+
 #ifndef TPOWERCONFIGURATION_H_INCLUDED
 #define TPOWERCONFIGURATION_H_INCLUDED
 

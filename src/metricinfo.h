@@ -18,6 +18,10 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
     =========================================================================
 */
+/*! \file   metricinfo.h
+ *  \author Alena Chernikava <AlenaChernikava@Eaton.com>
+ *  \brief  This class is intended to handle one metric
+ */
 
 #ifndef SRC_METRICINFO_H_
 #define SRC_METRICINFO_H_
