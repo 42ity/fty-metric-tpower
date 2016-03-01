@@ -105,7 +105,12 @@ int main (int argc, char *argv [])
     // Connect to malamute
     zstr_sendx (tpower_server, "CONNECT", ENDPOINT, NULL);
     zsock_wait (tpower_server);
-
+    // Producing new metrics
+    zstr_sendx (tpower_server, "PRODUCER", "METRICS", NULL);
+    zsock_wait (tpower_server);
+    // Consuming some metrics
+    zstr_sendx (tpower_server, "CONSUMER", "METRICS", ".*", NULL);
+    zsock_wait (tpower_server);
     //  Accept and print any message back from server
     //  copy from src/malamute.c under MPL license
     while (true) {

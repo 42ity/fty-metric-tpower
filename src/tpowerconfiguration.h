@@ -41,16 +41,17 @@
 
 
 class TotalPowerConfiguration {
- public:
-    explicit TotalPowerConfiguration( const char *agentName ) : _agentName(agentName) {  };
-    explicit TotalPowerConfiguration( const std::string &agentName ) : _agentName(agentName) { };
+public:
+    TotalPowerConfiguration (void) : 
+        _timeout {TPOWER_POLLING_INTERVAL}
+    {};
 
-    void onStart();
-    void onSend( zmsg_t **message, const std::string &topic );
+    void processMetric (bios_proto_t **message, const std::string &topic);
+    void processAsset (const std::string &topic);
     void onPoll();
+    //! \brief read configuration from database
+    bool configure();
  private:
-    // agent name
-    std::string _agentName;
 
     int64_t _timeout;
     //! \brief list of racks
@@ -85,8 +86,6 @@ class TotalPowerConfiguration {
     //! \brief timestamp, when we should re-read configuration
     time_t _reconfigPending = 0;
 
-    //! \brief read configuration from database
-    bool configuration();
 
     //! \brief send measurement message if needed
     void sendMeasurement(std::map< std::string, TPUnit > &elements, const std::vector<std::string> &quantities );

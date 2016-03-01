@@ -41,6 +41,10 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
 
     // Signal need to be send as it is required by "actor_new"
     zsock_signal (pipe, 0);
+
+    // initial set up
+    TotalPowerConfiguration tpower_conf;
+    tpower_conf.configure();
     while (!zsys_interrupted) {
 
         void *which = zpoller_wait (poller, -1);
@@ -106,8 +110,6 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
 
         // This agent is a reactive agent, it reacts only on messages
         // and doesn't do anything if there is no messages
-        // TODO: probably email also should be send every XXX seconds,
-        // even if no alerts were received
         zmsg_t *zmessage = mlm_client_recv (client);
         if ( zmessage == NULL ) {
             continue;
@@ -119,13 +121,32 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
         // What is going on???
         //
         // Listen on metrics
-        // Listen on assets
+        // Listen on assets TODO or are still CONFIGURE messages?
         //
         // Produce metrics
         //
         // Current iplementation: read topology from DB
         // TODO: move it to asset agent and receive this info
         // as message
+
+
+        if (is_bios_proto (zmessage)) {
+            bios_proto_t *bmessage = bios_proto_decode (&zmessage);
+            if (!bmessage) {
+                zsys_error ("cannot decode bios_proto message, ignore it");
+                continue;
+            }
+            if (bios_proto_id (bmessage) == BIOS_PROTO_METRIC)  {
+                tpower_conf.processMetric (&bmessage, topic);
+            }
+            else if (bios_proto_id (bmessage) == BIOS_PROTO_ASSET)  {
+                tpower_conf.processAsset (topic);
+            }
+            else {
+                zsys_error ("it is not an alert message, ignore it");
+            }
+            bios_proto_destroy (&bmessage);
+        }
 
         // listen 
         zmsg_destroy (&zmessage);
