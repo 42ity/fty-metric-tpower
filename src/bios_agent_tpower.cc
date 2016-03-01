@@ -28,28 +28,61 @@
 
 #include "tpower_classes.h"
 
+#include <getopt.h>
+
+void usage ()
+{
+    puts ("bios-agent-tpower [options]\n"
+          "  -v|--verbose          verbose test output\n"
+          "  -h|--help             print this information\n"
+          "Environment variables for paremeters are BIOS_LOG_LEVEL.\n"
+          "Command line option takes precedence over variable.");
+}
+
 int main (int argc, char *argv [])
 {
-    puts ("bios_agent_tpower -Evaluates some metrics and produces new power metrics ");
-    bool verbose = false;
-    int argn;
-    for (argn = 1; argn < argc; argn++) {
-        if (streq (argv [argn], "--help")
-        ||  streq (argv [argn], "-h")) {
-            puts ("bios_agent_tpower [options] ...");
-            puts ("  --verbose / -v         verbose test output");
-            puts ("  --help / -h            this information");
-            return 0;
+    int verbose = 0;
+    int help = 0;
+
+    // set defaults
+    char* bios_log_level = getenv ("BIOS_LOG_LEVEL");
+    if ( bios_log_level && streq (bios_log_level, "LOG_DEBUG") ) {
+        verbose = 1;
+    }
+
+    // get options
+    int c;
+    while(true) {
+        static struct option long_options[] =
+        {
+            {"help",       no_argument,       &help,    1},
+            {"verbose",    no_argument,       &verbose, 1},
+            {0, 0, 0, 0}
+        };
+        int option_index = 0;
+        c = getopt_long (argc, argv, "hv", long_options, &option_index);
+        if (c == -1) {
+            break;
         }
-        else
-        if (streq (argv [argn], "--verbose")
-        ||  streq (argv [argn], "-v"))
-            verbose = true;
-        else {
-            printf ("Unknown option: %s\n", argv [argn]);
-            return 1;
+        switch (c) {
+            case 'v':
+                verbose = 1;
+                break;
+            case 0:
+                // just now walking trough some long opt
+                break;
+            case 'h':
+            default:
+                help = 1;
+                break;
         }
     }
+    if ( help ) {
+        usage();
+        exit(1);
+    }
+
+    zsys_info ("bios_agent_tpower STARTED");
 /*
     int result = 1;
 
@@ -62,7 +95,6 @@ int main (int argc, char *argv [])
     return result;
 */
     //  Insert main code here
-    if (verbose)
-        zsys_info ("bios_agent_tpower - Evaluates some metrics and produces new power metrics");
+    zsys_info ("bios_agent_tpower ENDED");
     return 0;
 }
