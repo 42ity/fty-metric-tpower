@@ -122,45 +122,44 @@ void TotalPowerConfiguration::processAsset( const std::string &topic)
     _timeout = getPollInterval();
 }
 
-void TotalPowerConfiguration::processMetric( bios_proto_t **message, const std::string &topic) {
-    zsys_debug("received message with topic \"%s\"", topic.c_str() );
-    if( topic.compare(0,9,"configure") == 0 ) {
-        // something is beeing reconfigured, let things to settle down
-        if( _reconfigPending == 0 ) zsys_info("Reconfiguration scheduled");
-        _reconfigPending = time(NULL) + 60;
-    } else {
-        // measurement received
-        // TODO convert to metric INFO
-        MetricInfo M;
+MetricInfo TotalPowerConfiguration::
+    processMetric (
+        bios_proto_t **message,
+        const std::string &topic)
+{
+    // measurement received
+    // TODO convert to metric INFO
+    MetricInfo M;
 
-        if( _rackRegex.match(topic) ) {
-            auto affected_it = _affectedRacks.find( M.getElementName() );
-            if( affected_it != _affectedRacks.end() ) {
-                // this device affects some total rack
-                zsys_debug("measurement is interesting for rack %s", affected_it->second.c_str() );
-                auto rack_it = _racks.find( affected_it->second );
-                if( rack_it != _racks.end() ) {
-                    // affected rack found
-                    rack_it->second.setMeasurement(M);
-                    sendMeasurement( _racks, _rackQuantities );
-                }
+    // ASSUMTION: one device can affect only one ASSET ( Datacenter or Rack )
+    if( _rackRegex.match(topic) ) {
+        auto affected_it = _affectedRacks.find( M.getElementName() );
+        if( affected_it != _affectedRacks.end() ) {
+            // this device affects some total rack power
+            zsys_debug("measurement is interesting for rack %s", affected_it->second.c_str() );
+            auto rack_it = _racks.find( affected_it->second );
+            if( rack_it != _racks.end() ) {
+                // affected rack found
+                rack_it->second.setMeasurement(M);
+                sendMeasurement( _racks, _rackQuantities );
             }
         }
-        if( _dcRegex.match(topic) ) {
-            auto affected_it = _affectedDCs.find( M.getElementName() );
-            if( affected_it != _affectedDCs.end() ) {
-                // this device affects some total DC
-                zsys_debug("measurement is interesting for DC %s", affected_it->second.c_str() );
-                auto dc_it = _DCs.find( affected_it->second );
-                if( dc_it != _DCs.end() ) {
-                    // affected dc found
-                    dc_it->second.setMeasurement(M);
-                    sendMeasurement( _DCs, _dcQuantities );
-                }
+    }
+    if( _dcRegex.match(topic) ) {
+        auto affected_it = _affectedDCs.find( M.getElementName() );
+        if( affected_it != _affectedDCs.end() ) {
+            // this device affects some total DC power
+            zsys_debug("measurement is interesting for DC %s", affected_it->second.c_str() );
+            auto dc_it = _DCs.find( affected_it->second );
+            if( dc_it != _DCs.end() ) {
+                // affected dc found
+                dc_it->second.setMeasurement(M);
+                sendMeasurement( _DCs, _dcQuantities );
             }
         }
     }
     _timeout = getPollInterval();
+    return M;
 }
 
 int send( const char *subject, zmsg_t **msg_p )
