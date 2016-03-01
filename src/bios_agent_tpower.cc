@@ -120,7 +120,6 @@ int main (int argc, char *argv [])
         }
     }
 
-    //  Insert main code here
     zactor_destroy (&tpower_server);
     zsys_info ("bios_agent_tpower ENDED");
     return 0;
