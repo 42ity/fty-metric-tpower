@@ -36,7 +36,7 @@
 
 #include <stdlib.h>
 
-std::string url = std::string("mysql:db=box_utf8;user=") +
+static std::string url = std::string("mysql:db=box_utf8;user=") +
                   ((getenv("DB_USER")   == NULL) ? "root" : getenv("DB_USER")) +
                   ((getenv("DB_PASSWD") == NULL) ? ""     : 
                       std::string(";password=") + getenv("DB_PASSWD"));
@@ -112,7 +112,17 @@ void TotalPowerConfiguration::addDeviceToMap(
 }
 
 
-void TotalPowerConfiguration::onSend( zmsg_t **message, const std::string &topic) {
+void TotalPowerConfiguration::processAsset( const std::string &topic)
+{
+    // something is beeing reconfigured, let things to settle down
+    if( _reconfigPending == 0 ) {
+        zsys_info("Reconfiguration scheduled");
+        _reconfigPending = ::time(NULL) + 60; // in 60[s]
+    }
+    _timeout = getPollInterval();
+}
+
+void TotalPowerConfiguration::processMetric( bios_proto_t **message, const std::string &topic) {
     zsys_debug("received message with topic \"%s\"", topic.c_str() );
     if( topic.compare(0,9,"configure") == 0 ) {
         // something is beeing reconfigured, let things to settle down

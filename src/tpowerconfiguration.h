@@ -41,11 +41,13 @@
 
 
 class TotalPowerConfiguration {
- public:
-    TotalPowerConfiguration( void ) {    _timeout = TPOWER_POLLING_INTERVAL;
-  };
+public:
+    TotalPowerConfiguration (void) : 
+        _timeout {TPOWER_POLLING_INTERVAL}
+    {};
 
-    void onSend( zmsg_t **message, const std::string &topic );
+    void processMetric (bios_proto_t **message, const std::string &topic);
+    void processAsset (const std::string &topic);
     void onPoll();
     //! \brief read configuration from database
     bool configure();
