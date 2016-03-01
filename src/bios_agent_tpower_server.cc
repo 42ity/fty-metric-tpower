@@ -28,6 +28,46 @@
 
 #include "tpower_classes.h"
 
+static void
+    s_processMetric(
+        TotalPowerConfiguration &config,
+        const std::string &topic,
+        bios_proto_t **bmessage_p)
+{
+    bios_proto_t *bmessage = *bmessage_p;
+
+    const char *value = bios_proto_value(bmessage);
+    char *end;
+    double dvalue = strtod (value, &end);
+    if (errno == ERANGE) {
+        errno = 0;
+        zsys_debug ("cannot convert value to double, ignore message\n");
+        return;
+    }
+    else if (end == value || *end != '\0') {
+        zsys_debug ("cannot convert value to double, ignore message\n");
+        return;
+    }
+
+    const char *type = bios_proto_type(bmessage);
+    const char *element_src = bios_proto_element_src(bmessage);
+    const char *unit = bios_proto_unit(bmessage);
+    int64_t timestamp = bios_proto_time(bmessage);
+    if( timestamp <= 0 ) {
+        timestamp = ::time(NULL);
+    }
+    zsys_debug("Got message '%s' with value %s\n", topic.c_str(), value);
+
+    MetricInfo m (element_src, type, unit, dvalue, timestamp, "");
+    auto newMetrics = config.processMetric (m, topic);
+    for ( const auto &oneNewMetric : newMetrics ) {
+        if ( !oneNewMetric.isUnknown() ) {
+            // TODO
+            // publish on the stream
+        }
+    }
+}
+
 void
 bios_agent_tpower_server (zsock_t *pipe, void* args)
 {
@@ -137,7 +177,7 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
                 continue;
             }
             if (bios_proto_id (bmessage) == BIOS_PROTO_METRIC)  {
-                tpower_conf.processMetric (&bmessage, topic);
+                s_processMetric(tpower_conf, topic, &bmessage);
             }
             else if (bios_proto_id (bmessage) == BIOS_PROTO_ASSET)  {
                 tpower_conf.processAsset (topic);

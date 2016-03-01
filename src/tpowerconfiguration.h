@@ -46,7 +46,7 @@ public:
         _timeout {TPOWER_POLLING_INTERVAL}
     {};
 
-    void processMetric (bios_proto_t **message, const std::string &topic);
+    std::vector<MetricInfo> processMetric (const MetricInfo &M, const std::string &topic);
     void processAsset (const std::string &topic);
     void onPoll();
     //! \brief read configuration from database
@@ -57,7 +57,7 @@ public:
     //! \brief list of racks
     std::map< std::string, TPUnit > _racks;
     //! \brief topic interesting for racks
-    const cxxtools::Regex _rackRegex = cxxtools::Regex("^measurement\\.realpower\\.(default|nominal)", REG_EXTENDED );
+    const cxxtools::Regex _rackRegex = cxxtools::Regex("^realpower\\.(default|nominal)", REG_EXTENDED );
     //! \brief list of interested units
     const std::vector<std::string> _rackQuantities = {
         "realpower.default",
@@ -69,7 +69,7 @@ public:
     //! \brief list of datacenters
     std::map< std::string, TPUnit > _DCs;
     //! \brief topic interesting for DCs
-    const cxxtools::Regex _dcRegex = cxxtools::Regex("^measurement\\.realpower\\.(default|input\\.L[1-3]|output\\.L[1-3])", REG_EXTENDED );
+    const cxxtools::Regex _dcRegex = cxxtools::Regex("^realpower\\.(default|input\\.L[1-3]|output\\.L[1-3])", REG_EXTENDED );
     //! \brief list of interested units
     const std::vector<std::string> _dcQuantities = {
         "realpower.default",
