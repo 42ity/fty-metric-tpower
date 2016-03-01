@@ -114,11 +114,6 @@ void TotalPowerConfiguration::addDeviceToMap(
     reverseMap[device] = owner;
 }
 
-void TotalPowerConfiguration::onStart( )
-{
-    _timeout = TPOWER_POLLING_INTERVAL;
-    configure();
-}
 
 void TotalPowerConfiguration::onSend( zmsg_t **message, const std::string &topic) {
     zsys_debug("received message with topic \"%s\"", topic.c_str() );

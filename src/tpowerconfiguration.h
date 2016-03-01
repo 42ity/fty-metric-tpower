@@ -42,11 +42,13 @@
 
 class TotalPowerConfiguration {
  public:
-    TotalPowerConfiguration( void ) {  };
+    TotalPowerConfiguration( void ) {    _timeout = TPOWER_POLLING_INTERVAL;
+  };
 
-    void onStart();
     void onSend( zmsg_t **message, const std::string &topic );
     void onPoll();
+    //! \brief read configuration from database
+    bool configure();
  private:
 
     int64_t _timeout;
@@ -82,8 +84,6 @@ class TotalPowerConfiguration {
     //! \brief timestamp, when we should re-read configuration
     time_t _reconfigPending = 0;
 
-    //! \brief read configuration from database
-    bool configure();
 
     //! \brief send measurement message if needed
     void sendMeasurement(std::map< std::string, TPUnit > &elements, const std::vector<std::string> &quantities );

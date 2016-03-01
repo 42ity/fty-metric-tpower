@@ -44,6 +44,7 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
 
     // initial set up
     TotalPowerConfiguration tpower_conf;
+    tpower_conf.configure();
     while (!zsys_interrupted) {
 
         void *which = zpoller_wait (poller, -1);
