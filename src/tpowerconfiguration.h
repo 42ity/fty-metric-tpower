@@ -42,15 +42,12 @@
 
 class TotalPowerConfiguration {
  public:
-    explicit TotalPowerConfiguration( const char *agentName ) : _agentName(agentName) {  };
-    explicit TotalPowerConfiguration( const std::string &agentName ) : _agentName(agentName) { };
+    TotalPowerConfiguration( void ) {  };
 
     void onStart();
     void onSend( zmsg_t **message, const std::string &topic );
     void onPoll();
  private:
-    // agent name
-    std::string _agentName;
 
     int64_t _timeout;
     //! \brief list of racks

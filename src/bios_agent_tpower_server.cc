@@ -41,6 +41,9 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
 
     // Signal need to be send as it is required by "actor_new"
     zsock_signal (pipe, 0);
+
+    // initial set up
+    TotalPowerConfiguration tpower_conf;
     while (!zsys_interrupted) {
 
         void *which = zpoller_wait (poller, -1);
@@ -106,8 +109,6 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
 
         // This agent is a reactive agent, it reacts only on messages
         // and doesn't do anything if there is no messages
-        // TODO: probably email also should be send every XXX seconds,
-        // even if no alerts were received
         zmsg_t *zmessage = mlm_client_recv (client);
         if ( zmessage == NULL ) {
             continue;
