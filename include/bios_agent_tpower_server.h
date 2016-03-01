@@ -27,13 +27,8 @@ extern "C" {
 #endif
 
 //  @interface
-//  Create a new bios_agent_tpower_server
-TPOWER_EXPORT bios_agent_tpower_server_t *
-    bios_agent_tpower_server_new (void);
-
-//  Destroy the bios_agent_tpower_server
 TPOWER_EXPORT void
-    bios_agent_tpower_server_destroy (bios_agent_tpower_server_t **self_p);
+   bios_agent_tpower_server (zsock_t *pipe, void* args);
 
 //  Self test of this class
 TPOWER_EXPORT void

@@ -56,9 +56,6 @@
 #   define TPOWER_EXPORT
 #endif
 
-//  Opaque class structures to allow forward references
-//  These classes are stable or legacy and built in all releases
-typedef struct _bios_agent_tpower_server_t bios_agent_tpower_server_t;
 #define BIOS_AGENT_TPOWER_SERVER_T_DEFINED
 
 
