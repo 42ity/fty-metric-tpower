@@ -45,7 +45,7 @@ std::string url = std::string("mysql:db=box_utf8;user=") +
                       std::string(";password=") + getenv("DB_PASSWD"));
 
 bool TotalPowerConfiguration::
-    configuration(void)
+    configure(void)
 {
     zsys_info ("loading power topology");
     try {
@@ -117,7 +117,7 @@ void TotalPowerConfiguration::addDeviceToMap(
 void TotalPowerConfiguration::onStart( )
 {
     _timeout = TPOWER_POLLING_INTERVAL;
-    configuration();
+    configure();
 }
 
 void TotalPowerConfiguration::onSend( zmsg_t **message, const std::string &topic) {
@@ -229,7 +229,7 @@ time_t TotalPowerConfiguration::getPollInterval() {
 void TotalPowerConfiguration::onPoll() {
     sendMeasurement( _racks, _rackQuantities );
     sendMeasurement( _DCs, _dcQuantities );
-    if( _reconfigPending && ( _reconfigPending <= time(NULL) ) ) configuration();
+    if( _reconfigPending && ( _reconfigPending <= time(NULL) ) ) configure();
     _timeout = getPollInterval();
 }
 

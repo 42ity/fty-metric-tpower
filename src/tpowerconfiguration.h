@@ -83,7 +83,7 @@ class TotalPowerConfiguration {
     time_t _reconfigPending = 0;
 
     //! \brief read configuration from database
-    bool configuration();
+    bool configure();
 
     //! \brief send measurement message if needed
     void sendMeasurement(std::map< std::string, TPUnit > &elements, const std::vector<std::string> &quantities );
