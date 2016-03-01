@@ -39,6 +39,7 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
 
     zpoller_t *poller = zpoller_new (pipe, mlm_client_msgpipe(client), NULL);
 
+    // Signal need to be send as it is required by "actor_new"
     zsock_signal (pipe, 0);
     while (!zsys_interrupted) {
 
@@ -49,7 +50,9 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
         if (which == pipe) {
             zmsg_t *msg = zmsg_recv (pipe);
             char *cmd = zmsg_popstr (msg);
-            zsys_debug ("actor command=%s", cmd);
+            if ( verbose ) {
+                zsys_debug ("actor command=%s", cmd);
+            }
 
             if (streq (cmd, "$TERM")) {
                 zstr_free (&cmd);
@@ -91,16 +94,6 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
                 zstr_free (&pattern);
                 zstr_free (&stream);
                 zsock_signal (pipe, 0);
-            }
-            else
-            if (streq (cmd, "MSMTP_PATH")) {
-                char* path = zmsg_popstr (msg);
-                zstr_free (&path);
-            }
-            else
-            if (streq (cmd, "STATE_FILE_PATH")) {
-                char* path = zmsg_popstr (msg);
-                zstr_free (&path);
             }
             else
             {
