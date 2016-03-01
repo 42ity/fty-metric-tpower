@@ -34,9 +34,6 @@
 #include <errno.h>
 #include <tntdb/connect.h>
 
-#include "tpowerconfiguration.h"
-#include "calc_power.h"
-
 #include <stdlib.h>
 
 std::string url = std::string("mysql:db=box_utf8;user=") +
