@@ -122,16 +122,12 @@ void TotalPowerConfiguration::processAsset( const std::string &topic)
     _timeout = getPollInterval();
 }
 
-MetricInfo TotalPowerConfiguration::
+std::vector<MetricInfo> TotalPowerConfiguration::
     processMetric (
-        bios_proto_t **message,
+        const MetricInfo &M,
         const std::string &topic)
 {
-    // measurement received
-    // TODO convert to metric INFO
-    MetricInfo M;
-
-    // ASSUMTION: one device can affect only one ASSET ( Datacenter or Rack )
+    // ASSUMTION: one device can affect only one ASSET of each type ( Datacenter or Rack )
     if( _rackRegex.match(topic) ) {
         auto affected_it = _affectedRacks.find( M.getElementName() );
         if( affected_it != _affectedRacks.end() ) {
@@ -159,7 +155,8 @@ MetricInfo TotalPowerConfiguration::
         }
     }
     _timeout = getPollInterval();
-    return M;
+    // TODO return right metric
+    return {M};
 }
 
 int send( const char *subject, zmsg_t **msg_p )

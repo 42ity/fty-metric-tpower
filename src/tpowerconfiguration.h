@@ -46,7 +46,7 @@ public:
         _timeout {TPOWER_POLLING_INTERVAL}
     {};
 
-    MetricInfo processMetric (bios_proto_t **message, const std::string &topic);
+    std::vector<MetricInfo> processMetric (const MetricInfo &M, const std::string &topic);
     void processAsset (const std::string &topic);
     void onPoll();
     //! \brief read configuration from database
