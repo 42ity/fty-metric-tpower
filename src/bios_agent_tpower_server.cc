@@ -63,6 +63,7 @@ static void
     for ( const auto &oneNewMetric : newMetrics ) {
         if ( !oneNewMetric.isUnknown() ) {
             // TODO
+            // because of "advertised" property in TPUnit it is not easy :(
             // publish on the stream
         }
     }
