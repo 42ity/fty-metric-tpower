@@ -30,6 +30,15 @@
 
 #include <getopt.h>
 
+// agent's name
+// DO NOT CHANGE! as other agents can rely on this name
+static const char *AGENT_NAME = "agent-tpower";
+
+// malamute's endpoint
+// TODO make endpoint configurable on the start of the agent
+static const char *ENDPOINT = "ipc://@/malamute";
+
+
 void usage ()
 {
     puts ("bios-agent-tpower [options]\n"
@@ -83,18 +92,36 @@ int main (int argc, char *argv [])
     }
 
     zsys_info ("bios_agent_tpower STARTED");
-/*
-    int result = 1;
 
-    zsys_info ("tpower agent started");
-    TotalPowerConfiguration agent("TPOWER");
-    if( agent.connect(MLM_ENDPOINT, bios_get_stream_main(), "^(measurement\\.realpower\\..+@|configure@)") ) {
-        result = agent.run();
+    zactor_t *tpower_server = zactor_new (bios_agent_tpower_server, (void*) AGENT_NAME);
+    if ( !tpower_server ) {
+        zsys_error ("cannot start the daemon");
+        exit(1);
     }
-    zsys_info ("tpower agent exited with code %i\n", result);
-    return result;
-*/
+
+    if (verbose) {
+        zstr_sendx (tpower_server, "VERBOSE", NULL);
+    }
+    // Connect to malamute
+    zstr_sendx (tpower_server, "CONNECT", ENDPOINT, NULL);
+    zsock_wait (tpower_server);
+
+    //  Accept and print any message back from server
+    //  copy from src/malamute.c under MPL license
+    while (true) {
+        char *message = zstr_recv (tpower_server);
+        if (message) {
+            puts (message);
+            free (message);
+        }
+        else {
+            puts ("interrupted");
+            break;
+        }
+    }
+
     //  Insert main code here
+    zactor_destroy (&tpower_server);
     zsys_info ("bios_agent_tpower ENDED");
     return 0;
 }
