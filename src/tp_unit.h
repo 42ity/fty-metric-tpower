@@ -84,10 +84,10 @@ class TPUnit {
     void advertised( const std::string &quantity );
 
     //! \brief time to next advertisement [s]
-    time_t timeToAdvertisement( const std::string &quantity ) const;
+    int64_t timeToAdvertisement( const std::string &quantity ) const;
 
     //! \brief return timestamp for quantity change
-    time_t timestamp( const std::string &quantity ) const;
+    int64_t timestamp( const std::string &quantity ) const;
  protected:
     //! \brief A list of the last measurement values:  topic -> MetricInfo
     MetricList _lastValue;
@@ -96,10 +96,10 @@ class TPUnit {
     std::map < std::string, bool > _changed;
 
     //! \brief measurement change timestamp
-    std::map < std::string, time_t> _changetimestamp;
+    std::map < std::string, int64_t> _changetimestamp;
 
     //! \brief measurement advertisement timestamp
-    std::map < std::string, time_t> _advertisedtimestamp;
+    std::map < std::string, int64_t> _advertisedtimestamp;
 
     /*! \brief list of measurements for included devices
      *
