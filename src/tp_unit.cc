@@ -52,7 +52,7 @@ double TPUnit::get( const std::string &quantity) const {
 
 
 MetricInfo TPUnit::getMetricInfo(const std::string &quantity) const {
-    auto result = _lastValue.getMetricInfo( quantity );
+    auto result = _lastValue.getMetricInfo( generateTopic(quantity) );
     if ( result.isUnknown() ) {
         throw std::runtime_error("Unknown quantity");
     }
