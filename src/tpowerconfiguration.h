@@ -110,6 +110,7 @@ public:
         const std::string & device );
 
     //! \brief calculete polling interval (not to wake up every 5s)
+    // in [s]
     time_t getPollInterval();
 };
 

@@ -248,12 +248,20 @@ time_t TPUnit::timestamp( const std::string &quantity ) const {
 }
 
 time_t TPUnit::timeToAdvertisement( const std::string &quantity ) const {
-    if(
-        ( timestamp(quantity) == 0 ) ||
-        quantityIsUnknown(generateTopic(quantity))
-    ) return TPOWER_MEASUREMENT_REPEAT_AFTER;
-    time_t dt = time(NULL) - timestamp( quantity );
-    if( dt > TPOWER_MEASUREMENT_REPEAT_AFTER ) return 0;
+    auto quantityTimestamp = timestamp (quantity);
+    if ( ( quantityTimestamp == 0 ) ||
+           quantityIsUnknown(generateTopic(quantity))
+       )
+    {
+        // if quantity didn't change and it is still unknown
+        return TPOWER_MEASUREMENT_REPEAT_AFTER;
+    }
+    time_t dt = ::time(NULL) - quantityTimestamp;
+    if ( dt > TPOWER_MEASUREMENT_REPEAT_AFTER ) {
+        // no time left for waiting -. Need to advertise
+        return 0;
+    }
+    // we should wait a little bit, before advertising
     return TPOWER_MEASUREMENT_REPEAT_AFTER - dt;
 }
 

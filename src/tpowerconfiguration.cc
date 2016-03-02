@@ -45,6 +45,7 @@ static std::string url =
 bool TotalPowerConfiguration::
     configure(void)
 {
+    // TODO should be rewritten, for usinf messages
     zsys_info ("loading power topology");
     try {
         // remove old topology
@@ -201,11 +202,13 @@ void TotalPowerConfiguration::
 }
 
 time_t TotalPowerConfiguration::getPollInterval() {
-    time_t T = TPOWER_MEASUREMENT_REPEAT_AFTER;
+    time_t T = TPOWER_MEASUREMENT_REPEAT_AFTER; // result
     for( auto &rack_it : _racks ) {
         for( auto &q : _rackQuantities ) {
             time_t Tx = rack_it.second.timeToAdvertisement(q);
-            if( Tx > 0 && Tx < T ) T = Tx;
+            if( Tx > 0 && Tx < T ) {
+                T = Tx;
+            }
         }
     }
     for( auto &dc_it : _racks ) {
