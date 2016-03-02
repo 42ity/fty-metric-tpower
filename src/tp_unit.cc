@@ -287,25 +287,33 @@ int64_t TPUnit::
     }
     int64_t dt = ::time(NULL) - quantityTimestamp;
     if ( dt > TPOWER_MEASUREMENT_REPEAT_AFTER ) {
-        // no time left for waiting -. Need to advertise
+        // no time left for waiting -> Need to advertise
         return 0;
     }
     // we should wait a little bit, before advertising
     return TPOWER_MEASUREMENT_REPEAT_AFTER - dt;
 }
 
-bool TPUnit::advertise( const std::string &quantity ) const
+bool TPUnit::
+    advertise( const std::string &quantity ) const
 {
     if ( quantityIsUnknown(generateTopic(quantity)) ) {
+        // if do not know the quantity -> nothing to advertise
         return false;
     }
     int64_t now_timestamp = ::time(NULL);
+    // find the time, when quantity was advertised last time
     const auto it = _advertisedtimestamp.find(quantity);
     if ( ( it != _advertisedtimestamp.end() ) &&
          ( it->second == now_timestamp ) )
     {
+        // if time is known and
+        //    time is just now was advertised -> nothing to advertise
         return false;
     }
+    // advertise if 
+    // * value changed or
+    // * we should advertise according schedule
     return ( changed(quantity) || ( now_timestamp - timestamp(quantity) > TPOWER_MEASUREMENT_REPEAT_AFTER ) );
 }
 

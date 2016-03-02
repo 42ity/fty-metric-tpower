@@ -96,7 +96,7 @@ public:
     std::map< std::string, std::string> _affectedDCs;
 
     //! \brief timestamp, when we should re-read configuration
-    time_t _reconfigPending = 0;
+    int64_t _reconfigPending = 0;
 
 
     //! \brief send measurement message if needed
@@ -111,7 +111,7 @@ public:
 
     //! \brief calculete polling interval (not to wake up every 5s)
     // in [s]
-    time_t getPollInterval();
+    int64_t getPollInterval();
 };
 
 #endif // TPOWERCONFIGURATION_H_INCLUDED
