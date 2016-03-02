@@ -35,9 +35,9 @@
 
 #include "tp_unit.h"
 
-// TODO: read this from configuration (once in 5 minutes now (300s))
+// TODO: read this from configuration (once in 5 minutes now (300s)) in [s]
 #define TPOWER_MEASUREMENT_REPEAT_AFTER 300
-// TODO: read this from configuration (check with upsd ever 5s)
+// TODO: read this from configuration (check with upsd ever 5s) in [ms]
 #define TPOWER_POLLING_INTERVAL  5000
 
 
@@ -65,6 +65,8 @@ public:
      * \return true is metric was sent successfully
      */ 
     std::function<bool(const MetricInfo&)> _sendingFunction;
+
+    // in [m]
     int64_t _timeout;
     //! \brief list of racks
     std::map< std::string, TPUnit > _racks;
@@ -110,7 +112,7 @@ public:
         const std::string & device );
 
     //! \brief calculete polling interval (not to wake up every 5s)
-    // in [s]
+    // in [ms]
     int64_t getPollInterval();
 };
 
