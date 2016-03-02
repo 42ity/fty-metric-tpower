@@ -29,7 +29,8 @@
 #include "tpower_classes.h"
 
 bool send_metrics (mlm_client_t* client, const MetricInfo &M){
-    return false;
+    zsys_info ("Metric is sent: %s", M.generateTopic().c_str());
+    return true;
 }
 
 static void
@@ -187,6 +188,9 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
                 zsys_error ("it is not an alert message, ignore it");
             }
             bios_proto_destroy (&bmessage);
+        }
+        else {
+            zsys_error ("not bios proto");
         }
 
         // listen 

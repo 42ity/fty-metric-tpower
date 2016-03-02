@@ -59,20 +59,17 @@ MetricInfo TPUnit::getMetricInfo(const std::string &quantity) const {
     return result;
 }
 
-void TPUnit::set(const std::string &quantity, MetricInfo measurement)
+void TPUnit::set(const std::string &quantity, MetricInfo &measurement)
 {
     double itSums = _lastValue.find(quantity);
     if( isnan(itSums) || (itSums != measurement.getValue()) ) {
-        measurement.setTime();
         _lastValue.addMetric(measurement);
         _changed[quantity] = true;
-        _changetimestamp[quantity] = time(NULL);
+        _changetimestamp[quantity] = measurement.getTimestamp();
     }
 }
 
 MetricInfo TPUnit::simpleSummarize(const std::string &quantity) const {
-    MetricInfo result;
-    result.setUnits("W");
     double sum = 0;
     for( const auto &it : _powerdevices ) {
         auto itMetricInfo = getMetricInfoIter( it.second, quantity, it.first );
@@ -82,13 +79,11 @@ MetricInfo TPUnit::simpleSummarize(const std::string &quantity) const {
             sum += itMetricInfo;
         }
     }
-    // TODO fill metricINFO
+    MetricInfo result ( _name, quantity, "W", sum, -1, "");
     return result;
 }
 
 MetricInfo TPUnit::realpowerDefault(const std::string &quantity) const {
-    MetricInfo result;
-    result.setUnits("W");
     double sum = 0;
     for( const auto it : _powerdevices ) {
         auto itMetricInfos = getMetricInfoIter( it.second, quantity, it.first );
@@ -105,7 +100,7 @@ MetricInfo TPUnit::realpowerDefault(const std::string &quantity) const {
             sum += itMetricInfos;
         }
     }
-    // TODO fill metricINFO
+    MetricInfo result ( _name, quantity, "W", sum, -1, "");
     return result;
 }
 
@@ -176,16 +171,22 @@ void TPUnit::dropOldMetricInfos()
     _lastValue.removeOldMetrics();
 }
 
-bool TPUnit::quantityIsUnknown(const std::string &quantity) const
+std::string TPUnit::
+    generateTopic (const std::string &quantity) const
 {
-    return  isnan(_lastValue.find(quantity));
+    return quantity + "@" + _name;
+}
+
+bool TPUnit::quantityIsUnknown(const std::string &topic) const
+{
+    return  isnan(_lastValue.find(topic));
 }
 
 std::vector<std::string> TPUnit::devicesInUnknownState(const std::string &quantity) const
 {
     std::vector<std::string> result;
 
-    if ( quantityIsKnown( quantity ) ) {
+    if ( quantityIsKnown( generateTopic(quantity) ) ) {
         return result;
     }
 
@@ -249,7 +250,7 @@ time_t TPUnit::timestamp( const std::string &quantity ) const {
 time_t TPUnit::timeToAdvertisement( const std::string &quantity ) const {
     if(
         ( timestamp(quantity) == 0 ) ||
-        quantityIsUnknown(quantity)
+        quantityIsUnknown(generateTopic(quantity))
     ) return TPOWER_MEASUREMENT_REPEAT_AFTER;
     time_t dt = time(NULL) - timestamp( quantity );
     if( dt > TPOWER_MEASUREMENT_REPEAT_AFTER ) return 0;
@@ -257,15 +258,17 @@ time_t TPUnit::timeToAdvertisement( const std::string &quantity ) const {
 }
 
 bool TPUnit::advertise( const std::string &quantity ) const{
-    if( quantityIsUnknown(quantity) ) return false;
+    if ( quantityIsUnknown(generateTopic(quantity)) ) {
+        return false;
+    }
+    int64_t now_timestamp = ::time(NULL);
     const auto it = _advertisedtimestamp.find(quantity);
-    if( ( it != _advertisedtimestamp.end() ) && ( it->second == time(NULL) ) ) return false;
-    return ( changed(quantity) || ( time(NULL) - timestamp(quantity) > TPOWER_MEASUREMENT_REPEAT_AFTER ) );
-}
-
-zmsg_t * TPUnit::measurementMessage( const std::string &quantity ) {
-    // TODO
-    return NULL;
+    if ( ( it != _advertisedtimestamp.end() ) &&
+         ( it->second == now_timestamp ) )
+    {
+        return false;
+    }
+    return ( changed(quantity) || ( now_timestamp - timestamp(quantity) > TPOWER_MEASUREMENT_REPEAT_AFTER ) );
 }
 
 void tp_unit_test(bool verbose)

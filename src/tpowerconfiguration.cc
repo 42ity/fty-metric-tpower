@@ -175,7 +175,7 @@ void TotalPowerConfiguration::
                     }
                 } catch (...)
                 {
-                    // TODO
+                    zsys_error ("Am I here???");// TODO fix it
                 };
             } else {
                 // log something from time to time if device calculation is unknown
