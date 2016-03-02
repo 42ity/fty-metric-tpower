@@ -28,6 +28,9 @@
 
 #include "tpower_classes.h"
 
+// ============================================================
+//         Functionality for METRIC processing and publishing
+// ============================================================
 bool send_metrics (mlm_client_t* client, const MetricInfo &M){
     zsys_info ("Metric is sent: %s", M.generateTopic().c_str());
     zmsg_t *msg = bios_proto_encode_metric (
@@ -80,6 +83,19 @@ static void
     config.processMetric (m, topic);
 }
 
+// ============================================================
+//         Functionality for ASSET processing
+// ============================================================
+static void
+    s_processAsset(
+        TotalPowerConfiguration &config,
+        const std::string &topic,
+        bios_proto_t **bmessage_p)
+{
+    //bios_proto_t *bmessage = *bmessage_p;
+
+    config.processAsset (topic);
+}
 void
 bios_agent_tpower_server (zsock_t *pipe, void* args)
 {
@@ -94,10 +110,13 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
     // Signal need to be send as it is required by "actor_new"
     zsock_signal (pipe, 0);
 
-    // initial set up
+    // Such trick with function is used, because tpower_configuration
+    // wants itself to control "advertise time".
+    // But We want to separate logic from messaging -> use function as parameter
     std::function<bool(const MetricInfo&)> fff= [&client] (const MetricInfo& M) -> bool {
         return send_metrics (client, M);
     };
+    // initial set up
     TotalPowerConfiguration tpower_conf(fff);
     tpower_conf.configure();
     while (!zsys_interrupted) {
@@ -175,10 +194,10 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
         }
         // What is going on???
         //
-        // Listen on metrics
-        // Listen on assets TODO or are still CONFIGURE messages?
+        // Listen on metrics +
+        // Listen on assets
         //
-        // Produce metrics
+        // Produce metrics +
         //
         // Current iplementation: read topology from DB
         // TODO: move it to asset agent and receive this info
@@ -192,10 +211,10 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
                 continue;
             }
             if (bios_proto_id (bmessage) == BIOS_PROTO_METRIC)  {
-                s_processMetric(tpower_conf, topic, &bmessage);
+                s_processMetric (tpower_conf, topic, &bmessage);
             }
             else if (bios_proto_id (bmessage) == BIOS_PROTO_ASSET)  {
-                tpower_conf.processAsset (topic);
+                s_processAsset (tpower_conf, topic, &bmessage);
             }
             else {
                 zsys_error ("it is not an alert message, ignore it");

@@ -36,10 +36,11 @@
 
 #include <stdlib.h>
 
-static std::string url = std::string("mysql:db=box_utf8;user=") +
-                  ((getenv("DB_USER")   == NULL) ? "root" : getenv("DB_USER")) +
-                  ((getenv("DB_PASSWD") == NULL) ? ""     : 
-                      std::string(";password=") + getenv("DB_PASSWD"));
+static std::string url = 
+    std::string("mysql:db=box_utf8;user=") +
+    ((getenv("DB_USER")   == NULL) ? "root" : getenv("DB_USER")) +
+    ((getenv("DB_PASSWD") == NULL) ? ""     : 
+    std::string(";password=") + getenv("DB_PASSWD"));
 
 bool TotalPowerConfiguration::
     configure(void)
@@ -58,11 +59,11 @@ bool TotalPowerConfiguration::
         auto ret = select_devices_total_power_racks (connection);
 
         if( ret.status ) {
-            for( auto & rack_it: ret.item ) {
-                zsys_debug("reading rack %s powerdevices", rack_it.first.c_str() );
-                auto devices = rack_it.second;
-                for( auto device_it: devices ) {
-                    zsys_debug("rack %s powerdevice %s", rack_it.first.c_str(), device_it.c_str() );
+            for( auto &rack_it: ret.item ) {
+                zsys_debug("rack '%s' powerdevices:", rack_it.first.c_str() );
+                auto &devices = rack_it.second;
+                for( auto &device_it: devices ) {
+                    zsys_debug("         '%s'", device_it.c_str() );
                     addDeviceToMap(_racks, _affectedRacks, rack_it.first, device_it );
                 }
             }
@@ -70,25 +71,27 @@ bool TotalPowerConfiguration::
         // reading DCs
         ret = select_devices_total_power_dcs (connection);
         if( ret.status ) {
-            for( auto & dc_it: ret.item ) {
-                zsys_debug("reading DC %s powerdevices", dc_it.first.c_str() );
-                auto devices = dc_it.second;
-                for( auto device_it: devices ) {
-                    zsys_debug("DC %s powerdevice %s", dc_it.first.c_str(), device_it.c_str() );
+            for( auto &dc_it: ret.item ) {
+                zsys_debug("DC '%s' powerdevices", dc_it.first.c_str() );
+                auto &devices = dc_it.second;
+                for( auto &device_it: devices ) {
+                    zsys_debug("         '%s'", device_it.c_str() );
                     addDeviceToMap(_DCs, _affectedDCs, dc_it.first, device_it );
                 }
             }
         }
         connection.close();
+        // no reconfiguration should be scheduled
         _reconfigPending = 0;
+        zsys_debug ("topology loaded SUCCESS");
         return true;
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         zsys_error("Failed to read configuration from database. Excepton caught: '%s'.", e.what ());
-        _reconfigPending = time(NULL) + 60;
+        _reconfigPending = ::time(NULL) + 60;
         return false;
-    } catch(...) {
+    } catch (...) {
         zsys_error ("Failed to read configuration from database. Unknown exception caught.");
-        _reconfigPending = time(NULL) + 60;
+        _reconfigPending = ::time(NULL) + 60;
         return false;
     }
 }
@@ -112,7 +115,8 @@ void TotalPowerConfiguration::addDeviceToMap(
 }
 
 
-void TotalPowerConfiguration::processAsset( const std::string &topic)
+void TotalPowerConfiguration::
+    processAsset( const std::string &topic)
 {
     // something is beeing reconfigured, let things to settle down
     if( _reconfigPending == 0 ) {
@@ -222,7 +226,9 @@ time_t TotalPowerConfiguration::getPollInterval() {
 void TotalPowerConfiguration::onPoll() {
     sendMeasurement( _racks, _rackQuantities );
     sendMeasurement( _DCs, _dcQuantities );
-    if( _reconfigPending && ( _reconfigPending <= time(NULL) ) ) configure();
+    if( _reconfigPending && ( _reconfigPending <= ::time(NULL) ) ) {
+        configure();
+    }
     _timeout = getPollInterval();
 }
 
