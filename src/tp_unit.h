@@ -44,7 +44,7 @@ class TPUnit {
 
     //\! \brief set value of particular quantity.
     // TODO const &
-    void set(const std::string &quantity, MetricInfo measurement);
+    void set(const std::string &quantity, MetricInfo &measurement);
 
     //\! \brief Metric Info per articular quantity.
     MetricInfo getMetricInfo(const std::string &quantity) const;
@@ -85,9 +85,6 @@ class TPUnit {
 
     //! \brief time to next advertisement [s]
     time_t timeToAdvertisement( const std::string &quantity ) const;
-
-    //! \brief create ymsg meeasurement message
-    zmsg_t *measurementMessage( const std::string &quantity );
 
     //! \brief return timestamp for quantity change
     time_t timestamp( const std::string &quantity ) const;
@@ -137,6 +134,8 @@ class TPUnit {
     MetricInfo simpleSummarize(const std::string &quantity) const;
     //\! \brief calculate realpower sum over devices
     MetricInfo realpowerDefault(const std::string &quantity) const;
+private:
+    std::string generateTopic (const std::string &quantity) const;
 };
 
 #endif // TP_UNIT_H_INCLUDED
