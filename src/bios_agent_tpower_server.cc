@@ -30,7 +30,20 @@
 
 bool send_metrics (mlm_client_t* client, const MetricInfo &M){
     zsys_info ("Metric is sent: %s", M.generateTopic().c_str());
-    return true;
+    zmsg_t *msg = bios_proto_encode_metric (
+            NULL,
+            M.getSource().c_str(),
+            M.getElementName().c_str(),
+            std::to_string(M.getValue()).c_str(),
+            M.getUnits().c_str(),
+            M.getTimestamp());
+    int r = mlm_client_send (client, M.generateTopic().c_str(), &msg);
+    if ( r == -1 ) {
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
 static void

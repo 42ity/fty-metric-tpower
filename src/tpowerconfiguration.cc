@@ -175,9 +175,8 @@ void TotalPowerConfiguration::
                     if( isSent ) {
                         powerUnit.advertised(q);
                     }
-                } catch (...)
-                {
-                    zsys_error ("Am I here???");// TODO fix it
+                } catch (...) {
+                    zsys_error ("Some unexpected error during sending new measurement");
                 };
             } else {
                 // log something from time to time if device calculation is unknown
