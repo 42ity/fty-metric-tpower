@@ -164,14 +164,16 @@ void TotalPowerConfiguration::
         const std::vector<std::string> &quantities)
 {
     for( auto &element : elements ) {
-        element.second.calculate( quantities );
-        for( auto &q : quantities ) {
-            if( element.second.advertise(q) ) {
+        // renaming for better reading
+        auto &powerUnit = element.second;
+        powerUnit.calculate( quantities );
+        for( const auto &q : quantities ) {
+            if( powerUnit.advertise(q) ) {
                 try {
-                    MetricInfo M = element.second.getMetricInfo(q);
+                    MetricInfo M = powerUnit.getMetricInfo(q);
                     bool isSent = _sendingFunction(M);
                     if( isSent ) {
-                        element.second.advertised(q);
+                        powerUnit.advertised(q);
                     }
                 } catch (...)
                 {
