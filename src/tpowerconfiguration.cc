@@ -122,7 +122,7 @@ void TotalPowerConfiguration::processAsset( const std::string &topic)
     _timeout = getPollInterval();
 }
 
-std::vector<MetricInfo> TotalPowerConfiguration::
+void TotalPowerConfiguration::
     processMetric (
         const MetricInfo &M,
         const std::string &topic)
@@ -155,34 +155,28 @@ std::vector<MetricInfo> TotalPowerConfiguration::
         }
     }
     _timeout = getPollInterval();
-    // TODO return right metric
-    return {M};
 }
 
-int send( const char *subject, zmsg_t **msg_p )
+
+void TotalPowerConfiguration::
+    sendMeasurement(
+        std::map< std::string, TPUnit > &elements,
+        const std::vector<std::string> &quantities)
 {
-    // TODO send it!
-    return 0;
-}
-
-
-void  TotalPowerConfiguration::sendMeasurement(std::map< std::string, TPUnit > &elements, const std::vector<std::string> &quantities ) {
     for( auto &element : elements ) {
         element.second.calculate( quantities );
         for( auto &q : quantities ) {
             if( element.second.advertise(q) ) {
                 try {
-                    zmsg_t *message = element.second.measurementMessage(q);
-                    if( message ) {
-                        std::string topic = "measurement." + q + "@" + element.second.name();
-                        MetricInfo M = element.second.getMetricInfo(q);
-                        zsys_debug("Sending total power topic: %s value: %lf",
-                                  topic.c_str(),
-                                  M.getValue());
-                        send( topic.c_str(), &message );
+                    MetricInfo M = element.second.getMetricInfo(q);
+                    bool isSent = _sendingFunction(M);
+                    if( isSent ) {
                         element.second.advertised(q);
                     }
-                } catch(...) { };
+                } catch (...)
+                {
+                    // TODO
+                };
             } else {
                 // log something from time to time if device calculation is unknown
                 auto devices = element.second.devicesInUnknownState(q);
