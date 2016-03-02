@@ -92,7 +92,7 @@ class TPUnit {
     //! \brief return timestamp for quantity change
     time_t timestamp( const std::string &quantity ) const;
  protected:
-    //! \brief last measurement value - topic -> MetricInfo
+    //! \brief A list of the last measurement values:  topic -> MetricInfo
     MetricList _lastValue;
 
     //! \brief measurement status

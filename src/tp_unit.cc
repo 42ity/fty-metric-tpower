@@ -35,11 +35,11 @@ const std::map<std::string,std::string> TPUnit::_emergencyReplacements = {
 };
 
 enum TPowerMethod {
-    tpower_realpower_default = 1,
+    TPOWER_REALPOWER_DEFAULT = 1,
 };
 
 const std::map<std::string,int> TPUnit::_calculations = {
-    { "realpower.default", tpower_realpower_default },
+    { "realpower.default", TPOWER_REALPOWER_DEFAULT },
 };
 
 double TPUnit::get( const std::string &quantity) const {
@@ -123,7 +123,7 @@ void TPUnit::calculate(const std::string &quantity) {
         const auto how = _calculations.find(quantity);
         if( how != _calculations.cend() ) calc = how->second;
         switch( calc ) {
-        case tpower_realpower_default:
+        case TPOWER_REALPOWER_DEFAULT:
             result = realpowerDefault( quantity );
             break;
         default:
@@ -235,8 +235,9 @@ void TPUnit::changed(const std::string &quantity, bool newStatus) {
 
 void TPUnit::advertised(const std::string &quantity) {
     changed( quantity, false );
-    _changetimestamp[quantity] = time(NULL);
-    _advertisedtimestamp[quantity] = time(NULL);
+    int64_t now_timestamp = ::time(NULL);
+    _changetimestamp[quantity] = now_timestamp;
+    _advertisedtimestamp[quantity] = now_timestamp;
 }
 
 time_t TPUnit::timestamp( const std::string &quantity ) const {

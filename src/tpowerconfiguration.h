@@ -31,6 +31,7 @@
 #include <vector>
 #include <string>
 #include <cxxtools/regex.h>
+#include <functional>
 
 #include "tp_unit.h"
 
@@ -42,17 +43,28 @@
 
 class TotalPowerConfiguration {
 public:
-    TotalPowerConfiguration (void) : 
+    TotalPowerConfiguration (std::function<bool(const MetricInfo&)> f) : 
         _timeout {TPOWER_POLLING_INTERVAL}
-    {};
+    {
+        _sendingFunction = f;
+    };
 
-    std::vector<MetricInfo> processMetric (const MetricInfo &M, const std::string &topic);
+    void processMetric (const MetricInfo &M, const std::string &topic);
     void processAsset (const std::string &topic);
     void onPoll();
     //! \brief read configuration from database
     bool configure();
  private:
-
+    
+    /*
+     *
+     * \brief Function that is responsible for sending the message
+     *
+     * \param M - MetricInfo represents a metric to be sent
+     *
+     * \return true is metric was sent successfully
+     */ 
+    std::function<bool(const MetricInfo&)> _sendingFunction;
     int64_t _timeout;
     //! \brief list of racks
     std::map< std::string, TPUnit > _racks;

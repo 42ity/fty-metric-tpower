@@ -28,6 +28,10 @@
 
 #include "tpower_classes.h"
 
+bool send_metrics (mlm_client_t* client, const MetricInfo &M){
+    return false;
+}
+
 static void
     s_processMetric(
         TotalPowerConfiguration &config,
@@ -59,13 +63,7 @@ static void
     zsys_debug("Got message '%s' with value %s\n", topic.c_str(), value);
 
     MetricInfo m (element_src, type, unit, dvalue, timestamp, "");
-    auto newMetrics = config.processMetric (m, topic);
-    for ( const auto &oneNewMetric : newMetrics ) {
-        if ( !oneNewMetric.isUnknown() ) {
-            // TODO
-            // publish on the stream
-        }
-    }
+    config.processMetric (m, topic);
 }
 
 void
@@ -83,7 +81,10 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
     zsock_signal (pipe, 0);
 
     // initial set up
-    TotalPowerConfiguration tpower_conf;
+    std::function<bool(const MetricInfo&)> fff= [&client] (const MetricInfo& M) -> bool {
+        return send_metrics (client, M);
+    };
+    TotalPowerConfiguration tpower_conf(fff);
     tpower_conf.configure();
     while (!zsys_interrupted) {
 
