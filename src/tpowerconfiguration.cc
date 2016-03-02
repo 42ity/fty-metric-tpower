@@ -201,11 +201,11 @@ void TotalPowerConfiguration::
     }
 }
 
-time_t TotalPowerConfiguration::getPollInterval() {
-    time_t T = TPOWER_MEASUREMENT_REPEAT_AFTER; // result
+int64_t TotalPowerConfiguration::getPollInterval() {
+    int64_t T = TPOWER_MEASUREMENT_REPEAT_AFTER; // result
     for( auto &rack_it : _racks ) {
         for( auto &q : _rackQuantities ) {
-            time_t Tx = rack_it.second.timeToAdvertisement(q);
+            int64_t Tx = rack_it.second.timeToAdvertisement(q);
             if( Tx > 0 && Tx < T ) {
                 T = Tx;
             }
@@ -213,12 +213,12 @@ time_t TotalPowerConfiguration::getPollInterval() {
     }
     for( auto &dc_it : _racks ) {
         for( auto &q : _dcQuantities ) {
-            time_t Tx = dc_it.second.timeToAdvertisement(q);
+            int64_t Tx = dc_it.second.timeToAdvertisement(q);
             if( Tx > 0 && Tx < T ) T = Tx;
         }
     }
     if( _reconfigPending ) {
-        time_t Tx = _reconfigPending - time(NULL) + 1;
+        int64_t Tx = _reconfigPending - time(NULL) + 1;
         if( Tx <= 0 ) Tx = 1;
         if( Tx < T ) T = Tx;
     }
