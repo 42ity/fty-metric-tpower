@@ -55,6 +55,7 @@ public:
     //! \brief read configuration from database
     bool configure();
 
+    // in[ms]
     int64_t getTimeout(void) {
         return _timeout;
     };
