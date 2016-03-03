@@ -66,8 +66,8 @@ MetricInfo TPUnit::
 void TPUnit::
     set(const std::string &quantity, MetricInfo &measurement)
 {
-    double itSums = _lastValue.find(quantity);
-    if( isnan(itSums) || (itSums != measurement.getValue()) ) {
+    double itSums = _lastValue.find(generateTopic(quantity));
+    if( isnan(itSums) || ( abs(itSums - measurement.getValue()) > 0.00001) ) {
         _lastValue.addMetric(measurement);
         _changed[quantity] = true;
         _changetimestamp[quantity] = measurement.getTimestamp();
@@ -241,7 +241,9 @@ bool TPUnit::
     changed(const std::string &quantity) const
 {
     auto it = _changed.find(quantity);
-    if( it == _changed.end() ) return false;
+    if( it == _changed.end() ) {
+        return false;
+    }
     return it->second;
 }
 

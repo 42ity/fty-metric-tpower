@@ -64,7 +64,7 @@ bool TotalPowerConfiguration::
                 zsys_debug("rack '%s' powerdevices:", rack_it.first.c_str() );
                 auto &devices = rack_it.second;
                 for( auto &device_it: devices ) {
-                    zsys_debug("         '%s'", device_it.c_str() );
+                    zsys_debug("         -'%s'", device_it.c_str() );
                     addDeviceToMap(_racks, _affectedRacks, rack_it.first, device_it );
                 }
             }
@@ -73,10 +73,10 @@ bool TotalPowerConfiguration::
         ret = select_devices_total_power_dcs (connection);
         if( ret.status ) {
             for( auto &dc_it: ret.item ) {
-                zsys_debug("DC '%s' powerdevices", dc_it.first.c_str() );
+                zsys_debug("DC '%s' powerdevices:", dc_it.first.c_str() );
                 auto &devices = dc_it.second;
                 for( auto &device_it: devices ) {
-                    zsys_debug("         '%s'", device_it.c_str() );
+                    zsys_debug("         -'%s'", device_it.c_str() );
                     addDeviceToMap(_DCs, _affectedDCs, dc_it.first, device_it );
                 }
             }

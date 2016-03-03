@@ -54,6 +54,10 @@ public:
     void onPoll();
     //! \brief read configuration from database
     bool configure();
+
+    int64_t getTimeout(void) {
+        return _timeout;
+    };
  private:
     
     /*
@@ -66,7 +70,7 @@ public:
      */ 
     std::function<bool(const MetricInfo&)> _sendingFunction;
 
-    // in [m]
+    // in [ms]
     int64_t _timeout;
     //! \brief list of racks
     std::map< std::string, TPUnit > _racks;
