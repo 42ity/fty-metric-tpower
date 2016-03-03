@@ -111,6 +111,9 @@ int main (int argc, char *argv [])
     // Consuming some metrics
     zstr_sendx (tpower_server, "CONSUMER", "METRICS", ".*", NULL);
     zsock_wait (tpower_server);
+    // Consuming some metrics
+    zstr_sendx (tpower_server, "CONSUMER", "ASSETS", ".*", NULL);
+    zsock_wait (tpower_server);
     //  Accept and print any message back from server
     //  copy from src/malamute.c under MPL license
     while (true) {
