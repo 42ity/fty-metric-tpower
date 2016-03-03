@@ -93,9 +93,10 @@ static void
         bios_proto_t **bmessage_p)
 {
     //bios_proto_t *bmessage = *bmessage_p;
-
     config.processAsset (topic);
+    zsys_info ("ASSET PROCESSED");
 }
+
 void
 bios_agent_tpower_server (zsock_t *pipe, void* args)
 {
@@ -121,9 +122,16 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
     tpower_conf.configure();
     while (!zsys_interrupted) {
 
-        void *which = zpoller_wait (poller, -1);
-        if (!which)
+        zsys_info ("timeout = %d", tpower_conf.getTimeout());
+        void *which = zpoller_wait (poller, tpower_conf.getTimeout());
+        if ( zpoller_expired (poller) ) {
+            tpower_conf.onPoll();
+            continue;
+        }
+        if ( zpoller_terminated (poller) ) {
+            zsys_info ("poller was terminated");
             break;
+        }
 
         if (which == pipe) {
             zmsg_t *msg = zmsg_recv (pipe);
