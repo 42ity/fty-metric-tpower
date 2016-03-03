@@ -20,6 +20,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
     \brief  Functions for calculating a total rack and DC power from database values.
     \author Alena Chernikava <AlenaChernikava@Eaton.com>
     \author Michal Vyskocil  <MichalVyskocil@Eaton.com>
+
+    // TODO remove functionality to ASSERT agent
 */
 
 #ifndef SRC_CALC_POWER_H_
