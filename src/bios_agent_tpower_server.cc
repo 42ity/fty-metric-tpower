@@ -26,7 +26,7 @@
 @end
 */
 
-#include "tpower_classes.h"
+#include "agent_tpower_classes.h"
 
 // ============================================================
 //         Functionality for METRIC processing and publishing

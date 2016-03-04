@@ -1,0 +1,2 @@
+usr/bin/bios_agent_tpower
+usr/lib/systemd/system/bios_agent_tpower*.service

@@ -4,7 +4,7 @@
 ################################################################################
 MAN1 = bios_agent_tpower.1
 MAN3 = bios_agent_tpower_server.3
-MAN7 = tpower.7
+MAN7 = agent_tpower.7
 MAN_DOC = $(MAN1) $(MAN3) $(MAN7)
 
 MAN_TXT = $(MAN1:%.1=%.txt)
@@ -26,7 +26,7 @@ SUFFIXES=.txt .xml .1 .3 .7
 
 .txt.xml:
 	asciidoc -d manpage -b docbook -f $(srcdir)/asciidoc.conf \
-        -atpower_version=@PACKAGE_VERSION@ -o$@ $<
+        -aagent_tpower_version=@PACKAGE_VERSION@ -o$@ $<
 .xml.1:
 	xmlto man $<
 .xml.3:

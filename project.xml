@@ -1,5 +1,5 @@
 <project
-    name = "tpower"
+    name = "agent-tpower"
     description = "Computes power metrics"
     script = "zproject.gsl"
     email = "bios@eaton.com"

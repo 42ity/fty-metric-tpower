@@ -1,0 +1,3 @@
+usr/include/*
+usr/lib/*/libagent_tpower.so
+usr/lib/*/pkgconfig/libagent_tpower.pc

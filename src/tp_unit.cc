@@ -18,7 +18,7 @@
  *
  */
 
-#include "tpower_classes.h"
+#include "agent_tpower_classes.h"
 #include <ctime>
 #include <exception>
 

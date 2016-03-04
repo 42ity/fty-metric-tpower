@@ -8,13 +8,13 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libtpower
+Name: libagent_tpower
 Description: Computes power metrics
 Version: @VERSION@
 
 Requires:libzmq libczmq libmlm libbiosproto cxxtools
 
-Libs: -L${libdir} -ltpower
+Libs: -L${libdir} -lagent_tpower
 Cflags: -I${includedir} @pkg_config_defines@
 
 ################################################################################
