@@ -4,15 +4,15 @@ Name(7)
 
 NAME
 ----
-tpower - Computes power metrics
+agent_tpower - Computes power metrics
 
 
 SYNOPSIS
 --------
 ----
-#include <tpower.h>
+#include <agent_tpower.h>
 
-cc ['flags'] 'files' -ltpower ['libraries']
+cc ['flags'] 'files' -lagent_tpower ['libraries']
 ----
 
 

@@ -1,5 +1,5 @@
 /*  =========================================================================
-    tpower_selftest.c - run selftests
+    agent_tpower_selftest.c - run selftests
 
     Runs all selftests.
 
@@ -27,7 +27,7 @@
     =========================================================================
 */
 
-#include "tpower_classes.h"
+#include "agent_tpower_classes.h"
 
 typedef struct {
     const char *testname;
@@ -69,7 +69,7 @@ static void
 test_runall (bool verbose)
 {
     test_item_t *item;
-    printf ("Running tpower selftests...\n");
+    printf ("Running agent-tpower selftests...\n");
     for (item = all_tests; item->test; item++)
         item->test (verbose);
 
@@ -85,7 +85,7 @@ main (int argc, char **argv)
     for (argn = 1; argn < argc; argn++) {
         if (streq (argv [argn], "--help")
         ||  streq (argv [argn], "-h")) {
-            puts ("tpower_selftest.c [options] ...");
+            puts ("agent_tpower_selftest.c [options] ...");
             puts ("  --verbose / -v         verbose test output");
             puts ("  --number / -n          report number of tests");
             puts ("  --list / -l            list all tests");
@@ -142,7 +142,7 @@ main (int argc, char **argv)
         }
     }
     if (test) {
-        printf ("Running tpower test '%s'...\n", test->testname);
+        printf ("Running agent-tpower test '%s'...\n", test->testname);
         test->test (verbose);
     }
     else

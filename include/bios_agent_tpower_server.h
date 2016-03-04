@@ -27,11 +27,11 @@ extern "C" {
 #endif
 
 //  @interface
-TPOWER_EXPORT void
+AGENT_TPOWER_EXPORT void
    bios_agent_tpower_server (zsock_t *pipe, void* args);
 
 //  Self test of this class
-TPOWER_EXPORT void
+AGENT_TPOWER_EXPORT void
     bios_agent_tpower_server_test (bool verbose);
 //  @end
 

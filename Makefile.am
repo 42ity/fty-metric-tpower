@@ -22,7 +22,7 @@ AM_CPPFLAGS = \
     -D__STDC_FORMAT_MACROS \
     -I$(srcdir)/include
 
-project_libs = ${libzmq_LIBS} ${uuid_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${biosproto_LIBS} ${cxxtools_LIBS} -ltntdb
+project_libs = ${libzmq_LIBS} ${uuid_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${biosproto_LIBS} ${cxxtools_LIBS}
 
 SUBDIRS = doc
 DIST_SUBDIRS = doc
@@ -39,7 +39,7 @@ EXTRA_DIST = \
     src/tpowerconfiguration.h \
     src/metriclist.h \
     src/tp_unit.h \
-    src/tpower_classes.h
+    src/agent_tpower_classes.h
 
 include $(srcdir)/src/Makemodule.am
 

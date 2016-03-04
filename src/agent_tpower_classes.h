@@ -1,5 +1,5 @@
 /*  =========================================================================
-    tpower_classes - private header file
+    agent_tpower_classes - private header file
 
     Copyright (C) 2014 - 2015 Eaton                                        
                                                                            
@@ -23,14 +23,14 @@
     =========================================================================
 */
 
-#ifndef TPOWER_CLASSES_H_INCLUDED
-#define TPOWER_CLASSES_H_INCLUDED
+#ifndef AGENT_TPOWER_CLASSES_H_INCLUDED
+#define AGENT_TPOWER_CLASSES_H_INCLUDED
 
 //  Platform definitions, must come first
 #include "platform.h"
 
 //  External API
-#include "../include/tpower.h"
+#include "../include/agent_tpower.h"
 
 //  Internal API
 #include "metricinfo.h"
@@ -41,27 +41,27 @@
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-TPOWER_EXPORT void
+AGENT_TPOWER_EXPORT void
     metricinfo_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-TPOWER_EXPORT void
+AGENT_TPOWER_EXPORT void
     calc_power_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-TPOWER_EXPORT void
+AGENT_TPOWER_EXPORT void
     tpowerconfiguration_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-TPOWER_EXPORT void
+AGENT_TPOWER_EXPORT void
     metriclist_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-TPOWER_EXPORT void
+AGENT_TPOWER_EXPORT void
     tp_unit_test (bool verbose);
 
 #endif

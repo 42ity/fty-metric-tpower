@@ -1,5 +1,5 @@
 #
-#    tpower - Computes power metrics
+#    agent-tpower - Computes power metrics
 #
 #    Copyright (C) 2014 - 2015 Eaton                                        
 #                                                                           
@@ -18,7 +18,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
 #
 
-Name:           tpower
+Name:           agent-tpower
 Version:        0.1.0
 Release:        1
 Summary:        computes power metrics
@@ -41,28 +41,28 @@ BuildRequires:  cxxtools-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
-tpower computes power metrics.
+agent-tpower computes power metrics.
 
-%package -n libtpower0
+%package -n libagent_tpower0
 Group:          System/Libraries
 Summary:        computes power metrics
 
-%description -n libtpower0
-tpower computes power metrics.
+%description -n libagent_tpower0
+agent-tpower computes power metrics.
 This package contains shared library.
 
-%post -n libtpower0 -p /sbin/ldconfig
-%postun -n libtpower0 -p /sbin/ldconfig
+%post -n libagent_tpower0 -p /sbin/ldconfig
+%postun -n libagent_tpower0 -p /sbin/ldconfig
 
-%files -n libtpower0
+%files -n libagent_tpower0
 %defattr(-,root,root)
 %doc COPYING
-%{_libdir}/libtpower.so.*
+%{_libdir}/libagent_tpower.so.*
 
 %package devel
 Summary:        computes power metrics
 Group:          System/Libraries
-Requires:       libtpower0 = %{version}
+Requires:       libagent_tpower0 = %{version}
 Requires:       zeromq-devel
 Requires:       uuid-devel
 Requires:       czmq-devel
@@ -71,14 +71,14 @@ Requires:       biosproto-devel
 Requires:       cxxtools-devel
 
 %description devel
-tpower computes power metrics.
+agent-tpower computes power metrics.
 This package contains development files.
 
 %files devel
 %defattr(-,root,root)
 %{_includedir}/*
-%{_libdir}/libtpower.so
-%{_libdir}/pkgconfig/libtpower.pc
+%{_libdir}/libagent_tpower.so
+%{_libdir}/pkgconfig/libagent_tpower.pc
 
 %prep
 %setup -q

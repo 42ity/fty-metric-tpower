@@ -1,5 +1,5 @@
 #
-#    tpower - Computes power metrics
+#    agent-tpower - Computes power metrics
 #
 #    Copyright (C) 2014 - 2015 Eaton                                        
 #                                                                           
@@ -17,17 +17,14 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
 
-Source:         tpower
+Source:         agent-tpower
 Section:        net
 Priority:       optional
-Maintainer:     John Doe <John.Doe@example.com>
-Uploaders:      John Doe <John.Doe@example.com>
-Standards-Version: 3.9.5
-Build-Depends: bison, debhelper (>= 8),
+Maintainer:     agent-tpower Developers <bios@eaton.com>
+Standards-Version: 3.9.7
+Build-Depends: debhelper (>= 9),
     pkg-config,
-    automake,
-    autoconf,
-    libtool,
+    dh-autoreconf,
     libzmq4-dev,
     uuid-dev,
     libczmq-dev,
@@ -35,16 +32,18 @@ Build-Depends: bison, debhelper (>= 8),
     libbiosproto-dev,
     libcxxtools-dev,
     dh-autoreconf,
-    systemd
+    systemd,
+    dh-systemd,
+    libtntdb-dev
 
-Package: libtpower0
+Package: libagent-tpower0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: tpower
- This package contains shared library for tpower: computes power metrics
+Description: agent-tpower
+ This package contains shared library for agent-tpower: computes power metrics
 
-Package: tpower-dev
-Architecture: all
+Package: libagent-tpower-dev
+Architecture: any
 Section: libdevel
 Depends:
     libzmq4-dev,
@@ -53,23 +52,23 @@ Depends:
     libmlm-dev,
     libbiosproto-dev,
     libcxxtools-dev,
-    libtpower0 (= ${binary:Version})
-Description: development files for tpower
- This package contains development files for tpower: computes power metrics
+    libagent-tpower0 (= ${binary:Version})
+Description: development files for agent-tpower
+ This package contains development files for agent-tpower: computes power metrics
 
-Package: tpower
+Package: agent-tpower
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: computes power metrics
- Main package for tpower: computes power metrics
+ Main package for agent-tpower: computes power metrics
 
-Package: tpower-dbg
+Package: agent-tpower-dbg
 Architecture: any
 Section: debug
 Priority: extra
 Depends:
-    tpower (= ${binary:Version}),
+    agent-tpower (= ${binary:Version}),
     ${misc:Depends}
-Description: debugging symbols for tpower
- This package contains the debugging symbols for tpower : computes power metrics.
+Description: debugging symbols for agent-tpower
+ This package contains the debugging symbols for agent-tpower : computes power metrics.
 

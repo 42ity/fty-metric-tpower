@@ -1,5 +1,0 @@
-debian/tmp/usr/bin/bios_agent_tpower
-debian/tmp/usr/lib/systemd/system/bios_agent_tpower*.service
-
-
-

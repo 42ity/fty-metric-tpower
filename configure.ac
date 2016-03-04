@@ -7,7 +7,7 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
 #
-AC_INIT([tpower],[0.1.0],[bios@eaton.com])
+AC_INIT([agent-tpower],[0.1.0],[bios@eaton.com])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
@@ -20,11 +20,11 @@ PV_MAJOR=`echo $PACKAGE_VERSION | cut -d . -f 1`
 PV_MINOR=`echo $PACKAGE_VERSION | cut -d . -f 2`
 PV_PATCH=`echo $PACKAGE_VERSION | cut -d . -f 3`
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MAJOR],[$PV_MAJOR],
-    [TPOWER major version])
+    [AGENT_TPOWER major version])
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MINOR],[$PV_MINOR],
-    [TPOWER minor version])
+    [AGENT_TPOWER minor version])
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_PATCH],[$PV_PATCH],
-    [TPOWER patchlevel])
+    [AGENT_TPOWER patchlevel])
 # This lets us use PACKAGE_VERSION in Makefiles
 AC_SUBST(PACKAGE_VERSION)
 
@@ -35,12 +35,12 @@ AC_SUBST(PACKAGE_VERSION)
 # know exactly what you're doing and have read and understand
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 #
-# libtpower -version-info
+# libagent_tpower -version-info
 LTVER="0:1:0"
 AC_SUBST(LTVER)
 
 # Capture c flags
-TPOWER_ORIG_CFLAGS="${CFLAGS:-none}"
+AGENT_TPOWER_ORIG_CFLAGS="${CFLAGS:-none}"
 
 # Checks for programs
 AC_PROG_CC
@@ -56,14 +56,14 @@ PKG_PROG_PKG_CONFIG
 
 # Code coverage
 AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
-                  [With GCC Code Coverage reporting.])],
-                  [TPOWER_GCOV="$withval"])
+                  [With GCC Code Coverage reporting])],
+                  [AGENT_TPOWER_GCOV="$withval"])
 
-if test "x${TPOWER_GCOV}" == "xyes"; then
+if test "x${AGENT_TPOWER_GCOV}" == "xyes"; then
     CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
 
-    if test "x${TPOWER_ORIG_CFLAGS}" != "xnone"; then
-        CFLAGS="${CFLAGS} ${TPOWER_ORIG_CFLAGS}"
+    if test "x${AGENT_TPOWER_ORIG_CFLAGS}" != "xnone"; then
+        CFLAGS="${CFLAGS} ${AGENT_TPOWER_ORIG_CFLAGS}"
     fi
     AM_CONDITIONAL(WITH_GCOV, true)
 else
@@ -110,7 +110,7 @@ PKG_CHECK_MODULES([libzmq], [libzmq >= 0.0.0],
                 AC_SUBST([libzmq_LIBS],[${libzmq_synthetic_libs}])
                 was_libzmq_check_lib_detected=yes
             ],
-            [AC_MSG_ERROR([cannot link with -lzmq, install libzmq.])])
+            [AC_MSG_ERROR([cannot link with -lzmq, install libzmq])])
     ])
 
 if test "x$was_libzmq_check_lib_detected" = "xno"; then
@@ -122,7 +122,7 @@ was_uuid_check_lib_detected=no
 
 PKG_CHECK_MODULES([uuid], [uuid >= 0.0.0],
     [
-        AC_DEFINE(HAVE_UUID, 1, [The uuid library is to be used.])
+        AC_DEFINE(HAVE_UUID, 1, [The uuid library is to be used])
     ],
     [
         AC_ARG_WITH([uuid],
@@ -154,7 +154,7 @@ PKG_CHECK_MODULES([uuid], [uuid >= 0.0.0],
                 AC_SUBST([uuid_CFLAGS],[${uuid_synthetic_cflags}])
                 AC_SUBST([uuid_LIBS],[${uuid_synthetic_libs}])
                 was_uuid_check_lib_detected=yes
-                AC_DEFINE(HAVE_UUID, 1, [The uuid library is to be used.])
+                AC_DEFINE(HAVE_UUID, 1, [The uuid library is to be used])
             ],
             [])
     ])
@@ -200,7 +200,7 @@ PKG_CHECK_MODULES([czmq], [libczmq >= 0.0.0],
                 AC_SUBST([czmq_LIBS],[${czmq_synthetic_libs}])
                 was_czmq_check_lib_detected=yes
             ],
-            [AC_MSG_ERROR([cannot link with -lczmq, install libczmq.])])
+            [AC_MSG_ERROR([cannot link with -lczmq, install libczmq])])
     ])
 
 if test "x$was_czmq_check_lib_detected" = "xno"; then
@@ -244,7 +244,7 @@ PKG_CHECK_MODULES([malamute], [libmlm >= 0.0.0],
                 AC_SUBST([malamute_LIBS],[${malamute_synthetic_libs}])
                 was_malamute_check_lib_detected=yes
             ],
-            [AC_MSG_ERROR([cannot link with -lmlm, install libmlm.])])
+            [AC_MSG_ERROR([cannot link with -lmlm, install libmlm])])
     ])
 
 if test "x$was_malamute_check_lib_detected" = "xno"; then
@@ -288,7 +288,7 @@ PKG_CHECK_MODULES([biosproto], [libbiosproto >= 0.0.0],
                 AC_SUBST([biosproto_LIBS],[${biosproto_synthetic_libs}])
                 was_biosproto_check_lib_detected=yes
             ],
-            [AC_MSG_ERROR([cannot link with -lbiosproto, install libbiosproto.])])
+            [AC_MSG_ERROR([cannot link with -lbiosproto, install libbiosproto])])
     ])
 
 if test "x$was_biosproto_check_lib_detected" = "xno"; then
@@ -332,7 +332,7 @@ PKG_CHECK_MODULES([cxxtools], [cxxtools >= 0.0.0],
                 AC_SUBST([cxxtools_LIBS],[${cxxtools_synthetic_libs}])
                 was_cxxtools_check_lib_detected=yes
             ],
-            [AC_MSG_ERROR([cannot link with -lcxxtools, install cxxtools.])])
+            [AC_MSG_ERROR([cannot link with -lcxxtools, install cxxtools])])
     ])
 
 if test "x$was_cxxtools_check_lib_detected" = "xno"; then
@@ -344,11 +344,11 @@ CFLAGS="${PREVIOUS_CFLAGS}"
 LIBS="${PREVIOUS_LIBS}"
 
 # Platform specific checks
-tpower_on_mingw32="no"
-tpower_on_cygwin="no"
-tpower_on_android="no"
-tpower_on_linux="no"
-tpower_on_gnu="no"
+agent_tpower_on_mingw32="no"
+agent_tpower_on_cygwin="no"
+agent_tpower_on_android="no"
+agent_tpower_on_linux="no"
+agent_tpower_on_gnu="no"
 
 # Host specific checks
 AC_CANONICAL_HOST
@@ -361,32 +361,32 @@ AC_ARG_WITH([docs],
     [with_docs=$withval])
 
 if test "x$with_docs" = "xno"; then
-    tpower_build_doc="no"
-    tpower_install_man="no"
+    agent_tpower_build_doc="no"
+    agent_tpower_install_man="no"
 else
     # Determine whether or not documentation should be built and installed.
-    tpower_build_doc="yes"
-    tpower_install_man="yes"
+    agent_tpower_build_doc="yes"
+    agent_tpower_install_man="yes"
 
     # Check for asciidoc and xmlto and don't build the docs if these are not installed.
-    AC_CHECK_PROG(tpower_have_asciidoc, asciidoc, yes, no)
-    AC_CHECK_PROG(tpower_have_xmlto, xmlto, yes, no)
-    if test "x$tpower_have_asciidoc" = "xno" -o "x$tpower_have_xmlto" = "xno"; then
-        tpower_build_doc="no"
+    AC_CHECK_PROG(agent_tpower_have_asciidoc, asciidoc, yes, no)
+    AC_CHECK_PROG(agent_tpower_have_xmlto, xmlto, yes, no)
+    if test "x$agent_tpower_have_asciidoc" = "xno" -o "x$agent_tpower_have_xmlto" = "xno"; then
+        agent_tpower_build_doc="no"
         # Tarballs built with 'make dist' ship with prebuilt documentation.
-        if ! test -f doc/tpower.7; then
-            tpower_install_man="no"
-            AC_MSG_WARN([You are building an unreleased version of TPOWER and asciidoc or xmlto are not installed.])
+        if ! test -f doc/agent_tpower.7; then
+            agent_tpower_install_man="no"
+            AC_MSG_WARN([You are building an unreleased version of AGENT-TPOWER and asciidoc or xmlto are not installed.])
             AC_MSG_WARN([Documentation will not be built and manual pages will not be installed.])
         fi
     fi
 fi
 AC_MSG_CHECKING([whether to build documentation])
-AC_MSG_RESULT([$tpower_build_doc])
+AC_MSG_RESULT([$agent_tpower_build_doc])
 AC_MSG_CHECKING([whether to install manpages])
-AC_MSG_RESULT([$tpower_install_man])
+AC_MSG_RESULT([$agent_tpower_install_man])
 
-# Set some default features required by libtpower code.
+# Set some default features required by libagent_tpower code.
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
 
 # OS-specific tests
@@ -394,76 +394,76 @@ case "${host_os}" in
     *linux*)
         # Define on Linux to enable all library features
         CPPFLAGS="-D_GNU_SOURCE -DLINUX $CPPFLAGS"
-        AC_DEFINE(TPOWER_HAVE_LINUX, 1, [Have Linux OS])
-        tpower_on_linux="yes"
+        AC_DEFINE(AGENT_TPOWER_HAVE_LINUX, 1, [Have Linux OS])
+        agent_tpower_on_linux="yes"
 
         case "${host_os}" in
             *android*)
-                AC_DEFINE(TPOWER_HAVE_ANDROID, 1, [Have Android OS])
-                tpower_on_android="yes"
+                AC_DEFINE(AGENT_TPOWER_HAVE_ANDROID, 1, [Have Android OS])
+                agent_tpower_on_android="yes"
             ;;
         esac
         ;;
     *solaris*)
         # Define on Solaris to enable all library features
         CPPFLAGS="-D_PTHREADS $CPPFLAGS"
-        AC_DEFINE(TPOWER_HAVE_SOLARIS, 1, [Have Solaris OS])
+        AC_DEFINE(AGENT_TPOWER_HAVE_SOLARIS, 1, [Have Solaris OS])
         CFLAGS="${CFLAGS} -lsocket -lssp"
         ;;
     *freebsd*)
         # Define on FreeBSD to enable all library features
         CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
-        AC_DEFINE(TPOWER_HAVE_FREEBSD, 1, [Have FreeBSD OS])
+        AC_DEFINE(AGENT_TPOWER_HAVE_FREEBSD, 1, [Have FreeBSD OS])
         ;;
     *darwin*)
         # Define on Darwin to enable all library features
         CPPFLAGS="-D_DARWIN_C_SOURCE $CPPFLAGS"
-        AC_DEFINE(TPOWER_HAVE_OSX, 1, [Have DarwinOSX OS])
+        AC_DEFINE(AGENT_TPOWER_HAVE_OSX, 1, [Have DarwinOSX OS])
         ;;
     *netbsd*)
         # Define on NetBSD to enable all library features
         CPPFLAGS="-D_NETBSD_SOURCE $CPPFLAGS"
-        AC_DEFINE(TPOWER_HAVE_NETBSD, 1, [Have NetBSD OS])
+        AC_DEFINE(AGENT_TPOWER_HAVE_NETBSD, 1, [Have NetBSD OS])
         ;;
     *openbsd*)
         # Define on OpenBSD to enable all library features
         CPPFLAGS="-D_BSD_SOURCE $CPPFLAGS"
-        AC_DEFINE(TPOWER_HAVE_OPENBSD, 1, [Have OpenBSD OS])
+        AC_DEFINE(AGENT_TPOWER_HAVE_OPENBSD, 1, [Have OpenBSD OS])
         ;;
     *nto-qnx*)
-        AC_DEFINE(TPOWER_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
+        AC_DEFINE(AGENT_TPOWER_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
         ;;
     *aix*)
-        AC_DEFINE(TPOWER_HAVE_AIX, 1, [Have AIX OS])
+        AC_DEFINE(AGENT_TPOWER_HAVE_AIX, 1, [Have AIX OS])
         ;;
     *hpux*)
         # Define on HP-UX to enable all library features
         CPPFLAGS="-D_POSIX_C_SOURCE=200112L"
-        AC_DEFINE(TPOWER_HAVE_HPUX, 1, [Have HPUX OS])
+        AC_DEFINE(AGENT_TPOWER_HAVE_HPUX, 1, [Have HPUX OS])
         ;;
     *mingw32*)
-        AC_DEFINE(TPOWER_HAVE_WINDOWS, 1, [Have Windows OS])
-        AC_DEFINE(TPOWER_HAVE_MINGW32, 1, [Have MinGW32])
+        AC_DEFINE(AGENT_TPOWER_HAVE_WINDOWS, 1, [Have Windows OS])
+        AC_DEFINE(AGENT_TPOWER_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
-        tpower_on_mingw32="yes"
-        tpower_install_man="no"
+        agent_tpower_on_mingw32="yes"
+        agent_tpower_install_man="no"
         ;;
     *cygwin*)
         # Define on Cygwin to enable all library features
         CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
-        AC_DEFINE(TPOWER_HAVE_CYGWIN, 1, [Have Cygwin])
-        tpower_on_cygwin="yes"
+        AC_DEFINE(AGENT_TPOWER_HAVE_CYGWIN, 1, [Have Cygwin])
+        agent_tpower_on_cygwin="yes"
         ;;
     gnu*)
         # Define on GNU/Hurd to enable all library features
         if test "x$GXX" = "xyes"; then
             CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         fi
-        AC_DEFINE(TPOWER_HAVE_GNU, 1, [Have GNU/Hurd OS])
-        tpower_on_gnu="yes"
+        AC_DEFINE(AGENT_TPOWER_HAVE_GNU, 1, [Have GNU/Hurd OS])
+        agent_tpower_on_gnu="yes"
         ;;
     *)
-        AC_MSG_ERROR([unsupported system: ${host_os}.])
+        AC_MSG_ERROR([unsupported system: ${host_os}])
         ;;
 esac
 
@@ -497,33 +497,33 @@ if test "x$GCC" = "xyes"; then
 fi
 
 AM_CONDITIONAL(ENABLE_SHARED, test "x$enable_shared" = "xyes")
-AM_CONDITIONAL(ON_MINGW, test "x$tpower_on_mingw32" = "xyes")
-AM_CONDITIONAL(ON_CYGWIN, test "x$tpower_on_cygwin" = "xyes")
-AM_CONDITIONAL(ON_ANDROID, test "x$tpower_on_android" = "xyes")
-AM_CONDITIONAL(ON_LINUX, test "x$tpower_on_linux" = "xyes")
-AM_CONDITIONAL(ON_GNU, test "x$tpower_on_gnu" = "xyes")
-AM_CONDITIONAL(INSTALL_MAN, test "x$tpower_install_man" = "xyes")
-AM_CONDITIONAL(BUILD_DOC, test "x$tpower_build_doc" = "xyes")
+AM_CONDITIONAL(ON_MINGW, test "x$agent_tpower_on_mingw32" = "xyes")
+AM_CONDITIONAL(ON_CYGWIN, test "x$agent_tpower_on_cygwin" = "xyes")
+AM_CONDITIONAL(ON_ANDROID, test "x$agent_tpower_on_android" = "xyes")
+AM_CONDITIONAL(ON_LINUX, test "x$agent_tpower_on_linux" = "xyes")
+AM_CONDITIONAL(ON_GNU, test "x$agent_tpower_on_gnu" = "xyes")
+AM_CONDITIONAL(INSTALL_MAN, test "x$agent_tpower_install_man" = "xyes")
+AM_CONDITIONAL(BUILD_DOC, test "x$agent_tpower_build_doc" = "xyes")
 
 # Check for bios_agent_tpower intent
 AC_ARG_ENABLE([bios_agent_tpower],
     AS_HELP_STRING([--enable-bios_agent_tpower],
-        [Compile and install 'bios_agent_tpower' [default=yes].]),
+        [Compile and install 'bios_agent_tpower' [default=yes]]),
     [enable_bios_agent_tpower=$enableval],
     [enable_bios_agent_tpower=yes])
 
 AM_CONDITIONAL([ENABLE_BIOS_AGENT_TPOWER], [test x$enable_bios_agent_tpower != xno])
 AM_COND_IF([ENABLE_BIOS_AGENT_TPOWER], [AC_MSG_NOTICE([ENABLE_BIOS_AGENT_TPOWER defined])])
 
-# Check for tpower_selftest intent
-AC_ARG_ENABLE([tpower_selftest],
-    AS_HELP_STRING([--enable-tpower_selftest],
-        [Compile 'tpower_selftest' in src [default=yes].]),
-    [enable_tpower_selftest=$enableval],
-    [enable_tpower_selftest=yes])
+# Check for agent_tpower_selftest intent
+AC_ARG_ENABLE([agent_tpower_selftest],
+    AS_HELP_STRING([--enable-agent_tpower_selftest],
+        [Compile 'agent_tpower_selftest' in src [default=yes]]),
+    [enable_agent_tpower_selftest=$enableval],
+    [enable_agent_tpower_selftest=yes])
 
-AM_CONDITIONAL([ENABLE_TPOWER_SELFTEST], [test x$enable_tpower_selftest != xno])
-AM_COND_IF([ENABLE_TPOWER_SELFTEST], [AC_MSG_NOTICE([ENABLE_TPOWER_SELFTEST defined])])
+AM_CONDITIONAL([ENABLE_AGENT_TPOWER_SELFTEST], [test x$enable_agent_tpower_selftest != xno])
+AM_COND_IF([ENABLE_AGENT_TPOWER_SELFTEST], [AC_MSG_NOTICE([ENABLE_AGENT_TPOWER_SELFTEST defined])])
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
@@ -539,7 +539,7 @@ AC_SUBST([pkgconfigdir])
 # enable specific system integration features
 AC_ARG_WITH([systemd-units],
     AS_HELP_STRING([--with-systemd-units],
-    [Build and install with systemd units integration [default=no].]),
+    [Build and install with systemd units integration [default=no]]),
     [with_systemd_units=$withval],
     [with_systemd_units=no])
 
@@ -552,25 +552,25 @@ AM_COND_IF([WITH_SYSTEMD_UNITS],
 
 if test "x$cross_compiling" = "xyes"; then
     #   Enable draft by default when cross-compiling
-    gitmaster=yes
+    defaultval=yes
 else
     # enable draft API by default if we're in a git repository
     # else disable it by default; then allow --enable-drafts=yes/no override
-    AC_CHECK_FILE($srcdir/.git, [gitmaster=yes], [gitmaster=no])
+    AC_CHECK_FILE($srcdir/.git, [defaultval=yes], [defaultval=no])
 fi
 
 AC_ARG_ENABLE([drafts],
     AS_HELP_STRING([--enable-drafts],
-        [Build and install draft classes and methods [default=yes.]]),
+        [Build and install draft classes and methods [default=yes]]),
     [enable_drafts=$enableval],
-    [enable_drafts=$gitmaster])
+    [enable_drafts=$defaultval])
 
 AM_CONDITIONAL([ENABLE_DRAFTS], [test x$enable_drafts != xno])
 
 if test "x$enable_drafts" = "xyes"; then
     AC_MSG_NOTICE([Building stable and legacy API + draft API])
-    AC_DEFINE(TPOWER_BUILD_DRAFT_API, 1, [Provide draft classes and methods.])
-    AC_SUBST(pkg_config_defines, "-DTPOWER_BUILD_DRAFT_API=1")
+    AC_DEFINE(AGENT_TPOWER_BUILD_DRAFT_API, 1, [Provide draft classes and methods])
+    AC_SUBST(pkg_config_defines, "-DAGENT_TPOWER_BUILD_DRAFT_API=1")
 else
     AC_MSG_NOTICE([Building stable and legacy API (no draft API)])
     AC_SUBST(pkg_config_defines, "")
@@ -579,8 +579,7 @@ fi
 # Specify output files
 AC_CONFIG_FILES([Makefile
                  doc/Makefile
-                 src/libtpower.pc
-                 src/bios_agent_tpower.cfg
+                 src/libagent_tpower.pc
                  ])
 
 AM_COND_IF([WITH_SYSTEMD_UNITS],

@@ -1,5 +1,5 @@
 /*  =========================================================================
-    tpower - Computes power metrics
+    agent-tpower - Computes power metrics
 
     Copyright (C) 2014 - 2015 Eaton                                        
                                                                            
@@ -19,11 +19,11 @@
     =========================================================================
 */
 
-#ifndef TPOWER_H_H_INCLUDED
-#define TPOWER_H_H_INCLUDED
+#ifndef AGENT_TPOWER_H_H_INCLUDED
+#define AGENT_TPOWER_H_H_INCLUDED
 
 //  Include the project library file
-#include "tpower_library.h"
+#include "agent_tpower_library.h"
 
 //  Add your own public definitions here, if you need them
 

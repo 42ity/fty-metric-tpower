@@ -1,5 +1,5 @@
 /*  =========================================================================
-    tpower - generated layer of public API
+    agent-tpower - generated layer of public API
 
     Copyright (C) 2014 - 2015 Eaton                                        
                                                                            
@@ -24,8 +24,8 @@
     =========================================================================
 */
 
-#ifndef TPOWER_LIBRARY_H_INCLUDED
-#define TPOWER_LIBRARY_H_INCLUDED
+#ifndef AGENT_TPOWER_LIBRARY_H_INCLUDED
+#define AGENT_TPOWER_LIBRARY_H_INCLUDED
 
 //  Set up environment for the application
 
@@ -33,29 +33,31 @@
 #include <malamute.h>
 #include <biosproto.h>
 
-//  TPOWER version macros for compile-time API detection
+//  AGENT_TPOWER version macros for compile-time API detection
+#define AGENT_TPOWER_VERSION_MAJOR 0
+#define AGENT_TPOWER_VERSION_MINOR 1
+#define AGENT_TPOWER_VERSION_PATCH 0
 
-#define TPOWER_VERSION_MAJOR 0
-#define TPOWER_VERSION_MINOR 1
-#define TPOWER_VERSION_PATCH 0
-
-#define TPOWER_MAKE_VERSION(major, minor, patch) \
+#define AGENT_TPOWER_MAKE_VERSION(major, minor, patch) \
     ((major) * 10000 + (minor) * 100 + (patch))
-#define TPOWER_VERSION \
-    TPOWER_MAKE_VERSION(TPOWER_VERSION_MAJOR, TPOWER_VERSION_MINOR, TPOWER_VERSION_PATCH)
+#define AGENT_TPOWER_VERSION \
+    AGENT_TPOWER_MAKE_VERSION(AGENT_TPOWER_VERSION_MAJOR, AGENT_TPOWER_VERSION_MINOR, AGENT_TPOWER_VERSION_PATCH)
 
 #if defined (__WINDOWS__)
-#   if defined TPOWER_STATIC
-#       define TPOWER_EXPORT
-#   elif defined TPOWER_EXPORTS
-#       define TPOWER_EXPORT __declspec(dllexport)
+#   if defined AGENT_TPOWER_STATIC
+#       define AGENT_TPOWER_EXPORT
+#   elif defined AGENT_TPOWER_EXPORTS
+#       define AGENT_TPOWER_EXPORT __declspec(dllexport)
 #   else
-#       define TPOWER_EXPORT __declspec(dllimport)
+#       define AGENT_TPOWER_EXPORT __declspec(dllimport)
 #   endif
 #else
-#   define TPOWER_EXPORT
+#   define AGENT_TPOWER_EXPORT
 #endif
 
+//  Opaque class structures to allow forward references
+//  These classes are stable or legacy and built in all releases
+typedef struct _bios_agent_tpower_server_t bios_agent_tpower_server_t;
 #define BIOS_AGENT_TPOWER_SERVER_T_DEFINED
 
 
