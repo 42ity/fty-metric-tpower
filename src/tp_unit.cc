@@ -86,7 +86,7 @@ MetricInfo TPUnit::
             sum += itMetricInfo;
         }
     }
-    MetricInfo result ( _name, quantity, "W", sum, -1, "");
+    MetricInfo result ( _name, quantity, "W", sum, ::time (NULL), "");
     return result;
 }
 
@@ -109,7 +109,7 @@ MetricInfo TPUnit::
             sum += itMetricInfos;
         }
     }
-    MetricInfo result ( _name, quantity, "W", sum, -1, "");
+    MetricInfo result ( _name, quantity, "W", sum, ::time (NULL), "");
     return result;
 }
 
