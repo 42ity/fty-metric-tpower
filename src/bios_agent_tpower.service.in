@@ -1,11 +1,19 @@
 [Unit]
 Description=bios_agent_tpower service
-After=network.target
+After=malamute.service mysqld.service
+Requires=malamute.service
+PartOf=bios.target
 
 [Service]
 Type=simple
+User=bios
+EnvironmentFile=-/usr/share/bios/etc/default/bios
+EnvironmentFile=-/usr/share/bios/etc/default/bios__%n.conf
+EnvironmentFile=-/etc/default/bios
+EnvironmentFile=-/etc/default/bios__%n.conf
+EnvironmentFile=-/etc/bios/bios-db-ro
 Environment="prefix=@prefix@"
-ExecStart=@prefix@/bin/bios_agent_tpower @sysconfdir@/@PACKAGE@/bios_agent_tpower.cfg
+ExecStart=@prefix@/bin/bios_agent_tpower
 
 [Install]
 WantedBy=multi-user.target
