@@ -73,10 +73,8 @@ static void
     const char *type = bios_proto_type(bmessage);
     const char *element_src = bios_proto_element_src(bmessage);
     const char *unit = bios_proto_unit(bmessage);
-    int64_t timestamp = bios_proto_time(bmessage);
-    if( timestamp <= 0 ) {
-        timestamp = ::time(NULL);
-    }
+    uint64_t timestamp = bios_proto_time(bmessage);
+
     zsys_debug("Got message '%s' with value %s\n", topic.c_str(), value);
 
     MetricInfo m (element_src, type, unit, dvalue, timestamp, "");
