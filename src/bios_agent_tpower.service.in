@@ -1,5 +1,5 @@
 [Unit]
-Description=bios_agent_tpower service
+Description=Total power agent for BIOS project
 After=malamute.service mysqld.service
 Requires=malamute.service
 PartOf=bios.target
@@ -16,4 +16,4 @@ Environment="prefix=@prefix@"
 ExecStart=@prefix@/bin/bios_agent_tpower
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=bios.target
