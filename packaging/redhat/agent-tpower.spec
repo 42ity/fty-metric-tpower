@@ -38,6 +38,7 @@ BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
 BuildRequires:  biosproto-devel
 BuildRequires:  cxxtools-devel
+BuildRequires:  tntdb-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -69,6 +70,7 @@ Requires:       czmq-devel
 Requires:       malamute-devel
 Requires:       biosproto-devel
 Requires:       cxxtools-devel
+Requires:  tntdb-devel
 
 %description devel
 agent-tpower computes power metrics.
