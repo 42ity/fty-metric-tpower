@@ -1,6 +1,6 @@
 [Unit]
 Description=Total power agent for BIOS project
-After=malamute.service bios-db-init.service 
+After=malamute.service bios-db-init.service
 Requires=malamute.service bios-db-init.service
 PartOf=bios.target
 
@@ -14,6 +14,7 @@ EnvironmentFile=-/etc/default/bios__%n.conf
 EnvironmentFile=-/etc/default/bios-db-ro
 Environment="prefix=@prefix@"
 ExecStart=@prefix@/bin/bios_agent_tpower
+Restart=always
 
 [Install]
 WantedBy=bios.target
