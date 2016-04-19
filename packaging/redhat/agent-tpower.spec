@@ -100,8 +100,8 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %files
 %defattr(-,root,root)
 %doc COPYING
-%{_bindir}/bios_agent_tpower
-%{_prefix}/lib/systemd/system/bios_agent_tpower*.service
+%{_bindir}/bios-agent-tpower
+%{_prefix}/lib/systemd/system/bios-agent-tpower*.service
 
 
 %changelog

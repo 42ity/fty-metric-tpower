@@ -29,7 +29,7 @@
     <class name = "metriclist" private="1"> metriclist</class>
     <class name = "tp-unit" private="1"> Power unit </class>
     <class name = "bios_agent_tpower_server" state = "stable" >Actor generating new metrics</class>
-    <main name = "bios_agent_tpower" service = "1">
+    <main name = "bios-agent-tpower" service = "1">
         Evaluates some metrics and produces new power metrics
     </main>
 

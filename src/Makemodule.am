@@ -50,13 +50,13 @@ endif
 src_libagent_tpower_la_LIBADD = ${project_libs}
 
 if ENABLE_BIOS_AGENT_TPOWER
-bin_PROGRAMS += src/bios_agent_tpower
+bin_PROGRAMS += src/bios-agent-tpower
 src_bios_agent_tpower_CPPFLAGS = ${AM_CPPFLAGS}
 src_bios_agent_tpower_LDADD = ${program_libs}
 src_bios_agent_tpower_SOURCES = src/bios_agent_tpower.cc
 if WITH_SYSTEMD_UNITS
 src_bios_agent_tpower_servicedir = @prefix@/lib/systemd/system
-src_bios_agent_tpower_service_DATA = src/bios_agent_tpower.service
+src_bios_agent_tpower_service_DATA = src/bios-agent-tpower.service
 endif #WITH_SYSTEMD_UNITS
 endif #ENABLE_BIOS_AGENT_TPOWER
 
