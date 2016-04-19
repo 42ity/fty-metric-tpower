@@ -13,7 +13,7 @@ EnvironmentFile=-/etc/default/bios
 EnvironmentFile=-/etc/default/bios__%n.conf
 EnvironmentFile=-/etc/default/bios-db-ro
 Environment="prefix=@prefix@"
-ExecStart=@prefix@/bin/bios_agent_tpower
+ExecStart=@prefix@/bin/bios-agent-tpower
 Restart=always
 
 [Install]
