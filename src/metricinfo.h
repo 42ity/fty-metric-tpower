@@ -37,10 +37,12 @@ public:
         return _source + "@" + _element_name;
     };
 
-    MetricInfo() {
-        _timestamp = 0;
-        _ltl = 5 * 60;
-    };
+    MetricInfo()
+    :
+        _value{0},
+        _timestamp{0},
+        _ltl{5 * 60}
+    {};
 
     MetricInfo (
         const std::string &element_name,
@@ -57,10 +59,7 @@ public:
         _timestamp (timestamp),
         _element_destination_name (destination),
         _ltl (5*60)
-    {
-    };
-
-
+    {};
 
     double getValue (void) const{
         return _value;
@@ -74,7 +73,7 @@ public:
         return _timestamp;
     };
 
-    bool isUnknown() const {
+    bool isUnknown(void) const {
         if ( _element_name.empty() ||
              _source.empty() ||
              _units.empty() ) {
@@ -85,15 +84,18 @@ public:
 
 
     // new function!!!!
-    int32_t getLtl(void) {
+    int32_t getLtl(void) const {
         return _ltl;
-    }
-    std::string getUnits(void) const
-    { return _units; };
+    };
+
+    std::string getUnits(void) const {
+        return _units;
+    };
+
     std::string getSource (void) const {
         return _source;
     };
-    void setTime() { _timestamp = std::time(NULL); };
+    void setTime(void) { _timestamp = std::time(NULL); };
     void setUnits(const std::string &U) { _units = U; };
     friend inline bool operator==( const MetricInfo &lhs, const MetricInfo &rhs );
     // new function!!!!
