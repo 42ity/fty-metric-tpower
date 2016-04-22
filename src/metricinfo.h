@@ -49,8 +49,9 @@ public:
         const std::string &source,
         const std::string &units,
         double value,
-        int64_t timestamp,
-        const std::string &destination
+        uint64_t timestamp,
+        const std::string &destination,
+        uint64_t ttl
         ):
         _element_name (element_name),
         _source (source),
@@ -58,7 +59,7 @@ public:
         _value (value),
         _timestamp (timestamp),
         _element_destination_name (destination),
-        _ttl (5*60)
+        _ttl (ttl)
     {};
 
     double getValue (void) const{
@@ -69,7 +70,7 @@ public:
         return _element_name;
     };
 
-    int64_t getTimestamp (void) const {
+    uint64_t getTimestamp (void) const {
         return _timestamp;
     };
 
@@ -83,8 +84,7 @@ public:
     };
 
 
-    // new function!!!!
-    int32_t getTtl(void) const {
+    uint64_t getTtl(void) const {
         return _ttl;
     };
 
@@ -110,11 +110,11 @@ private:
     std::string _source;
     std::string _units;
     double      _value;
-    int64_t     _timestamp;
+    uint64_t     _timestamp;
     std::string _element_destination_name;
 
     // time to live [s]
-    int32_t _ttl;
+    uint64_t _ttl;
 
 };
 

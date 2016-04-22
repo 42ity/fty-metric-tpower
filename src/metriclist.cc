@@ -17,7 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include <czmq.h>
-extern int agent_alert_verbose;
 
 #define zsys_debug1(...) \
     do { if (agent_alert_verbose) zsys_debug (__VA_ARGS__); } while (0);
@@ -53,8 +52,8 @@ double MetricList::
         return NAN;
     }
     else {
-        int64_t currentTimestamp = ::time(NULL);
-        if ( ( currentTimestamp - it->second._timestamp ) > _maxLiveTime ) {
+        uint64_t currentTimestamp = ::time(NULL);
+        if ( ( currentTimestamp - it->second._timestamp ) > it->second._ttl ) {
             return NAN;
         }
         else {
@@ -92,7 +91,7 @@ MetricInfo MetricList::
 
 void MetricList::removeOldMetrics()
 {
-    int64_t currentTimestamp = ::time(NULL);
+    uint64_t currentTimestamp = ::time(NULL);
 
     for ( std::map<std::string, MetricInfo>::iterator iter = _knownMetrics.begin(); iter != _knownMetrics.end() ; /* empty */)
     {

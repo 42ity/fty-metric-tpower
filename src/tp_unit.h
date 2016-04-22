@@ -87,7 +87,7 @@ class TPUnit {
     int64_t timeToAdvertisement( const std::string &quantity ) const;
 
     //! \brief return timestamp for quantity change
-    int64_t timestamp( const std::string &quantity ) const;
+    uint64_t timestamp( const std::string &quantity ) const;
  protected:
     //! \brief A list of the last measurement values:  topic -> MetricInfo
     MetricList _lastValue;
@@ -96,10 +96,10 @@ class TPUnit {
     std::map < std::string, bool > _changed;
 
     //! \brief measurement change timestamp
-    std::map < std::string, int64_t> _changetimestamp;
+    std::map < std::string, uint64_t> _changetimestamp;
 
     //! \brief measurement advertisement timestamp
-    std::map < std::string, int64_t> _advertisedtimestamp;
+    std::map < std::string, uint64_t> _advertisedtimestamp;
 
     /*! \brief list of measurements for included devices
      *
@@ -136,6 +136,9 @@ class TPUnit {
     MetricInfo realpowerDefault(const std::string &quantity) const;
 private:
     std::string generateTopic (const std::string &quantity) const;
+
+    // time to live of the generated metrics [s]
+    static const uint64_t TTL = 5*60;
 };
 
 #endif // TP_UNIT_H_INCLUDED
