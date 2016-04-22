@@ -86,7 +86,7 @@ MetricInfo TPUnit::
             sum += itMetricInfo;
         }
     }
-    MetricInfo result ( _name, quantity, "W", sum, ::time (NULL), "");
+    MetricInfo result ( _name, quantity, "W", sum, ::time (NULL), "", TTL);
     return result;
 }
 
@@ -109,7 +109,7 @@ MetricInfo TPUnit::
             sum += itMetricInfos;
         }
     }
-    MetricInfo result ( _name, quantity, "W", sum, ::time (NULL), "");
+    MetricInfo result ( _name, quantity, "W", sum, ::time (NULL), "", TTL);
     return result;
 }
 
@@ -178,7 +178,7 @@ double TPUnit::
 void TPUnit::
     dropOldMetricInfos(void)
 {
-//    int64_t now = std::time(NULL);
+//    uint64_t now = std::time(NULL);
     for( auto & device : _powerdevices ) {
         auto &measurements = device.second;
         measurements.removeOldMetrics();
@@ -207,13 +207,13 @@ std::vector<std::string> TPUnit::
         return result;
     }
 
-    int64_t now = std::time(NULL);
+    uint64_t now = std::time(NULL);
     for( const auto &device : _powerdevices ) {
         const auto &deviceMetrics = device.second;
         std::string topic = quantity + "@" + device.first;
         auto measurement = deviceMetrics.getMetricInfo(topic);
         if ( ( isnan (measurement.getValue()) ) ||
-             ( now - measurement.getTimestamp() > measurement.getLtl() * 2 )
+             ( now - measurement.getTimestamp() > measurement.getTtl() * 2 )
            )
         {
             result.push_back( device.first );
@@ -252,7 +252,7 @@ void TPUnit::
 {
     if( changed( quantity ) != newStatus ) {
         _changed[quantity] = newStatus;
-        _changetimestamp[quantity] = time(NULL);
+        _changetimestamp[quantity] = ::time(NULL);
         if( _advertisedtimestamp.find(quantity) == _advertisedtimestamp.end() ) {
             _advertisedtimestamp[quantity] = 0;
         }
@@ -268,7 +268,7 @@ void TPUnit::
     _advertisedtimestamp[quantity] = now_timestamp;
 }
 
-int64_t TPUnit::
+uint64_t TPUnit::
     timestamp( const std::string &quantity ) const
 {
     auto it = _changetimestamp.find(quantity);
@@ -287,7 +287,7 @@ int64_t TPUnit::
         // if quantity didn't change and it is still unknown
         return TPOWER_MEASUREMENT_REPEAT_AFTER;
     }
-    int64_t dt = ::time(NULL) - quantityTimestamp;
+    uint64_t dt = ::time(NULL) - quantityTimestamp;
     if ( dt > TPOWER_MEASUREMENT_REPEAT_AFTER ) {
         // no time left for waiting -> Need to advertise
         return 0;
@@ -303,7 +303,7 @@ bool TPUnit::
         // if do not know the quantity -> nothing to advertise
         return false;
     }
-    int64_t now_timestamp = ::time(NULL);
+    uint64_t now_timestamp = ::time(NULL);
     // find the time, when quantity was advertised last time
     const auto it = _advertisedtimestamp.find(quantity);
     if ( ( it != _advertisedtimestamp.end() ) &&
@@ -313,7 +313,7 @@ bool TPUnit::
         //    time is just now was advertised -> nothing to advertise
         return false;
     }
-    // advertise if 
+    // advertise if
     // * value changed or
     // * we should advertise according schedule
     return ( changed(quantity) || ( now_timestamp - timestamp(quantity) > TPOWER_MEASUREMENT_REPEAT_AFTER ) );

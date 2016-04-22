@@ -73,11 +73,14 @@ static void
     const char *type = bios_proto_type(bmessage);
     const char *element_src = bios_proto_element_src(bmessage);
     const char *unit = bios_proto_unit(bmessage);
-    uint64_t timestamp = bios_proto_time(bmessage);
+    // in the protocol in the field time now "ttl" is sent
+    uint64_t ttl = bios_proto_time(bmessage);
+    // time is a time, when message is delivered
+    uint64_t timestamp = ::time(NULL);
 
     zsys_debug("Got message '%s' with value %s\n", topic.c_str(), value);
 
-    MetricInfo m (element_src, type, unit, dvalue, timestamp, "");
+    MetricInfo m (element_src, type, unit, dvalue, timestamp, "", ttl);
     config.processMetric (m, topic);
 }
 
