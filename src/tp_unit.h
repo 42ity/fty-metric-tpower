@@ -138,7 +138,7 @@ private:
     std::string generateTopic (const std::string &quantity) const;
 
     // time to live of the generated metrics [s]
-    static const uint64_t TTL = 5*60;
+    static const uint64_t TTL = 6*60;
 };
 
 #endif // TP_UNIT_H_INCLUDED
