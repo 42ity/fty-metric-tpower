@@ -213,7 +213,7 @@ std::vector<std::string> TPUnit::
         std::string topic = quantity + "@" + device.first;
         auto measurement = deviceMetrics.getMetricInfo(topic);
         if ( ( isnan (measurement.getValue()) ) ||
-             ( now - measurement.getTimestamp() > measurement.getLtl() * 2 )
+             ( now - measurement.getTimestamp() > measurement.getTtl() * 2 )
            )
         {
             result.push_back( device.first );

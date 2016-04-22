@@ -96,7 +96,7 @@ void MetricList::removeOldMetrics()
 
     for ( std::map<std::string, MetricInfo>::iterator iter = _knownMetrics.begin(); iter != _knownMetrics.end() ; /* empty */)
     {
-        if ( ( currentTimestamp - iter->second._timestamp ) > iter->second._ltl ) {
+        if ( ( currentTimestamp - iter->second._timestamp ) > iter->second.getTtl() ) {
             _knownMetrics.erase(iter++);
         }
         else {

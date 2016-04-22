@@ -41,7 +41,7 @@ public:
     :
         _value{0},
         _timestamp{0},
-        _ltl{5 * 60}
+        _ttl{5 * 60}
     {};
 
     MetricInfo (
@@ -58,7 +58,7 @@ public:
         _value (value),
         _timestamp (timestamp),
         _element_destination_name (destination),
-        _ltl (5*60)
+        _ttl (5*60)
     {};
 
     double getValue (void) const{
@@ -84,8 +84,8 @@ public:
 
 
     // new function!!!!
-    int32_t getLtl(void) const {
-        return _ltl;
+    int32_t getTtl(void) const {
+        return _ttl;
     };
 
     std::string getUnits(void) const {
@@ -113,8 +113,8 @@ private:
     int64_t     _timestamp;
     std::string _element_destination_name;
 
-    // life tme limit [s]
-    int32_t _ltl;
+    // time to live [s]
+    int32_t _ttl;
 
 };
 
