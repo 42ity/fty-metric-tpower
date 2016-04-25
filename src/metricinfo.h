@@ -83,7 +83,6 @@ public:
         return false;
     };
 
-
     uint64_t getTtl(void) const {
         return _ttl;
     };
@@ -98,7 +97,6 @@ public:
     void setTime(void) { _timestamp = std::time(NULL); };
     void setUnits(const std::string &U) { _units = U; };
     friend inline bool operator==( const MetricInfo &lhs, const MetricInfo &rhs );
-    // new function!!!!
     friend inline bool operator!=( const MetricInfo &lhs, const MetricInfo &rhs );
 
     // This class is very close to metric info
@@ -110,7 +108,7 @@ private:
     std::string _source;
     std::string _units;
     double      _value;
-    uint64_t     _timestamp;
+    uint64_t    _timestamp;
     std::string _element_destination_name;
 
     // time to live [s]
@@ -118,14 +116,12 @@ private:
 
 };
 
-// new function!!!!
 inline bool operator==( const MetricInfo &lhs, const MetricInfo &rhs ) {
     return ( lhs._units == rhs._units &&
              lhs._value == rhs._value
            );
 }
 
-// new function!!!!
 inline bool operator!=( const MetricInfo &lhs, const MetricInfo &rhs ) {
     return ! ( lhs == rhs );
 }
