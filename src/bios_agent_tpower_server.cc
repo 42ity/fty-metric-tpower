@@ -27,19 +27,21 @@
 */
 
 #include "agent_tpower_classes.h"
-
+#include <string>
 // ============================================================
 //         Functionality for METRIC processing and publishing
 // ============================================================
 bool send_metrics (mlm_client_t* client, const MetricInfo &M){
     zsys_info ("Metric is sent: %s", M.generateTopic().c_str());
+    zhash_t *aux = zhash_new();
+    zhash_insert(aux, "time", (char *) std::to_string(M.getTimestamp()).c_str());
     zmsg_t *msg = bios_proto_encode_metric (
-            NULL,
+            aux,
             M.getSource().c_str(),
             M.getElementName().c_str(),
             std::to_string(M.getValue()).c_str(),
             M.getUnits().c_str(),
-            M.getTimestamp());
+            M.getTtl());
     int r = mlm_client_send (client, M.generateTopic().c_str(), &msg);
     if ( r == -1 ) {
         return false;
@@ -47,6 +49,7 @@ bool send_metrics (mlm_client_t* client, const MetricInfo &M){
     else {
         return true;
     }
+    zhash_destroy (&aux);
 }
 
 static void
@@ -73,10 +76,9 @@ static void
     const char *type = bios_proto_type(bmessage);
     const char *element_src = bios_proto_element_src(bmessage);
     const char *unit = bios_proto_unit(bmessage);
-    // in the protocol in the field time now "ttl" is sent
-    uint64_t ttl = bios_proto_time(bmessage);
+    uint32_t ttl = bios_proto_ttl(bmessage);
     // time is a time, when message is delivered
-    uint64_t timestamp = ::time(NULL);
+    uint64_t timestamp = bios_proto_aux_number(bmessage, "time", ::time(NULL));
 
     zsys_debug("Got message '%s' with value %s\n", topic.c_str(), value);
 
