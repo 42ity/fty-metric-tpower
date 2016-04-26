@@ -32,8 +32,9 @@
 //         Functionality for METRIC processing and publishing
 // ============================================================
 bool send_metrics (mlm_client_t* client, const MetricInfo &M){
-    zsys_info ("Metric is sent: %s", M.generateTopic().c_str());
+    zsys_info ("Metric is sent: topic = %s , time = %s", M.generateTopic().c_str(), std::to_string(M.getTimestamp()).c_str());
     zhash_t *aux = zhash_new();
+    zhash_autofree(aux);
     zhash_insert(aux, "time", (char *) std::to_string(M.getTimestamp()).c_str());
     zmsg_t *msg = bios_proto_encode_metric (
             aux,
@@ -43,13 +44,13 @@ bool send_metrics (mlm_client_t* client, const MetricInfo &M){
             M.getUnits().c_str(),
             M.getTtl());
     int r = mlm_client_send (client, M.generateTopic().c_str(), &msg);
+    zhash_destroy (&aux);
     if ( r == -1 ) {
         return false;
     }
     else {
         return true;
     }
-    zhash_destroy (&aux);
 }
 
 static void
@@ -255,5 +256,42 @@ void
 bios_agent_tpower_server_test (bool verbose)
 {
     printf (" * bios_agent_tpower_server: ");
+    
+    //  @selftest
+    static const char* endpoint = "inproc://bios-tpower-server-test";
+
+    zactor_t *server = zactor_new (mlm_server, (void*) "Malamute");
+    zstr_sendx (server, "BIND", endpoint, NULL);
+    if (verbose)
+        zstr_send (server, "VERBOSE");
+
+    mlm_client_t *producer = mlm_client_new ();
+    mlm_client_connect (producer, endpoint, 1000, "producer");
+    mlm_client_set_producer (producer, "METRICS");
+
+    mlm_client_t *consumer = mlm_client_new ();
+    mlm_client_connect (consumer, endpoint, 1000, "consumer");
+    mlm_client_set_consumer (consumer, "METRICS", ".*");
+
+    uint64_t timestamp = ::time(NULL);
+    MetricInfo M("someUPS", "realpower.default", "W", 456.66, timestamp, "", 500);
+    send_metrics (producer, M);
+
+    zmsg_t *msg = mlm_client_recv (consumer);
+    assert ( msg != NULL);
+    assert ( M.generateTopic() == std::string(mlm_client_subject(consumer)));
+    assert ( is_bios_proto (msg));
+    bios_proto_t *bmessage = bios_proto_decode (&msg);
+    bios_proto_print(bmessage);
+    assert ( bmessage != NULL );
+    assert ( bios_proto_id (bmessage) == BIOS_PROTO_METRIC );
+    uint64_t timestamp_new = bios_proto_aux_number(bmessage, "time", ::time(NULL));
+    assert ( timestamp == timestamp_new);
+
+    bios_proto_destroy (&bmessage);
+    zmsg_destroy (&msg);
+    mlm_client_destroy (&consumer);
+    mlm_client_destroy (&producer);
+    zactor_destroy(&server);
     printf ("OK\n");
 }
