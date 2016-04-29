@@ -25,6 +25,9 @@
 @discuss
 @end
 */
+extern int agent_tpower_verbose;
+#define zsys_debug1(...) \
+    do { if (agent_tpower_verbose) zsys_debug (__VA_ARGS__); } while (0);
 
 #include "agent_tpower_classes.h"
 #include <stdio.h>
@@ -61,10 +64,10 @@ bool TotalPowerConfiguration::
 
         if( ret.status ) {
             for( auto &rack_it: ret.item ) {
-                zsys_debug("rack '%s' powerdevices:", rack_it.first.c_str() );
+                zsys_info("rack '%s' powerdevices:", rack_it.first.c_str() );
                 auto &devices = rack_it.second;
                 for( auto &device_it: devices ) {
-                    zsys_debug("         -'%s'", device_it.c_str() );
+                    zsys_info("         -'%s'", device_it.c_str() );
                     addDeviceToMap(_racks, _affectedRacks, rack_it.first, device_it );
                 }
             }
@@ -73,10 +76,10 @@ bool TotalPowerConfiguration::
         ret = select_devices_total_power_dcs (connection);
         if( ret.status ) {
             for( auto &dc_it: ret.item ) {
-                zsys_debug("DC '%s' powerdevices:", dc_it.first.c_str() );
+                zsys_info("DC '%s' powerdevices:", dc_it.first.c_str() );
                 auto &devices = dc_it.second;
                 for( auto &device_it: devices ) {
-                    zsys_debug("         -'%s'", device_it.c_str() );
+                    zsys_info("         -'%s'", device_it.c_str() );
                     addDeviceToMap(_DCs, _affectedDCs, dc_it.first, device_it );
                 }
             }
@@ -84,7 +87,7 @@ bool TotalPowerConfiguration::
         connection.close();
         // no reconfiguration should be scheduled
         _reconfigPending = 0;
-        zsys_debug ("topology loaded SUCCESS");
+        zsys_info ("topology loaded SUCCESS");
         return true;
     } catch (const std::exception &e) {
         zsys_error("Failed to read configuration from database. Excepton caught: '%s'.", e.what ());
@@ -137,7 +140,7 @@ void TotalPowerConfiguration::
         auto affected_it = _affectedRacks.find( M.getElementName() );
         if( affected_it != _affectedRacks.end() ) {
             // this device affects some total rack power
-            zsys_debug("measurement is interesting for rack %s", affected_it->second.c_str() );
+            zsys_debug1("measurement is interesting for rack %s", affected_it->second.c_str() );
             auto rack_it = _racks.find( affected_it->second );
             if( rack_it != _racks.end() ) {
                 // affected rack found
@@ -150,7 +153,7 @@ void TotalPowerConfiguration::
         auto affected_it = _affectedDCs.find( M.getElementName() );
         if( affected_it != _affectedDCs.end() ) {
             // this device affects some total DC power
-            zsys_debug("measurement is interesting for DC %s", affected_it->second.c_str() );
+            zsys_debug1("measurement is interesting for DC %s", affected_it->second.c_str() );
             auto dc_it = _DCs.find( affected_it->second );
             if( dc_it != _DCs.end() ) {
                 // affected dc found

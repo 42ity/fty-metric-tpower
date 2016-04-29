@@ -15,6 +15,10 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
+extern int agent_tpower_verbose;
+
+#define zsys_debug1(...) \
+    do { if (agent_tpower_verbose) zsys_debug (__VA_ARGS__); } while (0);
 
 #include <set>
 #include <functional>
@@ -113,7 +117,7 @@ int
          std::function<void(const tntdb::Row&)> cb
          )
 {
-    zsys_debug ("container element_id = %" PRIu32, element_id);
+    zsys_debug1 ("container element_id = %" PRIu32, element_id);
 
     try {
         // Can return more than one row.
@@ -132,7 +136,7 @@ int
 
         tntdb::Result result = st.set("containerid", element_id).
                                   select();
-        zsys_debug("[v_bios_asset_element_super_parent]: were selected %" PRIu32 " rows",
+        zsys_debug1("[v_bios_asset_element_super_parent]: were selected %" PRIu32 " rows",
                                                             result.size());
         for ( auto &row: result ) {
             cb(row);
@@ -158,7 +162,7 @@ db_reply <std::set <std::pair<a_elmnt_id_t ,a_elmnt_id_t>>>
         (tntdb::Connection &conn,
          a_elmnt_id_t element_id)
 {
-    zsys_debug ("  links are selected for element_id = %" PRIi32, element_id);
+    zsys_debug1 ("  links are selected for element_id = %" PRIi32, element_id);
     a_lnk_tp_id_t linktype = INPUT_POWER_CHAIN;
 
     //      all powerlinks are included into "resultpowers"
@@ -192,7 +196,7 @@ db_reply <std::set <std::pair<a_elmnt_id_t ,a_elmnt_id_t>>>
         tntdb::Result result = st.set("containerid", element_id).
                                   set("linktypeid", linktype).
                                   select();
-        zsys_debug("[t_bios_asset_link]: were selected %" PRIu32 " rows",
+        zsys_debug1("[t_bios_asset_link]: were selected %" PRIu32 " rows",
                                                          result.size());
 
         // Go through the selected links
@@ -296,7 +300,7 @@ db_reply <std::vector<db_a_elmnt_t>>
 
         tntdb::Result result = st.set("typeid", type_id).
                                   select();
-        zsys_debug("[v_bios_asset_element]: were selected %" PRIu32 " rows",
+        zsys_debug1("[v_bios_asset_element]: were selected %" PRIu32 " rows",
                                                             result.size());
 
         // Go through the selected elements
@@ -491,7 +495,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
         (tntdb::Connection  &conn,
          int8_t container_type_id)
 {
-    zsys_debug ("  container_type_id = %" PRIi8, container_type_id);
+    zsys_debug1 ("  container_type_id = %" PRIi8, container_type_id);
     // name of the container is mapped onto the vector of names of its power sources
     std::map<std::string, std::vector<std::string> > item{};
     db_reply <std::map<std::string, std::vector<std::string> > > ret =
@@ -611,7 +615,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
         //   then A is border device
         for ( auto &oneLink : links.item )
         {
-            zsys_debug ("  cur_link: %d->%d", oneLink.first, oneLink.second);
+            zsys_debug1 ("  cur_link: %d->%d", oneLink.first, oneLink.second);
             auto it = container_devices.find (oneLink.first);
             if ( it == container_devices.end() )
                 // if in the link first point is out of the Container,
