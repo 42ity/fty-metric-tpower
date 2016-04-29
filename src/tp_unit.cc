@@ -17,6 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
+extern int agent_tpower_verbose;
+#define zsys_debug1(...) \
+    do { if (agent_tpower_verbose) zsys_debug (__VA_ARGS__); } while (0);
+
 
 #include "agent_tpower_classes.h"
 #include <ctime>
@@ -167,7 +171,7 @@ double TPUnit::
                  deviceName.c_str(),
                  replacement->second.c_str() );
     } else {
-        zsys_debug("device %s, using replacement value %s instead of %s",
+        zsys_info("device %s, using replacement value %s instead of %s",
                   deviceName.c_str(),
                   replacement->second.c_str(),
                   quantity.c_str() );

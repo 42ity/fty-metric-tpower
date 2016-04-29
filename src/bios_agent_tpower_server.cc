@@ -25,6 +25,10 @@
 @discuss
 @end
 */
+int agent_tpower_verbose = 0;
+
+#define zsys_debug1(...) \
+    do { if (agent_tpower_verbose) zsys_debug (__VA_ARGS__); } while (0);
 
 #include "agent_tpower_classes.h"
 #include <string>
@@ -66,11 +70,11 @@ static void
     double dvalue = strtod (value, &end);
     if (errno == ERANGE) {
         errno = 0;
-        zsys_debug ("cannot convert value to double, ignore message\n");
+        zsys_error ("cannot convert value to double, ignore message\n");
         return;
     }
     else if (end == value || *end != '\0') {
-        zsys_debug ("cannot convert value to double, ignore message\n");
+        zsys_error ("cannot convert value to double, ignore message\n");
         return;
     }
 
@@ -81,7 +85,7 @@ static void
     // time is a time, when message is delivered
     uint64_t timestamp = bios_proto_aux_number(bmessage, "time", ::time(NULL));
 
-    zsys_debug("Got message '%s' with value %s\n", topic.c_str(), value);
+    zsys_debug1("Got message '%s' with value %s\n", topic.c_str(), value);
 
     MetricInfo m (element_src, type, unit, dvalue, timestamp, "", ttl);
     config.processMetric (m, topic);
@@ -141,7 +145,7 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
             zmsg_t *msg = zmsg_recv (pipe);
             char *cmd = zmsg_popstr (msg);
             if ( verbose ) {
-                zsys_debug ("actor command=%s", cmd);
+                zsys_debug1 ("actor command=%s", cmd);
             }
 
             if (streq (cmd, "$TERM")) {
@@ -152,6 +156,8 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
             else
             if (streq (cmd, "VERBOSE")) {
                 verbose = true;
+                agent_tpower_verbose = true;
+                zsys_debug1 ("VERBOSE received");
             }
             else
             if (streq (cmd, "CONNECT")) {
@@ -202,7 +208,7 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
         }
         std::string topic = mlm_client_subject(client);
         if ( verbose ) {
-            zsys_debug("Got message '%s'", topic.c_str());
+            zsys_debug1("Got message '%s'", topic.c_str());
         }
         // What is going on???
         //
