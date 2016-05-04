@@ -120,7 +120,7 @@ class TPUnit {
     //! \brief replace not present measurement with some algorithm
     static const std::map<std::string,int> _calculations;
 
-    double getMetricInfoIter(
+    double getMetricValue(
         const MetricList  &measurements,
         const std::string &quantity,
         const std::string &deviceName
