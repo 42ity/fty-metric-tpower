@@ -26,18 +26,6 @@ extern int agent_tpower_verbose;
 #include <ctime>
 #include <exception>
 
-/**
- * \brief mapping table for missing values replacements
- *
- * This table says simply "if we don't have measurement for realpower.input.L1, we can
- * use realpower.output.L1 instead".
- */
-const std::map<std::string,std::string> TPUnit::_emergencyReplacements = {
-    { "realpower.input.L1", "realpower.output.L1" },
-    { "realpower.input.L2", "realpower.output.L2" },
-    { "realpower.input.L3", "realpower.output.L3" },
-};
-
 enum TPowerMethod {
     TPOWER_REALPOWER_DEFAULT = 1,
 };
@@ -83,11 +71,11 @@ MetricInfo TPUnit::
 {
     double sum = 0;
     for( const auto &it : _powerdevices ) {
-        auto itMetricInfo = getMetricInfoIter( it.second, quantity, it.first );
-        if( isnan(itMetricInfo) ) {
+        double value = getMetricValue( it.second, quantity, it.first );
+        if( isnan(value) ) {
             throw std::runtime_error("value can't be calculated");
         } else {
-            sum += itMetricInfo;
+            sum += value;
         }
     }
     MetricInfo result ( _name, quantity, "W", sum, ::time (NULL), "", TTL);
@@ -99,18 +87,18 @@ MetricInfo TPUnit::
 {
     double sum = 0;
     for( const auto it : _powerdevices ) {
-        auto itMetricInfos = getMetricInfoIter( it.second, quantity, it.first );
-        if( isnan (itMetricInfos) ) {
+        double value = getMetricValue( it.second, quantity, it.first );
+        if( isnan (value) ) {
             // realpower.default not present, try to sum the phases
             for( int phase = 1 ; phase <= 3 ; ++phase ) {
-                auto itItem = getMetricInfoIter( it.second, "realpower.input.L" + std::to_string( phase ), it.first );
-                if( isnan(itItem) ) {
+                double phaseValue = getMetricValue( it.second, "realpower.output.L" + std::to_string( phase ), it.first );
+                if( isnan (phaseValue) ) {
                     throw std::runtime_error("value can't be calculated");
                 }
-                sum += itItem;
+                sum += phaseValue;
             }
         } else {
-            sum += itMetricInfos;
+            sum += value;
         }
     }
     MetricInfo result ( _name, quantity, "W", sum, ::time (NULL), "", TTL);
@@ -147,36 +135,14 @@ void TPUnit::
 }
 
 double TPUnit::
-    getMetricInfoIter(
+    getMetricValue(
         const MetricList  &measurements,
         const std::string &quantity,
         const std::string &deviceName
     ) const
 {
     std::string topic = quantity + "@" + deviceName;
-    double result = measurements.find(topic);
-    if( !isnan(result) ) {
-        // we have it
-        return result;
-    }
-    const auto &replacement = _emergencyReplacements.find(quantity);
-    if( replacement == _emergencyReplacements.cend() ) {
-        // there is no replacement for this value
-        return NAN;
-    }
-    // find the replacement value if any
-    double result_replace = measurements.find( replacement->second );
-    if( isnan(result_replace) ) {
-        zsys_info("device %s, value of %s is unknown",
-                 deviceName.c_str(),
-                 replacement->second.c_str() );
-    } else {
-        zsys_info("device %s, using replacement value %s instead of %s",
-                  deviceName.c_str(),
-                  replacement->second.c_str(),
-                  quantity.c_str() );
-    }
-    return result_replace;
+    return measurements.find(topic);
 }
 // TODO setup max life time metric
 void TPUnit::
