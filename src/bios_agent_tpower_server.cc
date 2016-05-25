@@ -129,8 +129,6 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
     TotalPowerConfiguration tpower_conf(fff);
     tpower_conf.configure();
     while (!zsys_interrupted) {
-
-        zsys_info ("timeout = %d", tpower_conf.getTimeout());
         void *which = zpoller_wait (poller, tpower_conf.getTimeout());
         if ( zpoller_expired (poller) ) {
             tpower_conf.onPoll();
