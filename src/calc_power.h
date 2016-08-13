@@ -1,20 +1,20 @@
 /*
-Copyright (C) 2015 Eaton
- 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along
-with this program; if not, write to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*/
+ * Copyright (C) 2015 Eaton
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 
 /*! \file   calc_power.h
     \brief  Functions for calculating a total rack and DC power from database values.
@@ -105,7 +105,7 @@ bool is_ups (const device_info_t &device);
  * \brief For every rack analyses its power topology and
  *        for each rack returns a list of power devices
  *        that belong to "input power".
- * 
+ *
  * Because this function is intent to support an agent (but agent
  * has no idea about ids) that listens to the stream, so
  * an output is supposed to be names of devices.
@@ -129,7 +129,7 @@ db_reply <std::map<std::string, std::vector<std::string> > >
  * \brief For every dc analyses its power topology and
  *        for each dc returns a list of power devices
  *        that belong to "input power".
- * 
+ *
  * Because this function is intent to support an agent (but agent
  * has no idea about ids) that listens to the stream, so
  * an output is supposed to be names of devices.
