@@ -147,6 +147,7 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
             }
 
             if (streq (cmd, "$TERM")) {
+                zsys_info ("Got $TERM");
                 zstr_free (&cmd);
                 zmsg_destroy (&msg);
                 goto exit;
