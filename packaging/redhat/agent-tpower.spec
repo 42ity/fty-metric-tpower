@@ -36,7 +36,7 @@ BuildRequires:  zeromq-devel
 BuildRequires:  uuid-devel
 BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
-BuildRequires:  biosproto-devel
+BuildRequires:  libbiosproto-devel
 BuildRequires:  cxxtools-devel
 BuildRequires:  tntdb-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -68,9 +68,9 @@ Requires:       zeromq-devel
 Requires:       uuid-devel
 Requires:       czmq-devel
 Requires:       malamute-devel
-Requires:       biosproto-devel
+Requires:       libbiosproto-devel
 Requires:       cxxtools-devel
-Requires:  tntdb-devel
+Requires:       tntdb-devel
 
 %description devel
 agent-tpower computes power metrics.
