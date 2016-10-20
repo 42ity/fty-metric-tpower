@@ -76,7 +76,7 @@ public:
     //! \brief list of racks
     std::map< std::string, TPUnit > _racks;
     //! \brief topic interesting for racks
-    const cxxtools::Regex _rackRegex = cxxtools::Regex("^realpower\\.(default|nominal)", REG_EXTENDED );
+    const cxxtools::Regex _rackRegex = cxxtools::Regex("^realpower\\.(default)", REG_EXTENDED );
     //! \brief list of interested units
     const std::vector<std::string> _rackQuantities = {
         "realpower.default",
