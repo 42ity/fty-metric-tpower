@@ -62,6 +62,7 @@ cmake_install.cmake
 install_manifest.txt
 Testing/
 *.cmake
+CMakeLists.txt
 
 # GYP files
 project.Makefile
