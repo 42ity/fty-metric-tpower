@@ -1,23 +1,33 @@
 #
 #    agent-tpower - Computes power metrics
 #
-#    Copyright (C) 2014 - 2015 Eaton
-#
-#    This program is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; either version 2 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
+#    Copyright (C) 2014 - 2015 Eaton                                        
+#                                                                           
+#    This program is free software; you can redistribute it and/or modify   
+#    it under the terms of the GNU General Public License as published by   
+#    the Free Software Foundation; either version 2 of the License, or      
+#    (at your option) any later version.                                    
+#                                                                           
+#    This program is distributed in the hope that it will be useful,        
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of         
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
+#    GNU General Public License for more details.                           
+#                                                                           
 #    You should have received a copy of the GNU General Public License along
 #    with this program; if not, write to the Free Software Foundation, Inc.,
-#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
 #
 
+# To build with draft APIs, use "--with drafts" in rpmbuild for local builds or add
+#   Macros:
+#   %_with_drafts 1
+# at the BOTTOM of the OBS prjconf
+%bcond_with drafts
+%if %{with drafts}
+%define DRAFTS yes
+%else
+%define DRAFTS no
+%endif
 Name:           agent-tpower
 Version:        0.1.0
 Release:        1
@@ -26,14 +36,21 @@ License:        GPL-2.0+
 URL:            https://eaton.com/
 Source0:        %{name}-%{version}.tar.gz
 Group:          System/Libraries
+# Note: ghostscript is required by graphviz which is required by
+#       asciidoc. On Fedora 24 the ghostscript dependencies cannot
+#       be resolved automatically. Thus add working dependency here!
+BuildRequires:  ghostscript
+BuildRequires:  asciidoc
 BuildRequires:  automake
 BuildRequires:  autoconf
 BuildRequires:  libtool
-BuildRequires:  pkg-config
+BuildRequires:  pkgconfig
 BuildRequires:  systemd-devel
+BuildRequires:  systemd
+%{?systemd_requires}
+BuildRequires:  xmlto
 BuildRequires:  gcc-c++
 BuildRequires:  zeromq-devel
-BuildRequires:  uuid-devel
 BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
 BuildRequires:  libbiosproto-devel
@@ -65,7 +82,6 @@ Summary:        computes power metrics
 Group:          System/Libraries
 Requires:       libagent_tpower0 = %{version}
 Requires:       zeromq-devel
-Requires:       uuid-devel
 Requires:       czmq-devel
 Requires:       malamute-devel
 Requires:       libbiosproto-devel
@@ -81,13 +97,15 @@ This package contains development files.
 %{_includedir}/*
 %{_libdir}/libagent_tpower.so
 %{_libdir}/pkgconfig/libagent_tpower.pc
+%{_mandir}/man3/*
+%{_mandir}/man7/*
 
 %prep
 %setup -q
 
 %build
 sh autogen.sh
-%{configure} --with-systemd-units
+%{configure} --enable-drafts=%{DRAFTS} --with-systemd-units
 make %{_smp_mflags}
 
 %install
@@ -102,6 +120,16 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %doc COPYING
 %{_bindir}/bios-agent-tpower
 %{_prefix}/lib/systemd/system/bios-agent-tpower*.service
-
+%{_mandir}/man1/bios-agent-tpower*
+%config(noreplace) %{_sysconfdir}/agent-tpower/bios-agent-tpower.cfg
+%dir %{_sysconfdir}/agent-tpower
+%if 0%{?suse_version} > 1315
+%post
+%systemd_post bios-agent-tpower.service
+%preun
+%systemd_preun bios-agent-tpower.service
+%postun
+%systemd_postun_with_restart bios-agent-tpower.service
+%endif
 
 %changelog

@@ -140,5 +140,6 @@ private:
     // time to live of the generated metrics [s]
     static const uint64_t TTL = 6*60;
 };
+void tp_unit_test(bool verbose);
 
 #endif // TP_UNIT_H_INCLUDED

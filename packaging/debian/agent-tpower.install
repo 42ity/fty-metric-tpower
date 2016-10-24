@@ -1,2 +1,6 @@
 usr/bin/bios-agent-tpower
 usr/lib/systemd/system/bios-agent-tpower*.service
+usr/share/man/man1/bios-agent-tpower.1
+etc/agent-tpower/bios-agent-tpower.cfg
+lib/systemd/system/bios-agent-tpower.service
+

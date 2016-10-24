@@ -125,5 +125,7 @@ inline bool operator==( const MetricInfo &lhs, const MetricInfo &rhs ) {
 inline bool operator!=( const MetricInfo &lhs, const MetricInfo &rhs ) {
     return ! ( lhs == rhs );
 }
+void
+metricinfo_test (bool verbose);
 
 #endif // SRC_METRICINFO_H_
