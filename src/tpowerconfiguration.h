@@ -121,4 +121,5 @@ public:
     int64_t getPollInterval();
 };
 
+void tpowerconfiguration_test (bool verbose);
 #endif // TPOWERCONFIGURATION_H_INCLUDED

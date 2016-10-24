@@ -26,7 +26,6 @@ Build-Depends: debhelper (>= 9),
     pkg-config,
     dh-autoreconf,
     libzmq4-dev,
-    uuid-dev,
     libczmq-dev,
     libmlm-dev,
     libbiosproto-dev,
@@ -47,7 +46,6 @@ Architecture: any
 Section: libdevel
 Depends:
     libzmq4-dev,
-    uuid-dev,
     libczmq-dev,
     libmlm-dev,
     libbiosproto-dev,
