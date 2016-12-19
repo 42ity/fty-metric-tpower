@@ -65,6 +65,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
 
     # Clone and build dependencies
     git clone --quiet --depth 1 https://github.com/zeromq/libzmq.git libzmq.git
+    BASE_PWD=${PWD}
     cd libzmq.git
     git --no-pager log --oneline -n1
     if [ -e autogen.sh ]; then
@@ -76,8 +77,9 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     ./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
-    cd ..
-    git clone --quiet --depth 1 https://github.com/zeromq/czmq.git czmq.git
+    cd "${BASE_PWD}"
+    git clone --quiet --depth 1 -b v3.0.2 https://github.com/zeromq/czmq.git czmq.git
+    BASE_PWD=${PWD}
     cd czmq.git
     git --no-pager log --oneline -n1
     if [ -e autogen.sh ]; then
@@ -89,8 +91,9 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     ./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
-    cd ..
+    cd "${BASE_PWD}"
     git clone --quiet --depth 1 https://github.com/zeromq/malamute.git malamute.git
+    BASE_PWD=${PWD}
     cd malamute.git
     git --no-pager log --oneline -n1
     if [ -e autogen.sh ]; then
@@ -102,8 +105,9 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     ./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
-    cd ..
+    cd "${BASE_PWD}"
     git clone --quiet --depth 1 https://github.com/42ity/fty-proto fty-proto.git
+    BASE_PWD=${PWD}
     cd fty-proto.git
     git --no-pager log --oneline -n1
     if [ -e autogen.sh ]; then
@@ -115,7 +119,35 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     ./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
-    cd ..
+    cd "${BASE_PWD}"
+    git clone --quiet --depth 1 -b 42ity https://github.com/42ity/cxxtools cxxtools.git
+    BASE_PWD=${PWD}
+    cd cxxtools.git
+    git --no-pager log --oneline -n1
+    if [ -e autogen.sh ]; then
+        ./autogen.sh 2> /dev/null
+    fi
+    if [ -e buildconf ]; then
+        ./buildconf 2> /dev/null
+    fi
+    ./configure "${CONFIG_OPTS[@]}"
+    make -j4
+    make install
+    cd "${BASE_PWD}"
+    git clone --quiet --depth 1 -b 1.3 https://github.com/maekitalo/tntdb tntdb.git
+    BASE_PWD=${PWD}
+    cd tntdb.git/tntdb
+    git --no-pager log --oneline -n1
+    if [ -e autogen.sh ]; then
+        ./autogen.sh 2> /dev/null
+    fi
+    if [ -e buildconf ]; then
+        ./buildconf 2> /dev/null
+    fi
+    ./configure "${CONFIG_OPTS[@]}"
+    make -j4
+    make install
+    cd "${BASE_PWD}"
 
     # Build and check this project
     ./autogen.sh 2> /dev/null
@@ -139,6 +171,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
 
     # Build and check this project without DRAFT APIs
     make distclean
+
     git clean -f
     git reset --hard HEAD
     (
