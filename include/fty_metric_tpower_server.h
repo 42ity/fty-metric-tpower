@@ -1,5 +1,5 @@
 /*  =========================================================================
-    proto_metric_unavailable - metric unavailable protocol send part
+    fty_metric_tpower_server - Actor generating new metrics
 
     Copyright (C) 2014 - 2015 Eaton                                        
                                                                            
@@ -19,27 +19,21 @@
     =========================================================================
 */
 
-#ifndef PROTO_METRIC_UNAVAILABLE_H_INCLUDED
-#define PROTO_METRIC_UNAVAILABLE_H_INCLUDED
+#ifndef FTY_METRIC_TPOWER_SERVER_H_INCLUDED
+#define FTY_METRIC_TPOWER_SERVER_H_INCLUDED
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct _proto_metric_unavailable_t proto_metric_unavailable_t;
-
 //  @interface
-//  Create a new proto_metric_unavailable
-FTY_METRIC_TPOWER_EXPORT proto_metric_unavailable_t *
-    proto_metric_unavailable_new (void);
-
-//  Destroy the proto_metric_unavailable
+//  Metric tpower server actor
 FTY_METRIC_TPOWER_EXPORT void
-    proto_metric_unavailable_destroy (proto_metric_unavailable_t **self_p);
+fty_metric_tpower_server (zsock_t *pipe, void* args);
 
 //  Self test of this class
 FTY_METRIC_TPOWER_EXPORT void
-    proto_metric_unavailable_test (bool verbose);
+fty_metric_tpower_server_test (bool verbose);
 
 //  @end
 

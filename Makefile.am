@@ -19,12 +19,13 @@ AM_CPPFLAGS = \
     ${libzmq_CFLAGS} \
     ${czmq_CFLAGS} \
     ${malamute_CFLAGS} \
-    ${biosproto_CFLAGS} \
+    ${fty_proto_CFLAGS} \
     ${cxxtools_CFLAGS} \
+    ${tntdb_CFLAGS} \
     -D__STDC_FORMAT_MACROS \
     -I$(srcdir)/include
 
-project_libs = ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${biosproto_LIBS} ${cxxtools_LIBS}
+project_libs = ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${fty_proto_LIBS} ${cxxtools_LIBS} ${tntdb_LIBS}
 
 SUBDIRS = doc
 DIST_SUBDIRS = doc
@@ -36,13 +37,20 @@ noinst_LTLIBRARIES =
 TESTS =
 
 EXTRA_DIST = \
+    CMakeLists.txt \
+    Findlibzmq.cmake \
+    Findczmq.cmake \
+    Findmalamute.cmake \
+    Findfty_proto.cmake \
+    Findcxxtools.cmake \
+    Findtntdb.cmake \
     src/metricinfo.h \
     src/calc_power.h \
     src/tpowerconfiguration.h \
     src/metriclist.h \
     src/tp_unit.h \
     src/proto_metric_unavailable.h \
-    src/agent_tpower_classes.h
+    src/fty_metric_tpower_classes.h
 
 include $(srcdir)/src/Makemodule.am
 
