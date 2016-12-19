@@ -30,10 +30,11 @@
 //  Set up environment for the application
 
 //  External dependencies
+#include <czmq.h>
 #include <malamute.h>
 #include <ftyproto.h>
-#include <cxxtools/api.h>
-#include <tntdb/connect.h>
+#include <cxxtools/allocator.h>
+#include <tntdb.h>
 
 //  FTY_METRIC_TPOWER version macros for compile-time API detection
 #define FTY_METRIC_TPOWER_VERSION_MAJOR 1

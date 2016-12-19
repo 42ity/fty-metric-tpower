@@ -22,7 +22,7 @@ endif (NOT MSVC)
 
 find_path (
     TNTDB_INCLUDE_DIRS
-    NAMES tntdb/connect.h
+    NAMES tntdb.h
     HINTS ${PC_TNTDB_INCLUDE_HINTS}
 )
 

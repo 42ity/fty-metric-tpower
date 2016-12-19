@@ -252,11 +252,11 @@ PKG_CHECK_MODULES([cxxtools], [cxxtools >= 0.0.0],
         cxxtools_synthetic_libs="-lcxxtools"
 
         if test "x$search_cxxtools" = "xyes"; then
-            if test -r "${with_cxxtools}/include/cxxtools/api.h"; then
+            if test -r "${with_cxxtools}/include/cxxtools/allocator.h"; then
                 cxxtools_synthetic_cflags="-I${with_cxxtools}/include"
                 cxxtools_synthetic_libs="-L${with_cxxtools}/lib -lcxxtools"
             else
-                AC_MSG_ERROR([${with_cxxtools}/include/cxxtools/api.h not found. Please check cxxtools prefix])
+                AC_MSG_ERROR([${with_cxxtools}/include/cxxtools/allocator.h not found. Please check cxxtools prefix])
             fi
         fi
 
@@ -299,16 +299,16 @@ PKG_CHECK_MODULES([tntdb], [tntdb >= 0.0.0],
         tntdb_synthetic_libs="-ltntdb"
 
         if test "x$search_tntdb" = "xyes"; then
-            if test -r "${with_tntdb}/include/tntdb/connect.h"; then
+            if test -r "${with_tntdb}/include/tntdb.h"; then
                 tntdb_synthetic_cflags="-I${with_tntdb}/include"
                 tntdb_synthetic_libs="-L${with_tntdb}/lib -ltntdb"
             else
-                AC_MSG_ERROR([${with_tntdb}/include/tntdb/connect.h not found. Please check tntdb prefix])
+                AC_MSG_ERROR([${with_tntdb}/include/tntdb.h not found. Please check tntdb prefix])
             fi
         fi
 
 
-        AC_CHECK_LIB([tntdb], [tntdb::connectCached],
+        AC_CHECK_LIB([tntdb], [tntdb::Date::gmtime],
             [
                 CFLAGS="${tntdb_synthetic_cflags} ${CFLAGS}"
                 LDFLAGS="${tntdb_synthetic_libs} ${LDFLAGS}"
