@@ -1,5 +1,5 @@
 /*  =========================================================================
-    agent-tpower - generated layer of public API
+    fty-metric-tpower - generated layer of public API
 
     Copyright (C) 2014 - 2015 Eaton                                        
                                                                            
@@ -24,51 +24,59 @@
     =========================================================================
 */
 
-#ifndef AGENT_TPOWER_LIBRARY_H_INCLUDED
-#define AGENT_TPOWER_LIBRARY_H_INCLUDED
+#ifndef FTY_METRIC_TPOWER_LIBRARY_H_INCLUDED
+#define FTY_METRIC_TPOWER_LIBRARY_H_INCLUDED
 
 //  Set up environment for the application
 
 //  External dependencies
 #include <malamute.h>
-#include <biosproto.h>
+#include <ftyproto.h>
+#include <cxxtools/api.h>
+#include <tntdb/connect.h>
 
-//  AGENT_TPOWER version macros for compile-time API detection
-#define AGENT_TPOWER_VERSION_MAJOR 0
-#define AGENT_TPOWER_VERSION_MINOR 1
-#define AGENT_TPOWER_VERSION_PATCH 0
+//  FTY_METRIC_TPOWER version macros for compile-time API detection
+#define FTY_METRIC_TPOWER_VERSION_MAJOR 1
+#define FTY_METRIC_TPOWER_VERSION_MINOR 0
+#define FTY_METRIC_TPOWER_VERSION_PATCH 0
 
-#define AGENT_TPOWER_MAKE_VERSION(major, minor, patch) \
+#define FTY_METRIC_TPOWER_MAKE_VERSION(major, minor, patch) \
     ((major) * 10000 + (minor) * 100 + (patch))
-#define AGENT_TPOWER_VERSION \
-    AGENT_TPOWER_MAKE_VERSION(AGENT_TPOWER_VERSION_MAJOR, AGENT_TPOWER_VERSION_MINOR, AGENT_TPOWER_VERSION_PATCH)
+#define FTY_METRIC_TPOWER_VERSION \
+    FTY_METRIC_TPOWER_MAKE_VERSION(FTY_METRIC_TPOWER_VERSION_MAJOR, FTY_METRIC_TPOWER_VERSION_MINOR, FTY_METRIC_TPOWER_VERSION_PATCH)
 
 #if defined (__WINDOWS__)
-#   if defined AGENT_TPOWER_STATIC
-#       define AGENT_TPOWER_EXPORT
-#   elif defined AGENT_TPOWER_INTERNAL_BUILD
+#   if defined FTY_METRIC_TPOWER_STATIC
+#       define FTY_METRIC_TPOWER_EXPORT
+#   elif defined FTY_METRIC_TPOWER_INTERNAL_BUILD
 #       if defined DLL_EXPORT
-#           define AGENT_TPOWER_EXPORT __declspec(dllexport)
+#           define FTY_METRIC_TPOWER_EXPORT __declspec(dllexport)
 #       else
-#           define AGENT_TPOWER_EXPORT
+#           define FTY_METRIC_TPOWER_EXPORT
 #       endif
-#   elif defined AGENT_TPOWER_EXPORTS
-#       define AGENT_TPOWER_EXPORT __declspec(dllexport)
+#   elif defined FTY_METRIC_TPOWER_EXPORTS
+#       define FTY_METRIC_TPOWER_EXPORT __declspec(dllexport)
 #   else
-#       define AGENT_TPOWER_EXPORT __declspec(dllimport)
+#       define FTY_METRIC_TPOWER_EXPORT __declspec(dllimport)
 #   endif
+#   define FTY_METRIC_TPOWER_PRIVATE
 #else
-#   define AGENT_TPOWER_EXPORT
+#   define FTY_METRIC_TPOWER_EXPORT
+#   if (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER
+#       define FTY_METRIC_TPOWER_PRIVATE __attribute__ ((visibility ("hidden")))
+#   else
+#       define FTY_METRIC_TPOWER_PRIVATE
+#   endif
 #endif
 
 //  Opaque class structures to allow forward references
 //  These classes are stable or legacy and built in all releases
-typedef struct _bios_agent_tpower_server_t bios_agent_tpower_server_t;
-#define BIOS_AGENT_TPOWER_SERVER_T_DEFINED
+typedef struct _fty_metric_tpower_server_t fty_metric_tpower_server_t;
+#define FTY_METRIC_TPOWER_SERVER_T_DEFINED
 
 
 //  Public classes, each with its own header file
-#include "bios_agent_tpower_server.h"
+#include "fty_metric_tpower_server.h"
 
 #endif
 /*

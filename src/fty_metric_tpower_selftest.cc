@@ -1,5 +1,5 @@
 /*  =========================================================================
-    agent_tpower_selftest.c - run selftests
+    fty_metric_tpower_selftest.c - run selftests
 
     Runs all selftests.
 
@@ -27,7 +27,7 @@
     =========================================================================
 */
 
-#include "agent_tpower_classes.h"
+#include "fty_metric_tpower_classes.h"
 
 typedef struct {
     const char *testname;
@@ -36,13 +36,7 @@ typedef struct {
 
 static test_item_t
 all_tests [] = {
-    { "metricinfo", metricinfo_test },
-    { "calc_power", calc_power_test },
-    { "tpowerconfiguration", tpowerconfiguration_test },
-    { "metriclist", metriclist_test },
-    { "tp_unit", tp_unit_test },
-    { "proto_metric_unavailable", proto_metric_unavailable_test },
-    { "bios_agent_tpower_server", bios_agent_tpower_server_test },
+    { "fty_metric_tpower_server", fty_metric_tpower_server_test },
     {0, 0}          //  Sentinel
 };
 
@@ -70,7 +64,7 @@ static void
 test_runall (bool verbose)
 {
     test_item_t *item;
-    printf ("Running agent-tpower selftests...\n");
+    printf ("Running fty-metric-tpower selftests...\n");
     for (item = all_tests; item->test; item++)
         item->test (verbose);
 
@@ -86,7 +80,7 @@ main (int argc, char **argv)
     for (argn = 1; argn < argc; argn++) {
         if (streq (argv [argn], "--help")
         ||  streq (argv [argn], "-h")) {
-            puts ("agent_tpower_selftest.c [options] ...");
+            puts ("fty_metric_tpower_selftest.c [options] ...");
             puts ("  --verbose / -v         verbose test output");
             puts ("  --number / -n          report number of tests");
             puts ("  --list / -l            list all tests");
@@ -113,7 +107,7 @@ main (int argc, char **argv)
             puts ("    metriclist");
             puts ("    tp_unit");
             puts ("    proto_metric_unavailable");
-            puts ("    bios_agent_tpower_server");
+            puts ("    fty_metric_tpower_server");
             return 0;
         }
         else
@@ -144,7 +138,7 @@ main (int argc, char **argv)
         }
     }
     if (test) {
-        printf ("Running agent-tpower test '%s'...\n", test->testname);
+        printf ("Running fty-metric-tpower test '%s'...\n", test->testname);
         test->test (verbose);
     }
     else

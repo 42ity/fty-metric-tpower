@@ -1,5 +1,5 @@
 /*  =========================================================================
-    bios_agent_tpower - Evaluates some metrics and produces new power metrics
+    fty_metric_tpower - Evaluates some metrics and produces new power metrics
 
     Copyright (C) 2014 - 2015 Eaton
 
@@ -21,12 +21,12 @@
 
 /*
 @header
-    bios_agent_tpower - Evaluates some metrics and produces new power metrics
+    fty_metric_tpower - Evaluates some metrics and produces new power metrics
 @discuss
 @end
 */
 
-#include "agent_tpower_classes.h"
+#include "fty_metric_tpower_classes.h"
 
 #include <getopt.h>
 
@@ -91,9 +91,9 @@ int main (int argc, char *argv [])
         exit(1);
     }
 
-    zsys_info ("bios_agent_tpower STARTED");
+    zsys_info ("fty_metric_tpower STARTED");
 
-    zactor_t *tpower_server = zactor_new (bios_agent_tpower_server, (void*) AGENT_NAME);
+    zactor_t *tpower_server = zactor_new (fty_metric_tpower_server, (void*) AGENT_NAME);
     if ( !tpower_server ) {
         zsys_error ("cannot start the daemon");
         exit(1);
@@ -129,6 +129,6 @@ int main (int argc, char *argv [])
     }
 
     zactor_destroy (&tpower_server);
-    zsys_info ("bios_agent_tpower ENDED");
+    zsys_info ("fty_metric_tpower ENDED");
     return 0;
 }

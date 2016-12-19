@@ -1,5 +1,5 @@
 /*  =========================================================================
-    bios_agent_tpower_server - Actor generating new metrics
+    agent-tpower - Computes power metrics
 
     Copyright (C) 2014 - 2015 Eaton
 
@@ -19,24 +19,12 @@
     =========================================================================
 */
 
-#ifndef BIOS_AGENT_TPOWER_SERVER_H_INCLUDED
-#define BIOS_AGENT_TPOWER_SERVER_H_INCLUDED
+#ifndef AGENT_TPOWER_H_H_INCLUDED
+#define AGENT_TPOWER_H_H_INCLUDED
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+//  Include the project library file
+#include "fty_metric_tpower_library.h"
 
-//  @interface
-AGENT_TPOWER_EXPORT void
-   bios_agent_tpower_server (zsock_t *pipe, void* args);
-
-//  Self test of this class
-AGENT_TPOWER_EXPORT void
-    bios_agent_tpower_server_test (bool verbose);
-//  @end
-
-#ifdef __cplusplus
-}
-#endif
+//  Add your own public definitions here, if you need them
 
 #endif

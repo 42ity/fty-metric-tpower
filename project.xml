@@ -1,27 +1,31 @@
 <project
-    name = "agent-tpower"
-    description = "Computes power metrics"
+    name = "fty-metric-tpower"
+    description = "42ity component for power metrics computation"
     script = "zproject.gsl"
-    email = "bios@eaton.com"
-    url = "https://eaton.com/"
+    email = "EatonIPCOpenSource@eaton.com"
+    url = "https://42ity.org"
+    repository = "https://github.com/42ity/fty-metric-tpower"
     license = "GPL-2.0+"
     >
 
     <target name = "debian" />
     <target name = "redhat" />
+    <target name = "travis" />
 
     <include filename = "license.xml" />
-    <version major = "0" minor = "1" patch = "0" />
+    <version major = "1" minor = "0" patch = "0" />
+
     <use project = "malamute" />
 
-    <use project = "biosproto" libname = "libbiosproto" prefix="biosproto"
-        min_major = "0" min_minor = "0" min_patch = "0"
-        repository = "https://stash.mbt.lab.etn.com/BIOS/libbiosproto"
-        test = "bios_proto_test">
+    <use project = "fty-proto" libname = "libfty_proto" header="ftyproto.h"
+        min_major = "1" min_minor = "0" min_patch = "0"
+        repository = "https://github.com/42ity/fty-proto"
+        test = "fty_proto_test">
         <use project = "malamute"/>
     </use>
 
-    <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec"/>
+    <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec" header="cxxtools/api.h" />
+    <use project = "tntdb" test="tntdb::connectCached" header="tntdb/connect.h" />
 
     <class name = "metricinfo" private="1"> Measurement</class>
     <class name = "calc_power" private="1"> Power calculation</class>
@@ -29,9 +33,8 @@
     <class name = "metriclist" private="1"> metriclist</class>
     <class name = "tp-unit" private="1"> Power unit </class>
     <class name = "proto-metric-unavailable"    private = "1">metric unavailable protocol send part</class>
-    <class name = "bios_agent_tpower_server" state = "stable" >Actor generating new metrics</class>
-    <main name = "bios-agent-tpower" service = "1">
+    <class name = "fty_metric_tpower_server" state = "stable" >Actor generating new metrics</class>
+    <main name = "fty-metric-tpower" service = "1">
         Evaluates some metrics and produces new power metrics
     </main>
-
 </project>

@@ -1,5 +1,5 @@
 /*  =========================================================================
-    agent_tpower_classes - private header file
+    fty_metric_tpower_classes - private header file
 
     Copyright (C) 2014 - 2015 Eaton                                        
                                                                            
@@ -23,14 +23,14 @@
     =========================================================================
 */
 
-#ifndef AGENT_TPOWER_CLASSES_H_INCLUDED
-#define AGENT_TPOWER_CLASSES_H_INCLUDED
+#ifndef FTY_METRIC_TPOWER_CLASSES_H_INCLUDED
+#define FTY_METRIC_TPOWER_CLASSES_H_INCLUDED
 
 //  Platform definitions, must come first
 #include "platform.h"
 
 //  External API
-#include "../include/agent_tpower.h"
+#include "../include/fty_metric_tpower.h"
 
 //  Internal API
 #include "metricinfo.h"
@@ -41,38 +41,38 @@
 #include "proto_metric_unavailable.h"
 
 //  *** To avoid double-definitions, only define if building without draft ***
-#ifndef AGENT_TPOWER_BUILD_DRAFT_API
+#ifndef FTY_METRIC_TPOWER_BUILD_DRAFT_API
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-AGENT_TPOWER_EXPORT void
+FTY_METRIC_TPOWER_PRIVATE void
     metricinfo_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-AGENT_TPOWER_EXPORT void
+FTY_METRIC_TPOWER_PRIVATE void
     calc_power_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-AGENT_TPOWER_EXPORT void
+FTY_METRIC_TPOWER_PRIVATE void
     tpowerconfiguration_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-AGENT_TPOWER_EXPORT void
+FTY_METRIC_TPOWER_PRIVATE void
     metriclist_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-AGENT_TPOWER_EXPORT void
+FTY_METRIC_TPOWER_PRIVATE void
     tp_unit_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-AGENT_TPOWER_EXPORT void
+FTY_METRIC_TPOWER_PRIVATE void
     proto_metric_unavailable_test (bool verbose);
 
-#endif // AGENT_TPOWER_BUILD_DRAFT_API
+#endif // FTY_METRIC_TPOWER_BUILD_DRAFT_API
 
 #endif

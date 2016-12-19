@@ -1,5 +1,5 @@
 /*  =========================================================================
-    bios_agent_tpower_server - Actor generating new metrics
+    fty_metric_tpower_server - Actor generating new metrics
 
     Copyright (C) 2014 - 2015 Eaton
 
@@ -21,7 +21,7 @@
 
 /*
 @header
-    bios_agent_tpower_server - Actor generating new metrics
+    fty_metric_tpower_server - Actor generating new metrics
 @discuss
 @end
 */
@@ -30,7 +30,7 @@ int agent_tpower_verbose = 0;
 #define zsys_debug1(...) \
     do { if (agent_tpower_verbose) zsys_debug (__VA_ARGS__); } while (0);
 
-#include "agent_tpower_classes.h"
+#include "fty_metric_tpower_classes.h"
 #include <string>
 // ============================================================
 //         Functionality for METRIC processing and publishing
@@ -40,7 +40,7 @@ bool send_metrics (mlm_client_t* client, const MetricInfo &M){
     zhash_t *aux = zhash_new();
     zhash_autofree(aux);
     zhash_insert(aux, "time", (char *) std::to_string(M.getTimestamp()).c_str());
-    zmsg_t *msg = bios_proto_encode_metric (
+    zmsg_t *msg = fty_proto_encode_metric (
             aux,
             M.getSource().c_str(),
             M.getElementName().c_str(),
@@ -61,11 +61,11 @@ static void
     s_processMetric(
         TotalPowerConfiguration &config,
         const std::string &topic,
-        bios_proto_t **bmessage_p)
+        fty_proto_t **bmessage_p)
 {
-    bios_proto_t *bmessage = *bmessage_p;
+    fty_proto_t *bmessage = *bmessage_p;
 
-    const char *value = bios_proto_value(bmessage);
+    const char *value = fty_proto_value(bmessage);
     char *end;
     double dvalue = strtod (value, &end);
     if (errno == ERANGE) {
@@ -78,12 +78,12 @@ static void
         return;
     }
 
-    const char *type = bios_proto_type(bmessage);
-    const char *element_src = bios_proto_element_src(bmessage);
-    const char *unit = bios_proto_unit(bmessage);
-    uint32_t ttl = bios_proto_ttl(bmessage);
+    const char *type = fty_proto_type(bmessage);
+    const char *element_src = fty_proto_element_src(bmessage);
+    const char *unit = fty_proto_unit(bmessage);
+    uint32_t ttl = fty_proto_ttl(bmessage);
     // time is a time, when message is delivered
-    uint64_t timestamp = bios_proto_aux_number(bmessage, "time", ::time(NULL));
+    uint64_t timestamp = fty_proto_aux_number(bmessage, "time", ::time(NULL));
 
     zsys_debug1("Got message '%s' with value %s\n", topic.c_str(), value);
 
@@ -98,15 +98,15 @@ static void
     s_processAsset(
         TotalPowerConfiguration &config,
         const std::string &topic,
-        bios_proto_t **bmessage_p)
+        fty_proto_t **bmessage_p)
 {
-    //bios_proto_t *bmessage = *bmessage_p;
+    //fty_proto_t *bmessage = *bmessage_p;
     config.processAsset (topic);
     zsys_info ("ASSET PROCESSED");
 }
 
 void
-bios_agent_tpower_server (zsock_t *pipe, void* args)
+fty_metric_tpower_server (zsock_t *pipe, void* args)
 {
     bool verbose = false;
 
@@ -221,22 +221,22 @@ bios_agent_tpower_server (zsock_t *pipe, void* args)
         // as message
 
 
-        if (is_bios_proto (zmessage)) {
-            bios_proto_t *bmessage = bios_proto_decode (&zmessage);
+        if (is_fty_proto (zmessage)) {
+            fty_proto_t *bmessage = fty_proto_decode (&zmessage);
             if (!bmessage) {
-                zsys_error ("cannot decode bios_proto message, ignore it");
+                zsys_error ("cannot decode fty_proto message, ignore it");
                 continue;
             }
-            if (bios_proto_id (bmessage) == BIOS_PROTO_METRIC)  {
+            if (fty_proto_id (bmessage) == FTY_PROTO_METRIC)  {
                 s_processMetric (tpower_conf, topic, &bmessage);
             }
-            else if (bios_proto_id (bmessage) == BIOS_PROTO_ASSET)  {
+            else if (fty_proto_id (bmessage) == FTY_PROTO_ASSET)  {
                 s_processAsset (tpower_conf, topic, &bmessage);
             }
             else {
                 zsys_error ("it is not an alert message, ignore it");
             }
-            bios_proto_destroy (&bmessage);
+            fty_proto_destroy (&bmessage);
         }
         else {
             zsys_error ("not bios proto");
@@ -258,9 +258,9 @@ exit:
 //  Self test of this class
 
 void
-bios_agent_tpower_server_test (bool verbose)
+fty_metric_tpower_server_test (bool verbose)
 {
-    printf (" * bios_agent_tpower_server: ");
+    printf (" * fty_metric_tpower_server: ");
 
     //  @selftest
     static const char* endpoint = "inproc://bios-tpower-server-test";
@@ -285,15 +285,15 @@ bios_agent_tpower_server_test (bool verbose)
     zmsg_t *msg = mlm_client_recv (consumer);
     assert ( msg != NULL);
     assert ( M.generateTopic() == std::string(mlm_client_subject(consumer)));
-    assert ( is_bios_proto (msg));
-    bios_proto_t *bmessage = bios_proto_decode (&msg);
-    bios_proto_print(bmessage);
+    assert ( is_fty_proto (msg));
+    fty_proto_t *bmessage = fty_proto_decode (&msg);
+    fty_proto_print(bmessage);
     assert ( bmessage != NULL );
-    assert ( bios_proto_id (bmessage) == BIOS_PROTO_METRIC );
-    uint64_t timestamp_new = bios_proto_aux_number(bmessage, "time", ::time(NULL));
+    assert ( fty_proto_id (bmessage) == FTY_PROTO_METRIC );
+    uint64_t timestamp_new = fty_proto_aux_number(bmessage, "time", ::time(NULL));
     assert ( timestamp == timestamp_new);
 
-    bios_proto_destroy (&bmessage);
+    fty_proto_destroy (&bmessage);
     zmsg_destroy (&msg);
     mlm_client_destroy (&consumer);
     mlm_client_destroy (&producer);
