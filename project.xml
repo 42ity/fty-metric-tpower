@@ -29,8 +29,8 @@
         release = "42ity"
     />
     <use project = "tntdb" test="tntdb::Date::gmtime"
-        repository = "https://github.com/maekitalo/tntdb"
-        release = "master"
+        repository = "https://github.com/42ity/tntdb"
+        release = "1.3"
     />
     <!-- use project = "tntdb" test="tntdb::connectCached" header="tntdb/connect.h" / -->
 
