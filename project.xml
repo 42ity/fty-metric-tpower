@@ -30,7 +30,7 @@
     />
     <use project = "tntdb" test="tntdb::Date::gmtime"
         repository = "https://github.com/maekitalo/tntdb"
-        release = "1.3"
+        release = "master"
         builddir = "tntdb">
     </use>
     <!-- use project = "tntdb" test="tntdb::connectCached" header="tntdb/connect.h" / -->
