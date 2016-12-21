@@ -1,0 +1,11 @@
+[Unit]
+Description=fty-metric-tpower service
+After=network.target
+
+[Service]
+Type=simple
+Environment="prefix=@prefix@"
+ExecStart=@prefix@/bin/fty-metric-tpower @sysconfdir@/@PACKAGE@/fty-metric-tpower.cfg
+
+[Install]
+WantedBy=multi-user.target

@@ -26,7 +26,7 @@
 @end
 */
 
-#include "agent_tpower_classes.h"
+#include "fty_metric_tpower_classes.h"
 
 
 //  --------------------------------------------------------------------------
