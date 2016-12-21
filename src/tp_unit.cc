@@ -22,7 +22,7 @@ extern int agent_tpower_verbose;
     do { if (agent_tpower_verbose) zsys_debug (__VA_ARGS__); } while (0);
 
 
-#include "agent_tpower_classes.h"
+#include "fty_metric_tpower_classes.h"
 #include <ctime>
 #include <exception>
 

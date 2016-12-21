@@ -23,7 +23,7 @@ DRAFTS=yes
 endif
 
 override_dh_strip:
-	dh_strip --dbg-package=agent-tpower-dbg
+	dh_strip --dbg-package=fty-metric-tpower-dbg
 
 override_dh_auto_test:
 	echo "Skipped for now"
