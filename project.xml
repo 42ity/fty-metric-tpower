@@ -31,8 +31,7 @@
     <use project = "tntdb" test="tntdb::Date::gmtime"
         repository = "https://github.com/maekitalo/tntdb"
         release = "master"
-        builddir = "tntdb">
-    </use>
+    />
     <!-- use project = "tntdb" test="tntdb::connectCached" header="tntdb/connect.h" / -->
 
     <class name = "metricinfo" private="1"> Measurement</class>
