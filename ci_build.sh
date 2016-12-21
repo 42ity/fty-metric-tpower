@@ -140,6 +140,10 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     git --no-pager log --oneline -n1
     if [ -e autogen.sh ]; then
         ./autogen.sh 2> /dev/null
+    else
+        if [ -e configure.ac -o -e configure.in ]; then
+            autoreconf -fiv
+        fi
     fi
     if [ -e buildconf ]; then
         ./buildconf 2> /dev/null
