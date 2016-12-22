@@ -136,7 +136,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     cd "${BASE_PWD}"
     git clone --quiet --depth 1 -b 1.3 https://github.com/42ity/tntdb tntdb.git
     BASE_PWD=${PWD}
-    cd tntdb.git
+    cd tntdb.git/tntdb
     git --no-pager log --oneline -n1
     if [ -e autogen.sh ]; then
         ./autogen.sh 2> /dev/null
