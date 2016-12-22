@@ -74,6 +74,14 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     if [ -e buildconf ]; then
         ./buildconf 2> /dev/null
     fi
+    if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+        libtoolize --copy --force && \
+        aclocal -I . && \
+        autoheader && \
+        automake --add-missing --copy && \
+        autoconf || \
+        autoreconf -fiv
+    fi
     ./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
@@ -87,6 +95,14 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     fi
     if [ -e buildconf ]; then
         ./buildconf 2> /dev/null
+    fi
+    if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+        libtoolize --copy --force && \
+        aclocal -I . && \
+        autoheader && \
+        automake --add-missing --copy && \
+        autoconf || \
+        autoreconf -fiv
     fi
     ./configure "${CONFIG_OPTS[@]}"
     make -j4
@@ -102,6 +118,14 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     if [ -e buildconf ]; then
         ./buildconf 2> /dev/null
     fi
+    if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+        libtoolize --copy --force && \
+        aclocal -I . && \
+        autoheader && \
+        automake --add-missing --copy && \
+        autoconf || \
+        autoreconf -fiv
+    fi
     ./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
@@ -115,6 +139,14 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     fi
     if [ -e buildconf ]; then
         ./buildconf 2> /dev/null
+    fi
+    if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+        libtoolize --copy --force && \
+        aclocal -I . && \
+        autoheader && \
+        automake --add-missing --copy && \
+        autoconf || \
+        autoreconf -fiv
     fi
     ./configure "${CONFIG_OPTS[@]}"
     make -j4
@@ -130,6 +162,14 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     if [ -e buildconf ]; then
         ./buildconf 2> /dev/null
     fi
+    if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+        libtoolize --copy --force && \
+        aclocal -I . && \
+        autoheader && \
+        automake --add-missing --copy && \
+        autoconf || \
+        autoreconf -fiv
+    fi
     ./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
@@ -144,12 +184,20 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     if [ -e buildconf ]; then
         ./buildconf 2> /dev/null
     fi
+    if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+        libtoolize --copy --force && \
+        aclocal -I . && \
+        autoheader && \
+        automake --add-missing --copy && \
+        autoconf || \
+        autoreconf -fiv
+    fi
     ./configure "${CONFIG_OPTS[@]}"
     make -j4
     make install
     cd "${BASE_PWD}"
 
-    # Build and check this project
+    # Build and check this project; note that zprojects always have an autogen.sh
     ./autogen.sh 2> /dev/null
     ./configure --enable-drafts=yes "${CONFIG_OPTS[@]}"
     make VERBOSE=1 all
