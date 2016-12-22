@@ -134,16 +134,12 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] ; the
     make -j4
     make install
     cd "${BASE_PWD}"
-    git clone --quiet --depth 1 -b master https://github.com/maekitalo/tntdb tntdb.git
+    git clone --quiet --depth 1 -b 1.3 https://github.com/42ity/tntdb tntdb.git
     BASE_PWD=${PWD}
     cd tntdb.git
     git --no-pager log --oneline -n1
     if [ -e autogen.sh ]; then
         ./autogen.sh 2> /dev/null
-    else
-        if [ -e configure.ac -o -e configure.in ]; then
-            autoreconf -fiv
-        fi
     fi
     if [ -e buildconf ]; then
         ./buildconf 2> /dev/null

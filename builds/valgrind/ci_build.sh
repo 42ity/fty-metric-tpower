@@ -88,7 +88,7 @@ fi
 make -j4
 make install
 cd ..
-git clone --quiet --depth 1 -b master https://github.com/maekitalo/tntdb tntdb.git
+git clone --quiet --depth 1 -b 1.3 https://github.com/42ity/tntdb tntdb.git
 cd tntdb.git
 git --no-pager log --oneline -n1
 if [ -e autogen.sh ]; then
