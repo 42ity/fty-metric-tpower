@@ -19,13 +19,18 @@ save.xml
 *.lo
 
 # Executables
-src/tpower_selftest
-src/bios_agent_tpower
-src/tpower_selftest
+src/fty-metric-tpower_selftest
+src/fty-metric-tpower
+src/fty_metric_tpower_selftest
 *.exe
 *.out
 *.app
 core
+
+ # Distcheck workspace and archives
+fty-metric-tpower-1.0.0/
+fty-metric-tpower-1.0.0.tar.gz
+fty-metric-tpower-1.0.0.zip
 
 # Man pages
 doc/*.1
@@ -59,10 +64,20 @@ CMakeCache.txt
 CMakeFiles/
 CTestTestfile.cmake
 cmake_install.cmake
+compile_commands.json
+DartConfiguration.tcl
 install_manifest.txt
 Testing/
-*.cmake
-CMakeLists.txt
+
+# Repositories downloaded by CI integration scripts
+*.git/
+
+# Travis build area
+tmp/
+
+# Valgrind files
+callgrind*
+vgcore*
 
 # GYP files
 project.Makefile
@@ -81,6 +96,24 @@ src/app/local.properties
 # Android -dependencies
 src/app/jni/output
 
+# Python build directory
+build/
+
+# MSVC build directories
+obj/
+bin/
+*.tlog
+
+# Qt
+*pro.user
+moc_*
+build-*
+bindings/qt/selftest/selftest
+
 # Temporary files
 *.swp
+*.bak
+.test*
+
+# editor backups
 *~

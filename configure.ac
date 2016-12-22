@@ -506,6 +506,15 @@ AM_CONDITIONAL(ON_GNU, test "x$fty_metric_tpower_on_gnu" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$fty_metric_tpower_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$fty_metric_tpower_build_doc" = "xyes")
 
+AC_ARG_ENABLE([dist_cmakefiles],
+    AS_HELP_STRING([--enable-dist_cmakefiles],
+        [Distribute CMakeLists.txt and related files [default depends: on if present]]),
+    [enable_dist_cmakefiles=$enableval],
+    [AC_MSG_CHECKING([for presence of CMake recipes])
+     AC_CHECK_FILE($srcdir/CMakeLists.txt, [enable_dist_cmakefiles=yes], [enable_dist_cmakefiles=no])
+     AC_MSG_RESULT([$enable_dist_cmakefiles])])
+AM_CONDITIONAL(ENABLE_DIST_CMAKEFILES, test "x$enable_dist_cmakefiles" = "xyes")
+
 # Check for fty-metric-tpower intent
 AC_ARG_ENABLE([fty-metric-tpower],
     AS_HELP_STRING([--enable-fty-metric-tpower],
@@ -660,7 +669,7 @@ echo
 echo '##########################################################################'
 
 echo
-echo Configure complete! Now procced with:
+echo Configure complete! Now proceed with:
 echo "    - 'make'               compile the project"
 echo "    - 'make check'         run the project's selftest"
 echo "    - 'make install'       install the project to $prefix"

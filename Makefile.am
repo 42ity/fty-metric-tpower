@@ -35,15 +35,20 @@ noinst_PROGRAMS =
 check_PROGRAMS =
 noinst_LTLIBRARIES =
 TESTS =
+EXTRA_DIST =
 
-EXTRA_DIST = \
-    CMakeLists.txt \
+if ENABLE_DIST_CMAKEFILES
+EXTRA_DIST += \
     Findlibzmq.cmake \
     Findczmq.cmake \
     Findmalamute.cmake \
     Findfty_proto.cmake \
     Findcxxtools.cmake \
     Findtntdb.cmake \
+    CMakeLists.txt
+endif
+
+EXTRA_DIST += \
     src/metricinfo.h \
     src/calc_power.h \
     src/tpowerconfiguration.h \
