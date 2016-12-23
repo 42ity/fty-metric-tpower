@@ -239,7 +239,7 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
             fty_proto_destroy (&bmessage);
         }
         else {
-            zsys_error ("not bios proto");
+            zsys_error ("not fty proto");
         }
 
         // listen
