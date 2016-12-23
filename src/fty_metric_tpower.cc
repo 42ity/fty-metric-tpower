@@ -41,10 +41,10 @@ static const char *ENDPOINT = "ipc://@/malamute";
 
 void usage ()
 {
-    puts ("bios-agent-tpower [options]\n"
+    puts ("fty-metric-tpower [options]\n"
           "  -v|--verbose          verbose test output\n"
           "  -h|--help             print this information\n"
-          "Environment variables for paremeters are BIOS_LOG_LEVEL.\n"
+          "Environment variables for parameters are FTY_LOG_LEVEL.\n"
           "Command line option takes precedence over variable.");
 }
 
@@ -54,8 +54,8 @@ int main (int argc, char *argv [])
     int help = 0;
 
     // set defaults
-    char* bios_log_level = getenv ("BIOS_LOG_LEVEL");
-    if ( bios_log_level && streq (bios_log_level, "LOG_DEBUG") ) {
+    char* fty_log_level = getenv ("FTY_LOG_LEVEL");
+    if ( fty_log_level && streq (fty_log_level, "LOG_DEBUG") ) {
         verbose = 1;
     }
 
