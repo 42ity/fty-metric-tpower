@@ -5,7 +5,13 @@ After=network.target
 [Service]
 Type=simple
 Environment="prefix=@prefix@"
+EnvironmentFile=-/etc/default/bios-db-ro
+EnvironmentFile=-/usr/share/bios/etc/default/bios
+EnvironmentFile=-/usr/share/bios/etc/default/fty__%n.conf
+EnvironmentFile=-/etc/default/bios
+EnvironmentFile=-/etc/default/fty__%n.conf
 ExecStart=@prefix@/bin/fty-metric-tpower @sysconfdir@/@PACKAGE@/fty-metric-tpower.cfg
+Restart=always
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=bios.target
