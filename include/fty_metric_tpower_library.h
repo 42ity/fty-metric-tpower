@@ -79,6 +79,12 @@ typedef struct _fty_metric_tpower_server_t fty_metric_tpower_server_t;
 //  Public classes, each with its own header file
 #include "fty_metric_tpower_server.h"
 
+#ifdef FTY_METRIC_TPOWER_BUILD_DRAFT_API
+//  Self test for private classes
+FTY_METRIC_TPOWER_EXPORT void
+    fty_metric_tpower_private_selftest (bool verbose);
+#endif // FTY_METRIC_TPOWER_BUILD_DRAFT_API
+
 #endif
 /*
 ################################################################################

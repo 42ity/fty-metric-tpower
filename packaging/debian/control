@@ -24,20 +24,18 @@ Maintainer:     fty-metric-tpower Developers <eatonipcopensource@eaton.com>
 Standards-Version: 3.9.7
 Build-Depends: debhelper (>= 9),
     pkg-config,
-    dh-autoreconf,
     libzmq3-dev,
     libczmq-dev,
     libmlm-dev,
     libfty-proto-dev,
     libcxxtools-dev,
     libtntdb-dev,
-# necessary for systemd.pc to get unit install path
     systemd,
     dh-systemd,
-Build-Depends-Indep: asciidoc,
-                     xmlto
+    asciidoc-base | asciidoc, xmlto,
+    dh-autoreconf
 
-Package: libfty-metric-tpower1
+Package: libfty-metric-tpower0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: 42ity component for power metrics computation shared library
@@ -53,13 +51,13 @@ Depends:
     libfty-proto-dev,
     libcxxtools-dev,
     libtntdb-dev,
-    libfty-metric-tpower1 (= ${binary:Version})
+    libfty-metric-tpower0 (= ${binary:Version})
 Description: 42ity component for power metrics computation development tools
  This package contains development files for fty-metric-tpower: 42ity component for power metrics computation
 
 Package: fty-metric-tpower
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends},
 Description: 42ity component for power metrics computation
  Main package for fty-metric-tpower: 42ity component for power metrics computation
 
