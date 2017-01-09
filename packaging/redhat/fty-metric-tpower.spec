@@ -61,17 +61,17 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 %description
 fty-metric-tpower 42ity component for power metrics computation.
 
-%package -n libfty_metric_tpower1
+%package -n libfty_metric_tpower0
 Group:          System/Libraries
 Summary:        42ity component for power metrics computation shared library
 
-%description -n libfty_metric_tpower1
+%description -n libfty_metric_tpower0
 This package contains shared library for fty-metric-tpower: 42ity component for power metrics computation
 
-%post -n libfty_metric_tpower1 -p /sbin/ldconfig
-%postun -n libfty_metric_tpower1 -p /sbin/ldconfig
+%post -n libfty_metric_tpower0 -p /sbin/ldconfig
+%postun -n libfty_metric_tpower0 -p /sbin/ldconfig
 
-%files -n libfty_metric_tpower1
+%files -n libfty_metric_tpower0
 %defattr(-,root,root)
 %doc COPYING
 %{_libdir}/libfty_metric_tpower.so.*
@@ -79,7 +79,7 @@ This package contains shared library for fty-metric-tpower: 42ity component for 
 %package devel
 Summary:        42ity component for power metrics computation
 Group:          System/Libraries
-Requires:       libfty_metric_tpower1 = %{version}
+Requires:       libfty_metric_tpower0 = %{version}
 Requires:       zeromq-devel
 Requires:       czmq-devel
 Requires:       malamute-devel
@@ -97,6 +97,7 @@ This package contains development files for fty-metric-tpower: 42ity component f
 %{_libdir}/libfty_metric_tpower.so
 %{_libdir}/pkgconfig/libfty_metric_tpower.pc
 %{_mandir}/man3/*
+%{_mandir}/man7/*
 
 %prep
 %setup -q
@@ -119,15 +120,15 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/fty-metric-tpower
 %{_mandir}/man1/fty-metric-tpower*
 %config(noreplace) %{_sysconfdir}/fty-metric-tpower/fty-metric-tpower.cfg
-/usr/lib/systemd/system/fty-metric-tpower.service
+/usr/lib/systemd/system/fty-metric-tpower{,@*}.{service,*}
 %dir %{_sysconfdir}/fty-metric-tpower
 %if 0%{?suse_version} > 1315
 %post
-%systemd_post fty-metric-tpower.service
+%systemd_post fty-metric-tpower{,@*}.{service,*}
 %preun
-%systemd_preun fty-metric-tpower.service
+%systemd_preun fty-metric-tpower{,@*}.{service,*}
 %postun
-%systemd_postun_with_restart fty-metric-tpower.service
+%systemd_postun_with_restart fty-metric-tpower{,@*}.{service,*}
 %endif
 
 %changelog

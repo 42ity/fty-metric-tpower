@@ -73,6 +73,10 @@ FTY_METRIC_TPOWER_PRIVATE void
 FTY_METRIC_TPOWER_PRIVATE void
     proto_metric_unavailable_test (bool verbose);
 
+//  Self test for private classes
+FTY_METRIC_TPOWER_PRIVATE void
+    fty_metric_tpower_private_selftest (bool verbose);
+
 #endif // FTY_METRIC_TPOWER_BUILD_DRAFT_API
 
 #endif

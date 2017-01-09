@@ -31,12 +31,12 @@ AC_SUBST(PACKAGE_VERSION)
 #
 # Libtool -version-info (ABI version)
 #
-# Currently 2.0.1 ("stable"). Don't change this unless you
+# Currently 0:0:0 ("stable"). Don't change this unless you
 # know exactly what you're doing and have read and understand
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 #
 # libfty_metric_tpower -version-info
-LTVER="1:0:0"
+LTVER="0:0:0"
 AC_SUBST(LTVER)
 
 # Capture c flags
@@ -508,10 +508,14 @@ AM_CONDITIONAL(BUILD_DOC, test "x$fty_metric_tpower_build_doc" = "xyes")
 
 AC_ARG_ENABLE([dist_cmakefiles],
     AS_HELP_STRING([--enable-dist_cmakefiles],
-        [Distribute CMakeLists.txt and related files [default depends: on if present]]),
+        [Distribute CMakeLists.txt and related files [default depends: on if present and not cross compiling]]),
     [enable_dist_cmakefiles=$enableval],
     [AC_MSG_CHECKING([for presence of CMake recipes])
+if test "x$cross_compiling" = "xyes"; then
+     enable_dist_cmakefiles=no
+else
      AC_CHECK_FILE($srcdir/CMakeLists.txt, [enable_dist_cmakefiles=yes], [enable_dist_cmakefiles=no])
+fi
      AC_MSG_RESULT([$enable_dist_cmakefiles])])
 AM_CONDITIONAL(ENABLE_DIST_CMAKEFILES, test "x$enable_dist_cmakefiles" = "xyes")
 

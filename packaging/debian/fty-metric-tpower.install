@@ -1,5 +1,5 @@
 usr/bin/fty-metric-tpower
 usr/share/man/man1/fty-metric-tpower.1
 etc/fty-metric-tpower/fty-metric-tpower.cfg
-lib/systemd/system/fty-metric-tpower.service
+lib/systemd/system/fty-metric-tpower{,@*}.{service,*}
 

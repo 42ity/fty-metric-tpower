@@ -36,7 +36,11 @@ typedef struct {
 
 static test_item_t
 all_tests [] = {
+// Tests for stable public classes:
     { "fty_metric_tpower_server", fty_metric_tpower_server_test },
+#ifdef FTY_METRIC_TPOWER_BUILD_DRAFT_API
+    { "private_classes", fty_metric_tpower_private_selftest },
+#endif // FTY_METRIC_TPOWER_BUILD_DRAFT_API
     {0, 0}          //  Sentinel
 };
 
@@ -101,13 +105,8 @@ main (int argc, char **argv)
         if (streq (argv [argn], "--list")
         ||  streq (argv [argn], "-l")) {
             puts ("Available tests:");
-            puts ("    metricinfo");
-            puts ("    calc_power");
-            puts ("    tpowerconfiguration");
-            puts ("    metriclist");
-            puts ("    tp_unit");
-            puts ("    proto_metric_unavailable");
-            puts ("    fty_metric_tpower_server");
+            puts ("    fty_metric_tpower_server\t\t- stable");
+            puts ("    private_classes\t- draft");
             return 0;
         }
         else
