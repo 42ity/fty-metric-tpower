@@ -1,7 +1,7 @@
 /*  =========================================================================
     fty_metric_tpower_classes - private header file
 
-    Copyright (C) 2014 - 2015 Eaton                                        
+    Copyright (C) 2014 - 2017 Eaton                                        
                                                                            
     This program is free software; you can redistribute it and/or modify   
     it under the terms of the GNU General Public License as published by   
@@ -31,6 +31,34 @@
 
 //  External API
 #include "../include/fty_metric_tpower.h"
+
+//  Extra headers
+
+//  Opaque class structures to allow forward references
+#ifndef METRICINFO_T_DEFINED
+typedef struct _metricinfo_t metricinfo_t;
+#define METRICINFO_T_DEFINED
+#endif
+#ifndef CALC_POWER_T_DEFINED
+typedef struct _calc_power_t calc_power_t;
+#define CALC_POWER_T_DEFINED
+#endif
+#ifndef TPOWERCONFIGURATION_T_DEFINED
+typedef struct _tpowerconfiguration_t tpowerconfiguration_t;
+#define TPOWERCONFIGURATION_T_DEFINED
+#endif
+#ifndef METRICLIST_T_DEFINED
+typedef struct _metriclist_t metriclist_t;
+#define METRICLIST_T_DEFINED
+#endif
+#ifndef TP_UNIT_T_DEFINED
+typedef struct _tp_unit_t tp_unit_t;
+#define TP_UNIT_T_DEFINED
+#endif
+#ifndef PROTO_METRIC_UNAVAILABLE_T_DEFINED
+typedef struct _proto_metric_unavailable_t proto_metric_unavailable_t;
+#define PROTO_METRIC_UNAVAILABLE_T_DEFINED
+#endif
 
 //  Internal API
 #include "metricinfo.h"

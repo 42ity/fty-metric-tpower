@@ -62,7 +62,8 @@ bin_PROGRAMS += src/fty-metric-tpower
 src_fty_metric_tpower_CPPFLAGS = ${AM_CPPFLAGS}
 src_fty_metric_tpower_LDADD = ${program_libs}
 src_fty_metric_tpower_SOURCES = src/fty_metric_tpower.cc
-src_fty_metric_tpower_config_DATA = src/fty-metric-tpower.cfg
+src_fty_metric_tpower_config_DATA =
+src_fty_metric_tpower_config_DATA += src/fty-metric-tpower.cfg
 src_fty_metric_tpower_configdir = $(sysconfdir)/fty-metric-tpower
 if WITH_SYSTEMD_UNITS
 systemdsystemunit_DATA += src/fty-metric-tpower.service
