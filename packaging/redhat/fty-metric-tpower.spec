@@ -1,7 +1,7 @@
 #
 #    fty-metric-tpower - 42ity component for power metrics computation
 #
-#    Copyright (C) 2014 - 2015 Eaton                                        
+#    Copyright (C) 2014 - 2017 Eaton                                        
 #                                                                           
 #    This program is free software; you can redistribute it and/or modify   
 #    it under the terms of the GNU General Public License as published by   
@@ -120,15 +120,15 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/fty-metric-tpower
 %{_mandir}/man1/fty-metric-tpower*
 %config(noreplace) %{_sysconfdir}/fty-metric-tpower/fty-metric-tpower.cfg
-/usr/lib/systemd/system/fty-metric-tpower{,@*}.{service,*}
+/usr/lib/systemd/system/fty-metric-tpower.service
 %dir %{_sysconfdir}/fty-metric-tpower
 %if 0%{?suse_version} > 1315
 %post
-%systemd_post fty-metric-tpower{,@*}.{service,*}
+%systemd_post fty-metric-tpower.service
 %preun
-%systemd_preun fty-metric-tpower{,@*}.{service,*}
+%systemd_preun fty-metric-tpower.service
 %postun
-%systemd_postun_with_restart fty-metric-tpower{,@*}.{service,*}
+%systemd_postun_with_restart fty-metric-tpower.service
 %endif
 
 %changelog
