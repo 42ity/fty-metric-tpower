@@ -1,9 +1,12 @@
 [Unit]
-Description=fty-metric-tpower service
-After=network.target
+Description=Total power agent for 42ITy project
+After=malamute.service bios-db-init.service
+Requires=malamute.service bios-db-init.service
+PartOf=bios.target
 
 [Service]
 Type=simple
+User=bios
 Environment="prefix=@prefix@"
 EnvironmentFile=-/etc/default/bios-db-ro
 EnvironmentFile=-/usr/share/bios/etc/default/bios
