@@ -38,7 +38,7 @@ double TPUnit::
     get( const std::string &quantity) const
 {
     double result = _lastValue.find( quantity );
-    if ( isnan(result) ) {
+    if ( std::isnan(result) ) {
         throw std::runtime_error("Unknown quantity");
     }
     return result;
@@ -59,7 +59,7 @@ void TPUnit::
     set(const std::string &quantity, MetricInfo &measurement)
 {
     double itSums = _lastValue.find(generateTopic(quantity));
-    if( isnan(itSums) || ( abs(itSums - measurement.getValue()) > 0.00001) ) {
+    if( std::isnan(itSums) || ( abs(itSums - measurement.getValue()) > 0.00001) ) {
         _lastValue.addMetric(measurement);
         _changed[quantity] = true;
         _changetimestamp[quantity] = measurement.getTimestamp();
@@ -72,7 +72,7 @@ MetricInfo TPUnit::
     double sum = 0;
     for( const auto &it : _powerdevices ) {
         double value = getMetricValue( it.second, quantity, it.first );
-        if( isnan(value) ) {
+        if( std::isnan(value) ) {
             throw std::runtime_error("value can't be calculated");
         } else {
             sum += value;
@@ -88,11 +88,11 @@ MetricInfo TPUnit::
     double sum = 0;
     for( const auto it : _powerdevices ) {
         double value = getMetricValue( it.second, quantity, it.first );
-        if( isnan (value) ) {
+        if( std::isnan (value) ) {
             // realpower.default not present, try to sum the phases
             for( int phase = 1 ; phase <= 3 ; ++phase ) {
                 double phaseValue = getMetricValue( it.second, "realpower.output.L" + std::to_string( phase ), it.first );
-                if( isnan (phaseValue) ) {
+                if( std::isnan (phaseValue) ) {
                     throw std::runtime_error("value can't be calculated");
                 }
                 sum += phaseValue;
@@ -165,7 +165,7 @@ std::string TPUnit::
 bool TPUnit::
     quantityIsUnknown(const std::string &topic) const
 {
-    return  isnan(_lastValue.find(topic));
+    return  std::isnan(_lastValue.find(topic));
 }
 
 std::vector<std::string> TPUnit::
@@ -182,7 +182,7 @@ std::vector<std::string> TPUnit::
         const auto &deviceMetrics = device.second;
         std::string topic = quantity + "@" + device.first;
         auto measurement = deviceMetrics.getMetricInfo(topic);
-        if ( ( isnan (measurement.getValue()) ) ||
+        if ( ( std::isnan (measurement.getValue()) ) ||
              ( now - measurement.getTimestamp() > measurement.getTtl() * 2 )
            )
         {
