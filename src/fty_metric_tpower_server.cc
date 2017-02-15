@@ -36,19 +36,16 @@ int agent_tpower_verbose = 0;
 //         Functionality for METRIC processing and publishing
 // ============================================================
 bool send_metrics (mlm_client_t* client, const MetricInfo &M){
-    zsys_info ("Metric is sent: topic = %s , time = %s", M.generateTopic().c_str(), std::to_string(M.getTimestamp()).c_str());
-    zhash_t *aux = zhash_new();
-    zhash_autofree(aux);
-    zhash_insert(aux, "time", (char *) std::to_string(M.getTimestamp()).c_str());
+    zsys_debug1 ("Metric is sent: topic = %s , time = %s", M.generateTopic().c_str(), std::to_string(M.getTimestamp()).c_str());
     zmsg_t *msg = fty_proto_encode_metric (
-            aux,
+            NULL,
+            ::time (NULL),
+            M.getTtl (),
             M.getSource().c_str(),
             M.getElementName().c_str(),
             std::to_string(M.getValue()).c_str(),
-            M.getUnits().c_str(),
-            M.getTtl());
+            M.getUnits().c_str());
     int r = mlm_client_send (client, M.generateTopic().c_str(), &msg);
-    zhash_destroy (&aux);
     if ( r == -1 ) {
         return false;
     }
@@ -79,11 +76,10 @@ static void
     }
 
     const char *type = fty_proto_type(bmessage);
-    const char *element_src = fty_proto_element_src(bmessage);
+    const char *element_src = fty_proto_name (bmessage);
     const char *unit = fty_proto_unit(bmessage);
     uint32_t ttl = fty_proto_ttl(bmessage);
-    // time is a time, when message is delivered
-    uint64_t timestamp = fty_proto_aux_number(bmessage, "time", ::time(NULL));
+    uint64_t timestamp = fty_proto_time (bmessage);
 
     zsys_debug1("Got message '%s' with value %s\n", topic.c_str(), value);
 
@@ -290,7 +286,7 @@ fty_metric_tpower_server_test (bool verbose)
     fty_proto_print(bmessage);
     assert ( bmessage != NULL );
     assert ( fty_proto_id (bmessage) == FTY_PROTO_METRIC );
-    uint64_t timestamp_new = fty_proto_aux_number(bmessage, "time", ::time(NULL));
+    uint64_t timestamp_new = fty_proto_time (bmessage);
     assert ( timestamp == timestamp_new);
 
     fty_proto_destroy (&bmessage);
