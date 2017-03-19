@@ -216,7 +216,7 @@ AS_IF([test x"${search_libczmq}" = xyes], [
         found_pkgconfig="libczmq"
     ],
     [
-        AC_MSG_NOTICE([Package libczmq not found; falling back to defined compilability tests])
+        AC_MSG_NOTICE([Package libczmq not found with needed constraints; falling back to defined compilability tests])
 
         czmq_synthetic_cflags=""
         czmq_synthetic_libs="-lczmq"
@@ -932,6 +932,7 @@ AM_COND_IF([WITH_SYSTEMD_UNITS],
                  src/fty-metric-tpower.service
     ])],
     [])
+
 
 AC_OUTPUT
 
