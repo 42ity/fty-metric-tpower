@@ -12,7 +12,7 @@ Name: libfty_metric_tpower
 Description: 42ity component for power metrics computation
 Version: @VERSION@
 
-Requires:@pkgconfig_name_libzmq@ @pkgconfig_name_libczmq@ @pkgconfig_name_libmlm@ @pkgconfig_name_libfty_proto@ >= 1.0.0 @pkgconfig_name_cxxtools@ @pkgconfig_name_tntdb@
+Requires:@pkgconfig_name_libzmq@ @pkgconfig_name_libczmq@ >= 3.0.0 @pkgconfig_name_libmlm@ @pkgconfig_name_libfty_proto@ >= 1.0.0 @pkgconfig_name_cxxtools@ @pkgconfig_name_tntdb@
 
 Libs: -L${libdir} -lfty_metric_tpower
 Cflags: -I${includedir} @pkg_config_defines@
