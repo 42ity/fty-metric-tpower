@@ -61,13 +61,22 @@ int main (int argc, char *argv [])
 
     // get options
     int c;
+// Some systems define struct option with non-"const" "char *"
+#if defined(__GNUC__) || defined(__GNUG__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+    static struct option long_options[] =
+    {
+        {"help",       no_argument,       &help,    1},
+        {"verbose",    no_argument,       &verbose, 1},
+        {NULL, 0, 0, 0}
+    };
+#if defined(__GNUC__) || defined(__GNUG__)
+#pragma GCC diagnostic pop
+#endif
+
     while(true) {
-        static struct option long_options[] =
-        {
-            {"help",       no_argument,       &help,    1},
-            {"verbose",    no_argument,       &verbose, 1},
-            {0, 0, 0, 0}
-        };
         int option_index = 0;
         c = getopt_long (argc, argv, "hv", long_options, &option_index);
         if (c == -1) {
