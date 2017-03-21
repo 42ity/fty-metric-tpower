@@ -66,6 +66,7 @@ int main (int argc, char *argv [])
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
+    static const char *short_options = "hv";
     static struct option long_options[] =
     {
         {"help",       no_argument,       &help,    1},
@@ -78,7 +79,7 @@ int main (int argc, char *argv [])
 
     while(true) {
         int option_index = 0;
-        c = getopt_long (argc, argv, "hv", long_options, &option_index);
+        c = getopt_long (argc, argv, short_options, long_options, &option_index);
         if (c == -1) {
             break;
         }
