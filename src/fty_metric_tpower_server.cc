@@ -65,13 +65,14 @@ static void
     const char *value = fty_proto_value(bmessage);
     char *end;
     double dvalue = strtod (value, &end);
-    if (errno == ERANGE) {
-        errno = 0;
-        zsys_error ("cannot convert value to double, ignore message\n");
-        return;
-    }
-    else if (end == value || *end != '\0') {
-        zsys_error ("cannot convert value to double, ignore message\n");
+
+    if (errno == ERANGE || end == value || *end != '\0') {
+
+        if (errno == ERANGE)
+            errno = 0;
+
+        zsys_info ("cannot convert value '%s' to double, ignore message\n", value);
+        fty_proto_print (bmessage);
         return;
     }
 
