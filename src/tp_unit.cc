@@ -28,10 +28,16 @@ extern int agent_tpower_verbose;
 
 enum TPowerMethod {
     TPOWER_REALPOWER_DEFAULT = 1,
+    TPOWER_REALPOWER_OUTPUT_L1 = 2,
+    TPOWER_REALPOWER_OUTPUT_L2 = 3,
+    TPOWER_REALPOWER_OUTPUT_L3 = 4,
 };
 
 const std::map<std::string,int> TPUnit::_calculations = {
     { "realpower.default", TPOWER_REALPOWER_DEFAULT },
+    { "realpower.output.L1", TPOWER_REALPOWER_OUTPUT_L1 },
+    { "realpower.output.L2", TPOWER_REALPOWER_OUTPUT_L2 },
+    { "realpower.output.L3", TPOWER_REALPOWER_OUTPUT_L3 },
 };
 
 double TPUnit::
@@ -105,6 +111,35 @@ MetricInfo TPUnit::
     return result;
 }
 
+MetricInfo TPUnit::
+    realpowerOutput(const std::string &quantity) const
+{
+    double value = NAN;
+    std::string phases {"n/a"};
+    for( const auto it : _powerdevices ) {
+        value = getMetricValue( it.second, quantity, it.first );
+
+        double roL2 = getMetricValue (it.second, "realpower.output.L2", it.first);
+
+        // detect a mix of single and three phase devices - return NAN for this case
+        if (phases == "n/a") {
+            if (isnan (roL2))
+                phases = "single";
+            else
+                phases = "three";
+        }
+        else {
+            if ((isnan (roL2) && phases == "three") ||
+                (!isnan (roL2) && phases == "single")) {
+                return MetricInfo ( _name, quantity, "W", NAN, ::time (NULL), "", TTL);
+            }
+        }
+    }
+
+    MetricInfo result ( _name, quantity, "W", value, ::time (NULL), "", TTL);
+    return result;
+}
+
 void TPUnit::
     calculate(const std::vector<std::string> &quantities)
 {
@@ -125,6 +160,11 @@ void TPUnit::
         switch( calc ) {
         case TPOWER_REALPOWER_DEFAULT:
             result = realpowerDefault( quantity );
+            break;
+        case TPOWER_REALPOWER_OUTPUT_L1:
+        case TPOWER_REALPOWER_OUTPUT_L2:
+        case TPOWER_REALPOWER_OUTPUT_L3:
+            result = realpowerOutput (quantity);
             break;
         default:
             result = simpleSummarize( quantity );

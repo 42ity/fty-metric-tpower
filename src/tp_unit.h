@@ -134,6 +134,8 @@ class TPUnit {
     MetricInfo simpleSummarize(const std::string &quantity) const;
     //\! \brief calculate realpower sum over devices
     MetricInfo realpowerDefault(const std::string &quantity) const;
+    //\! send realpower output or null in case of phase incompatibilities
+    MetricInfo realpowerOutput(const std::string &quantity) const;
 private:
     std::string generateTopic (const std::string &quantity) const;
 
