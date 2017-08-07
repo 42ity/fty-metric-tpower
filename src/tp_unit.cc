@@ -123,14 +123,14 @@ MetricInfo TPUnit::
 
         // detect a mix of single and three phase devices - return NAN for this case
         if (phases == "n/a") {
-            if (isnan (roL2))
+            if (std::isnan (roL2))
                 phases = "single";
             else
                 phases = "three";
         }
         else {
-            if ((isnan (roL2) && phases == "three") ||
-                (!isnan (roL2) && phases == "single")) {
+            if ((std::isnan (roL2) && phases == "three") ||
+                (!std::isnan (roL2) && phases == "single")) {
                 return MetricInfo ( _name, quantity, "W", NAN, ::time (NULL), "", TTL);
             }
         }
