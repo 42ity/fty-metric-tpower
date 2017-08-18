@@ -1,7 +1,7 @@
 [Unit]
 Description=Total power agent for 42ITy project
-After=malamute.service bios-db-init.service
-Requires=malamute.service bios-db-init.service
+After=malamute.service fty-db-init.service
+Requires=malamute.service fty-db-init.service
 PartOf=bios.target
 
 [Service]
