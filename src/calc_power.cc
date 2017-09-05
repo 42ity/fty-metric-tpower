@@ -131,7 +131,7 @@ int
             " FROM "
             "   v_bios_asset_element_super_parent v "
             " WHERE "
-            "   :containerid in (v.id_parent1, v.id_parent2, v.id_parent3, v.id_parent4, v.id_parent5)"
+            "   :containerid in (v.id_parent1, v.id_parent2, v.id_parent3, v.id_parent4, v.id_parent5, v.id_parent6)"
         );
 
         tntdb::Result result = st.set("containerid", element_id).
@@ -186,9 +186,9 @@ db_reply <std::set <std::pair<a_elmnt_id_t ,a_elmnt_id_t>>>
             "   v.id_asset_element_src = v1.id_asset_element AND"
             "   ("
             "       ( :containerid IN (v2.id_parent1, v2.id_parent2 ,v2.id_parent3,"
-            "               v2.id_parent4, v2.id_parent5) ) OR"
+            "               v2.id_parent4, v2.id_parent5, v2.id_parent6) ) OR"
             "       ( :containerid IN (v1.id_parent1, v1.id_parent2 ,v1.id_parent3,"
-            "               v1.id_parent4, v1.id_parent5) )"
+            "               v1.id_parent4, v1.id_parent5, v1.id_parent6) )"
             "   )"
         );
 
