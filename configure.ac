@@ -39,6 +39,9 @@ AC_SUBST(PACKAGE_VERSION)
 LTVER="0:0:0"
 AC_SUBST(LTVER)
 
+# building in a subdirectory?
+AM_CONDITIONAL([USING_VPATH], [test "x${srcdir}" != "x."])
+
 # Capture c flags
 FTY_METRIC_TPOWER_ORIG_CFLAGS="${CFLAGS:-none}"
 
@@ -53,6 +56,9 @@ AC_PROG_LIBTOOL
 AC_PROG_SED
 AC_PROG_AWK
 PKG_PROG_PKG_CONFIG
+
+# Check endianess of the system
+AC_C_BIGENDIAN
 
 # Code coverage
 AC_MSG_CHECKING([whether to enable GCov])
@@ -669,6 +675,9 @@ else
     AC_CHECK_PROG(fty_metric_tpower_have_asciidoc, asciidoc, yes, no)
     AC_CHECK_PROG(fty_metric_tpower_have_xmlto, xmlto, yes, no)
     if test "x$fty_metric_tpower_have_asciidoc" = "xno" -o "x$fty_metric_tpower_have_xmlto" = "xno"; then
+        if test "x$with_docs" = "xyes" ; then
+            AC_MSG_ERROR([Build with docs was explicitly requested, but tools are not available])
+        fi
         fty_metric_tpower_build_doc="no"
         # Tarballs built with 'make dist' ship with prebuilt documentation.
         if ! test -f doc/fty-metric-tpower.7; then
@@ -741,6 +750,9 @@ case "${host_os}" in
         AC_DEFINE(FTY_METRIC_TPOWER_HAVE_HPUX, 1, [Have HPUX OS])
         ;;
     *mingw32*)
+        # Disable format error due to incomplete ANSI C
+        CFLAGS="-Wno-error=format -Wno-unused-function -Wno-unused-variable -D_XOPEN_SOURCE $CFLAGS"
+        CPPFLAGS="-Wno-error=format -Wno-unused-function -Wno-unused-variable -D_XOPEN_SOURCE $CPPFLAGS"
         AC_DEFINE(FTY_METRIC_TPOWER_HAVE_WINDOWS, 1, [Have Windows OS])
         AC_DEFINE(FTY_METRIC_TPOWER_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
@@ -750,7 +762,8 @@ case "${host_os}" in
     *mingw64*)
         # Define on MINGW64 to enable all libeary features
         # Disable format error due to incomplete ANSI C
-        CPPFLAGS="-Wno-error=format -D_XOPEN_SOURCE $CPPFLAGS"
+        CFLAGS="-Wno-error=format -Wno-unused-function -Wno-unused-variable -D_XOPEN_SOURCE $CFLAGS"
+        CPPFLAGS="-Wno-error=format -Wno-unused-function -Wno-unused-variable -D_XOPEN_SOURCE $CPPFLAGS"
         AC_DEFINE(FTY_METRIC_TPOWER_HAVE_WINDOWS, 1, [Have Windows OS])
         AC_DEFINE(FTY_METRIC_TPOWER_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)

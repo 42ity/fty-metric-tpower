@@ -73,7 +73,7 @@ fty-metric-tpower.txt: $(top_srcdir)/src/fty_metric_tpower.cc
 	"$(srcdir)/mkman" "fty_metric_tpower" "$(builddir)/fty-metric-tpower.txt" "$(srcdir)/.."
 
 
-clean:
+clean-local:
 	rm -f *.1 *.3 *.7 $(GENERATED_DOCS)
 
 doc: $(GENERATED_DOCS)
