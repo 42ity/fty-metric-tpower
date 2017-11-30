@@ -16,23 +16,28 @@
     <version major = "1" minor = "0" patch = "0" />
 
     <use project = "czmq"
-        repository="https://github.com/42ity/czmq.git" release = "v3.0.2"
+        repository="https://github.com/42ity/czmq.git" release = "release/IPM_Infra-1.3"
         min_major = "3" min_minor = "0" min_patch = "2" />
-    <use project = "malamute" min_major = "1" test = "mlm_server_test" />
+
+    <use project = "malamute" min_major = "1" test = "mlm_server_test"
+        repository="https://github.com/42ity/malamute.git"
+        release = "release/IPM_Infra-1.3" />
+
     <use project = "fty-proto" libname = "libfty_proto" header="ftyproto.h" prefix="fty_proto"
         min_major = "1" min_minor = "0" min_patch = "0"
-        repository = "https://github.com/42ity/fty-proto"
+        repository = "https://github.com/42ity/fty-proto.git"
+        release = "release/IPM_Infra-1.3"
         test = "fty_proto_test">
         <use project = "malamute"/>
     </use>
 
     <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec" header="cxxtools/allocator.h"
-        repository = "https://github.com/42ity/cxxtools"
-        release = "42ity"
-    />
+        repository = "https://github.com/42ity/cxxtools.git"
+        release = "release/IPM_Infra-1.3" />
+
     <use project = "tntdb" test="tntdb::Date::gmtime"
-        repository = "https://github.com/42ity/tntdb"
-        release = "1.3"
+        repository = "https://github.com/42ity/tntdb.git"
+        release = "release/IPM_Infra-1.3"
         builddir = "tntdb">
     </use>
     <!-- use project = "tntdb" test="tntdb::connectCached" header="tntdb/connect.h" / -->
