@@ -51,6 +51,7 @@ BuildRequires:  systemd
 %{?systemd_requires}
 BuildRequires:  xmlto
 BuildRequires:  gcc-c++
+BuildRequires:  libsodium-devel
 BuildRequires:  zeromq-devel
 BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
@@ -81,6 +82,7 @@ This package contains shared library for fty-metric-tpower: 42ity component for 
 Summary:        42ity component for power metrics computation
 Group:          System/Libraries
 Requires:       libfty_metric_tpower0 = %{version}
+Requires:       libsodium-devel
 Requires:       zeromq-devel
 Requires:       czmq-devel
 Requires:       malamute-devel
