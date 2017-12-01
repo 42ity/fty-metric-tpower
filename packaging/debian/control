@@ -48,6 +48,7 @@ Architecture: any
 Section: libdevel
 Depends:
     ${misc:Depends},
+    libsodium-dev,
     libzmq3-dev,
     libczmq-dev,
     libmlm-dev,
