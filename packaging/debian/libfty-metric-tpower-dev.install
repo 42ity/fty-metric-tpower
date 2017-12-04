@@ -1,5 +1,3 @@
 usr/include/*
 usr/lib/*/libfty_metric_tpower.so
 usr/lib/*/pkgconfig/libfty_metric_tpower.pc
-usr/share/man/man3/*
-usr/share/man/man7/*
