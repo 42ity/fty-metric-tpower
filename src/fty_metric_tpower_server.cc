@@ -125,10 +125,16 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
     // initial set up
     TotalPowerConfiguration tpower_conf(fff);
     tpower_conf.configure();
+    uint64_t last = zclock_mono ();
     while (!zsys_interrupted) {
         void *which = zpoller_wait (poller, tpower_conf.getTimeout());
-        if ( zpoller_expired (poller) ) {
+        uint64_t now = zclock_mono();
+        if (now - last >= static_cast<uint64_t>(tpower_conf.getTimeout())) {
+            last = now;
+            zsys_debug("Periodic polling");
             tpower_conf.onPoll();
+        }
+        if ( zpoller_expired (poller) ) {
             continue;
         }
         if ( zpoller_terminated (poller) ) {
