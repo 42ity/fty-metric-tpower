@@ -119,7 +119,7 @@ int main (int argc, char *argv [])
     zstr_sendx (tpower_server, "PRODUCER", "METRICS", NULL);
     zsock_wait (tpower_server);
     // Consuming some metrics
-    zstr_sendx (tpower_server, "CONSUMER", "METRICS", ".*", NULL);
+    zstr_sendx (tpower_server, "CONSUMER", "METRICS", "^realpower.*", NULL);
     zsock_wait (tpower_server);
     // Consuming some metrics
     zstr_sendx (tpower_server, "CONSUMER", "ASSETS", ".*", NULL);
