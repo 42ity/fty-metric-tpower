@@ -44,7 +44,7 @@ void usage ()
     puts ("fty-metric-tpower [options]\n"
           "  -v|--verbose          verbose test output\n"
           "  -h|--help             print this information\n"
-          "Environment variables for parameters are FTY_LOG_LEVEL.\n"
+          "Environment variables for parameters are BIOS_LOG_LEVEL.\n"
           "Command line option takes precedence over variable.");
 }
 
@@ -54,7 +54,7 @@ int main (int argc, char *argv [])
     int help = 0;
 
     // set defaults
-    char* fty_log_level = getenv ("FTY_LOG_LEVEL");
+    char* fty_log_level = getenv ("BIOS_LOG_LEVEL");
     if ( fty_log_level && streq (fty_log_level, "LOG_DEBUG") ) {
         verbose = 1;
     }
