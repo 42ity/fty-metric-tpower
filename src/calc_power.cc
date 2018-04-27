@@ -114,8 +114,8 @@ int
     select_assets_by_container
         (tntdb::Connection &conn,
          a_elmnt_id_t element_id,
-         std::function<void(const tntdb::Row&)> cb
-         )
+         std::function<void(const tntdb::Row&)> cb,
+         std::string status)
 {
     zsys_debug1 ("container element_id = %" PRIu32, element_id);
 
@@ -134,10 +134,12 @@ int
             "   :containerid in (v.id_parent1, v.id_parent2, v.id_parent3, "
             "                    v.id_parent4, v.id_parent5, v.id_parent6, "
             "                    v.id_parent7, v.id_parent8, v.id_parent9, "
-            "                    v.id_parent10)"
+            "                    v.id_parent10)   AND                      "
+            "                    v.status = :vstatus                       "
         );
 
         tntdb::Result result = st.set("containerid", element_id).
+                                  set("vstatus", status).
                                   select();
         zsys_debug1("[v_bios_asset_element_super_parent]: were selected %" PRIu32 " rows",
                                                             result.size());
@@ -151,8 +153,6 @@ int
         return -1;
     }
 }
-
-
 
 
 } // namespace end
@@ -566,7 +566,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
 
 
         auto rv = persist::select_assets_by_container
-                                (conn, container.id, func);
+            (conn, container.id, func, "active");
 
         // here would be placed names of devices to summ up
         std::vector<std::string> result(0);
