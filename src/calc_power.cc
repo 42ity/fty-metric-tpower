@@ -156,6 +156,39 @@ int
 
 
 } // namespace end
+
+// debug helper
+// returns vector with either active or inactive devices
+std::vector <std::string>
+list_devices_with_status (tntdb::Connection &conn, std::string status)
+{
+    std::vector <std::string> inactive_list;
+    try {
+        tntdb::Statement st = conn.prepareCached(
+            " SELECT"
+            "   v.name, v.id_subtype"
+            " FROM"
+            "   v_bios_asset_element v"
+            " WHERE v.status = :vstatus "
+        );
+
+        tntdb::Result result = st.set("vstatus", status).select();
+        zsys_debug1("[v_bios_asset_element]: were selected %" PRIu32 " rows",
+                                                            result.size());
+        for (auto &row : result) {
+            std::string device;
+            row [0].get (device);
+            inactive_list.push_back (device);
+        }
+
+    }
+    catch (const std::exception &e) {
+        throw std::runtime_error("Reading from DB failed.");
+    }
+    return inactive_list;
+}
+
+
 // ----- table:  t_bios_asset_link_type ---------------
 // ----- column: id_asset_link_type -------------------
 typedef uint8_t  a_lnk_tp_id_t;
@@ -163,7 +196,8 @@ typedef uint8_t  a_lnk_tp_id_t;
 db_reply <std::set <std::pair<a_elmnt_id_t ,a_elmnt_id_t>>>
     select_links_by_container
         (tntdb::Connection &conn,
-         a_elmnt_id_t element_id)
+         a_elmnt_id_t element_id,
+         std::string status)
 {
     zsys_debug1 ("  links are selected for element_id = %" PRIi32, element_id);
     a_lnk_tp_id_t linktype = INPUT_POWER_CHAIN;
@@ -191,20 +225,27 @@ db_reply <std::set <std::pair<a_elmnt_id_t ,a_elmnt_id_t>>>
             "       ( :containerid IN (v2.id_parent1, v2.id_parent2 ,v2.id_parent3,"
             "                          v2.id_parent4, v2.id_parent5, v2.id_parent6,"
             "                          v2.id_parent7, v2.id_parent8, v2.id_parent9,"
-            "                          v2.id_parent10) ) OR"
+            "                          v2.id_parent10) AND v1.status = :vstatus AND v2.status = :vstatus) OR"
             "       ( :containerid IN (v1.id_parent1, v1.id_parent2 ,v1.id_parent3,"
             "                          v1.id_parent4, v1.id_parent5, v1.id_parent6,"
             "                          v1.id_parent7, v1.id_parent8, v1.id_parent9,"
-            "                          v1.id_parent10) )"
+            "                          v1.id_parent10) AND v1.status = :vstatus AND v2.status = :vstatus)"
             "   )"
         );
 
         // can return more than one row
         tntdb::Result result = st.set("containerid", element_id).
                                   set("linktypeid", linktype).
+                                  set("vstatus", status).
                                   select();
         zsys_debug1("[t_bios_asset_link]: were selected %" PRIu32 " rows",
                                                          result.size());
+        // debug helper
+        std::vector <std::string> inactive = list_devices_with_status (conn,"inactive");
+        zsys_debug1 ("Inactive devices omitted:");
+        for (auto dev : inactive) {
+            zsys_debug1 ("\t- %s", dev.c_str ());
+        }
 
         // Go through the selected links
         for ( auto &row: result )
@@ -289,7 +330,8 @@ struct db_a_elmnt_t {
 db_reply <std::vector<db_a_elmnt_t>>
     select_asset_elements_by_type
         (tntdb::Connection &conn,
-         a_elmnt_tp_id_t type_id)
+         a_elmnt_tp_id_t type_id,
+         std::string status)
 {
 
     std::vector<db_a_elmnt_t> item{};
@@ -302,10 +344,12 @@ db_reply <std::vector<db_a_elmnt_t>>
             "   v.name , v.id_parent, v.status, v.priority, v.id, v.id_subtype"
             " FROM"
             "   v_bios_asset_element v"
-            " WHERE v.id_type = :typeid"
+            " WHERE v.id_type = :typeid AND"
+            "   v.status = :vstatus "
         );
 
         tntdb::Result result = st.set("typeid", type_id).
+                                  set("vstatus", status).
                                   select();
         zsys_debug1("[v_bios_asset_element]: were selected %" PRIu32 " rows",
                                                             result.size());
@@ -510,8 +554,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
 
     // there is no need to do all in one select, so let's do it by steps
     // select all containers by type
-    auto allContainers = select_asset_elements_by_type
-                                    (conn, container_type_id);
+    auto allContainers = select_asset_elements_by_type (conn, container_type_id, "active");
 
     if  ( allContainers.status == 0 )
     {
@@ -588,7 +631,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
             continue;
         }
 
-        auto links = select_links_by_container (conn, container.id);
+        auto links = select_links_by_container (conn, container.id, "active");
         if ( links.status == 0 )
         {
             zsys_warning ("'%s': internal problems in links detecting",
