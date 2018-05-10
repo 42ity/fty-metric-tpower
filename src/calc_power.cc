@@ -241,7 +241,7 @@ db_reply <std::set <std::pair<a_elmnt_id_t ,a_elmnt_id_t>>>
         zsys_debug1("[t_bios_asset_link]: were selected %" PRIu32 " rows",
                                                          result.size());
         // debug helper
-        std::vector <std::string> inactive = list_devices_with_status (conn,"inactive");
+        std::vector <std::string> inactive = list_devices_with_status (conn,"nonactive");
         zsys_debug1 ("Inactive devices omitted:");
         for (auto dev : inactive) {
             zsys_debug1 ("\t- %s", dev.c_str ());
