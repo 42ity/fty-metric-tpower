@@ -1,7 +1,7 @@
 /*  =========================================================================
     fty_metric_tpower_classes - private header file
 
-    Copyright (C) 2014 - 2017 Eaton
+    Copyright (C) 2014 - 2018 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -104,7 +104,7 @@ FTY_METRIC_TPOWER_PRIVATE void
 
 //  Self test for private classes
 FTY_METRIC_TPOWER_PRIVATE void
-    fty_metric_tpower_private_selftest (bool verbose);
+    fty_metric_tpower_private_selftest (bool verbose, const char *subtest);
 
 #endif // FTY_METRIC_TPOWER_BUILD_DRAFT_API
 

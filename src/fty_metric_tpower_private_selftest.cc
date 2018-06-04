@@ -4,7 +4,7 @@
     Runs all private classes selftests.
 
     -------------------------------------------------------------------------
-    Copyright (C) 2014 - 2017 Eaton
+    Copyright (C) 2014 - 2018 Eaton
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,15 +35,21 @@
 //
 
 void
-fty_metric_tpower_private_selftest (bool verbose)
+fty_metric_tpower_private_selftest (bool verbose, const char *subtest)
 {
 // Tests for stable private classes:
-    metricinfo_test (verbose);
-    calc_power_test (verbose);
-    tpowerconfiguration_test (verbose);
-    metriclist_test (verbose);
-    tp_unit_test (verbose);
-    proto_metric_unavailable_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "metricinfo_test"))
+        metricinfo_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "calc_power_test"))
+        calc_power_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "tpowerconfiguration_test"))
+        tpowerconfiguration_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "metriclist_test"))
+        metriclist_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "tp_unit_test"))
+        tp_unit_test (verbose);
+    if (streq (subtest, "$ALL") || streq (subtest, "proto_metric_unavailable_test"))
+        proto_metric_unavailable_test (verbose);
 }
 /*
 ################################################################################

@@ -1,7 +1,7 @@
 #
 #    fty-metric-tpower - 42ity component for power metrics computation
 #
-#    Copyright (C) 2014 - 2017 Eaton
+#    Copyright (C) 2014 - 2018 Eaton
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -120,6 +120,7 @@ find %{buildroot} -name '*.la' | xargs rm -f
 
 %files
 %defattr(-,root,root)
+%doc README.md
 %doc COPYING
 %{_bindir}/fty-metric-tpower
 %{_mandir}/man1/fty-metric-tpower*
