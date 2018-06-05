@@ -1,5 +1,6 @@
 /*  =========================================================================
     proto_metric_unavailable - metric unavailable protocol send part
+    Note: This file was manually amended, see below
 
     Copyright (C) 2014 - 2017 Eaton                                        
                                                                            
@@ -38,7 +39,8 @@ FTY_METRIC_TPOWER_EXPORT void
     proto_metric_unavailable_destroy (proto_metric_unavailable_t **self_p);
 
 //  Self test of this class
-FTY_METRIC_TPOWER_EXPORT void
+//  Note: Keep this definition in sync with fty_metric_tpower_classes.h
+FTY_METRIC_TPOWER_PRIVATE void
     proto_metric_unavailable_test (bool verbose);
 
 //  @end
