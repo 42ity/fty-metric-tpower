@@ -25,6 +25,10 @@
 @discuss
 @end
 */
+// agent's name
+// DO NOT CHANGE! as other agents can rely on this name
+static const char *AGENT_NAME = "agent-tpower";
+
 int agent_tpower_verbose = 0;
 
 #define zsys_debug1(...) \
@@ -107,14 +111,42 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
 {
     bool verbose = false;
 
-    char *name = strdup ((char*) args);
-
-    mlm_client_t *client = mlm_client_new ();
-
-    zpoller_t *poller = zpoller_new (pipe, mlm_client_msgpipe(client), NULL);
+    const char *endpoint = static_cast<const char *>(args);
 
     // Signal need to be send as it is required by "actor_new"
     zsock_signal (pipe, 0);
+
+    MlmClientGuard client(mlm_client_new());
+    if (!client) {
+        zsys_error("mlm_client_new () failed");
+        return;
+    }
+    if (mlm_client_connect(client, endpoint, 1000, AGENT_NAME) < 0) {
+        zsys_error("%s: can't connect to malamute endpoint '%s'",
+                AGENT_NAME, endpoint);
+        zstr_send(pipe, "$TERM");
+        return;
+    }
+    if (mlm_client_set_producer(client, FTY_PROTO_STREAM_METRICS) < 0) {
+        zsys_error("%s: can't set producer on stream '%s'",
+                AGENT_NAME, FTY_PROTO_STREAM_METRICS);
+        zstr_send(pipe, "$TERM");
+        return;
+    }
+    if (mlm_client_set_consumer(client, FTY_PROTO_STREAM_METRICS, "^realpower.*") < 0) {
+        zsys_error("%s: can't set consumer on stream '%s', '%s'",
+                AGENT_NAME, FTY_PROTO_STREAM_METRICS, "^realpower.*");
+        zstr_send(pipe, "$TERM");
+        return;
+    }
+    if (mlm_client_set_consumer(client, FTY_PROTO_STREAM_ASSETS, ".*") < 0) {
+        zsys_error("%s: can't set consumer on stream '%s', '%s'",
+                AGENT_NAME, FTY_PROTO_STREAM_ASSETS, ".*");
+        zstr_send(pipe, "$TERM");
+        return;
+    }
+
+    ZpollerGuard poller(zpoller_new (pipe, mlm_client_msgpipe (client), NULL));
 
     // Such trick with function is used, because tpower_configuration
     // wants itself to control "advertise time".
@@ -143,17 +175,15 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
         }
 
         if (which == pipe) {
-            zmsg_t *msg = zmsg_recv (pipe);
-            char *cmd = zmsg_popstr (msg);
+            ZmsgGuard msg(zmsg_recv (pipe));
+            ZstrGuard cmd(zmsg_popstr(msg));
             if ( verbose ) {
-                zsys_debug1 ("actor command=%s", cmd);
+                zsys_debug1 ("actor command=%s", cmd.get());
             }
 
             if (streq (cmd, "$TERM")) {
                 zsys_info ("Got $TERM");
-                zstr_free (&cmd);
-                zmsg_destroy (&msg);
-                goto exit;
+                break;
             }
             else
             if (streq (cmd, "VERBOSE")) {
@@ -162,43 +192,9 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
                 zsys_debug1 ("VERBOSE received");
             }
             else
-            if (streq (cmd, "CONNECT")) {
-                char* endpoint = zmsg_popstr (msg);
-                int rv = mlm_client_connect (client, endpoint, 1000, name);
-                if (rv == -1) {
-                    zsys_error ("%s: can't connect to malamute endpoint '%s'", name, endpoint);
-                }
-                zstr_free (&endpoint);
-                zsock_signal (pipe, 0);
-            }
-            else
-            if (streq (cmd, "PRODUCER")) {
-                char* stream = zmsg_popstr (msg);
-                int rv = mlm_client_set_producer (client, stream);
-                if (rv == -1) {
-                    zsys_error ("%s: can't set producer on stream '%s'", name, stream);
-                }
-                zstr_free (&stream);
-                zsock_signal (pipe, 0);
-            }
-            else
-            if (streq (cmd, "CONSUMER")) {
-                char* stream = zmsg_popstr (msg);
-                char* pattern = zmsg_popstr (msg);
-                int rv = mlm_client_set_consumer (client, stream, pattern);
-                if (rv == -1) {
-                    zsys_error ("%s: can't set consumer on stream '%s', '%s'", name, stream, pattern);
-                }
-                zstr_free (&pattern);
-                zstr_free (&stream);
-                zsock_signal (pipe, 0);
-            }
-            else
             {
-                zsys_info ("unhandled command %s", cmd);
+                zsys_info ("unhandled command %s", cmd.get());
             }
-            zstr_free (&cmd);
-            zmsg_destroy (&msg);
             continue;
         }
 
@@ -248,11 +244,7 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
         // listen
         zmsg_destroy (&zmessage);
     }
-exit:
     //TODO:  save info to persistence before I die
-    zpoller_destroy (&poller);
-    mlm_client_destroy (&client);
-    zstr_free (&name);
 }
 
 

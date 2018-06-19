@@ -33,6 +33,7 @@
 #include "../include/fty_metric_tpower.h"
 
 //  Extra headers
+#include "fty_mlm.h"
 
 //  Opaque class structures to allow forward references
 #ifndef METRICINFO_T_DEFINED
