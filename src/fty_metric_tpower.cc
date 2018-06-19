@@ -30,13 +30,9 @@
 
 #include <getopt.h>
 
-// agent's name
-// DO NOT CHANGE! as other agents can rely on this name
-static const char *AGENT_NAME = "agent-tpower";
-
 // malamute's endpoint
 // TODO make endpoint configurable on the start of the agent
-static const char *ENDPOINT = "ipc://@/malamute";
+static const void *ENDPOINT = "ipc://@/malamute";
 
 
 void usage ()
@@ -103,7 +99,7 @@ int main (int argc, char *argv [])
 
     zsys_info ("fty_metric_tpower STARTED");
 
-    zactor_t *tpower_server = zactor_new (fty_metric_tpower_server, (void*) AGENT_NAME);
+    zactor_t *tpower_server = zactor_new (fty_metric_tpower_server, const_cast<void *>(ENDPOINT));
     if ( !tpower_server ) {
         zsys_error ("cannot start the daemon");
         exit(1);
@@ -112,27 +108,16 @@ int main (int argc, char *argv [])
     if (verbose) {
         zstr_sendx (tpower_server, "VERBOSE", NULL);
     }
-    // Connect to malamute
-    zstr_sendx (tpower_server, "CONNECT", ENDPOINT, NULL);
-    zsock_wait (tpower_server);
-    // Producing new metrics
-    zstr_sendx (tpower_server, "PRODUCER", "METRICS", NULL);
-    zsock_wait (tpower_server);
-    // Consuming some metrics
-    zstr_sendx (tpower_server, "CONSUMER", "METRICS", "^realpower.*", NULL);
-    zsock_wait (tpower_server);
-    // Consuming some metrics
-    zstr_sendx (tpower_server, "CONSUMER", "ASSETS", ".*", NULL);
-    zsock_wait (tpower_server);
     //  Accept and print any message back from server
     //  copy from src/malamute.c under MPL license
-    while (true) {
-        char *message = zstr_recv (tpower_server);
+    while (!zsys_interrupted) {
+        ZstrGuard message(zstr_recv(tpower_server));
         if (message) {
-            puts (message);
-            free (message);
-        }
-        else {
+            puts(message);
+            // actor returned prematurely
+            if (streq(message, "$TERM"))
+                break;
+        } else {
             puts ("interrupted");
             break;
         }
