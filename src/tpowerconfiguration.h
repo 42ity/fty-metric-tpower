@@ -108,6 +108,8 @@ public:
 
     //! \brief send measurement message if needed
     void sendMeasurement(std::map< std::string, TPUnit > &elements, const std::vector<std::string> &quantities );
+    //! \brief send measurement message for a single unit if needed
+    void sendMeasurement(std::pair<const std::string, TPUnit > &elements, const std::vector<std::string> &quantities );
 
     //! \brief powerdevice to DC or rack and put it also in _affected* map
     void addDeviceToMap(
