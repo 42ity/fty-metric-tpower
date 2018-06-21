@@ -13,6 +13,7 @@ lib_LTLIBRARIES += src/libfty_metric_tpower.la
 pkgconfig_DATA = src/libfty_metric_tpower.pc
 
 src_libfty_metric_tpower_la_SOURCES = \
+    src/fty_mlm.cc \
     src/metricinfo.cc \
     src/calc_power.cc \
     src/tpowerconfiguration.cc \

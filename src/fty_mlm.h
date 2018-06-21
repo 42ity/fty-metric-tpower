@@ -60,7 +60,22 @@ private:
     T* ptr_;
 };
 
-typedef MlmObjGuard<mlm_client_t, mlm_client_destroy> MlmClientGuard;
+class MlmClientGuard: public MlmObjGuard<mlm_client_t, mlm_client_destroy>
+{
+public:
+    using MlmObjGuard::MlmObjGuard;
+    /**
+     * if the connection to malamute broker is lost for more than 5 minutes force
+     * the process to exit.
+     * @return false when connection is lost for more than 5 minutes
+     */
+    void check_connection_alive_or_die();
+
+private:
+    uint64_t ts_conn_OK=0;
+    uint64_t ts_conn_KO=0;
+};
+
 typedef MlmObjGuard<zpoller_t, zpoller_destroy> ZpollerGuard;
 typedef MlmObjGuard<zmsg_t, zmsg_destroy> ZmsgGuard;
 typedef MlmObjGuard<zuuid_t, zuuid_destroy> ZuuidGuard;

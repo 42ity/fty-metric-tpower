@@ -60,7 +60,7 @@
         />
     <!-- use project = "tntdb" test="tntdb::connectCached" header="tntdb/connect.h" / -->
 
-    <header name = "fty_mlm" private = "1">Malamute connection helpers</header>
+    <class name = "fty_mlm" private = "1">Malamute connection helpers</class>
     <class name = "metricinfo" private="1"> Measurement</class>
     <class name = "calc_power" private="1"> Power calculation</class>
     <class name = "tpowerconfiguration" private="1"> Configuration</class>
