@@ -30,7 +30,6 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <cxxtools/regex.h>
 #include <functional>
 
 #include "tp_unit.h"
@@ -75,20 +74,16 @@ public:
     int64_t _timeout;
     //! \brief list of racks
     std::map< std::string, TPUnit > _racks;
-    //! \brief topic interesting for racks
-    const cxxtools::Regex _rackRegex = cxxtools::Regex("^realpower\\.(default)", REG_EXTENDED );
     //! \brief list of interested units
     const std::vector<std::string> _rackQuantities = {
         "realpower.default",
-        "realpower.nominal",
     };
+    bool isRackQuantity(const std::string &quantity) const;
     //! \brief list of racks, affected by powerdevice
     std::map< std::string, std::string> _affectedRacks;
 
     //! \brief list of datacenters
     std::map< std::string, TPUnit > _DCs;
-    //! \brief topic interesting for DCs
-    const cxxtools::Regex _dcRegex = cxxtools::Regex("^realpower\\.(default|input\\.L[1-3]|output\\.L[1-3])", REG_EXTENDED );
     //! \brief list of interested units
     const std::vector<std::string> _dcQuantities = {
         "realpower.default",
@@ -99,6 +94,7 @@ public:
         "realpower.output.L2",
         "realpower.output.L3",
     };
+    bool isDCQuantity(const std::string &quantity) const;
     //! \brief list of DCs, affected by powerdevice
     std::map< std::string, std::string> _affectedDCs;
 
@@ -109,7 +105,7 @@ public:
     //! \brief send measurement message if needed
     void sendMeasurement(std::map< std::string, TPUnit > &elements, const std::vector<std::string> &quantities );
     //! \brief send measurement message for a single unit if needed
-    void sendMeasurement(std::pair<const std::string, TPUnit > &elements, const std::vector<std::string> &quantities );
+    void sendMeasurement(std::pair<const std::string, TPUnit > &element, const std::string &quantity );
 
     //! \brief powerdevice to DC or rack and put it also in _affected* map
     void addDeviceToMap(
