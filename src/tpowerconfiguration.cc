@@ -145,7 +145,7 @@ void TotalPowerConfiguration::
             if( rack_it != _racks.end() ) {
                 // affected rack found
                 rack_it->second.setMeasurement(M);
-                sendMeasurement( _racks, _rackQuantities );
+                sendMeasurement(*rack_it, _rackQuantities );
             }
         }
     }
@@ -158,7 +158,7 @@ void TotalPowerConfiguration::
             if( dc_it != _DCs.end() ) {
                 // affected dc found
                 dc_it->second.setMeasurement(M);
-                sendMeasurement( _DCs, _dcQuantities );
+                sendMeasurement(*dc_it, _dcQuantities );
             }
         }
     }
@@ -168,39 +168,47 @@ void TotalPowerConfiguration::
 
 void TotalPowerConfiguration::
     sendMeasurement(
+        std::pair<const std::string, TPUnit > &element,
+        const std::vector<std::string> &quantities)
+{
+    // renaming for better reading
+    auto &powerUnit = element.second;
+    powerUnit.calculate( quantities );
+    for( const auto &q : quantities ) {
+        if( powerUnit.advertise(q) ) {
+            try {
+                MetricInfo M = powerUnit.getMetricInfo(q);
+                bool isSent = _sendingFunction(M);
+                if( isSent ) {
+                    powerUnit.advertised(q);
+                }
+            } catch (...) {
+                zsys_error ("Some unexpected error during sending new measurement");
+            };
+        } else {
+            // log something from time to time if device calculation is unknown
+            auto devices = element.second.devicesInUnknownState(q);
+            if( ! devices.empty() ) {
+                std::string devicesText;
+                for( auto &it: devices ) {
+                    devicesText += it + " ";
+                }
+                zsys_info("Devices preventing total %s calculation for %s are: %s",
+                         q.c_str(),
+                         element.first.c_str(),
+                         devicesText.c_str() );
+            }
+        }
+    }
+}
+
+void TotalPowerConfiguration::
+    sendMeasurement(
         std::map< std::string, TPUnit > &elements,
         const std::vector<std::string> &quantities)
 {
     for( auto &element : elements ) {
-        // renaming for better reading
-        auto &powerUnit = element.second;
-        powerUnit.calculate( quantities );
-        for( const auto &q : quantities ) {
-            if( powerUnit.advertise(q) ) {
-                try {
-                    MetricInfo M = powerUnit.getMetricInfo(q);
-                    bool isSent = _sendingFunction(M);
-                    if( isSent ) {
-                        powerUnit.advertised(q);
-                    }
-                } catch (...) {
-                    zsys_error ("Some unexpected error during sending new measurement");
-                };
-            } else {
-                // log something from time to time if device calculation is unknown
-                auto devices = element.second.devicesInUnknownState(q);
-                if( ! devices.empty() ) {
-                    std::string devicesText;
-                    for( auto &it: devices ) {
-                        devicesText += it + " ";
-                    }
-                    zsys_info("Devices preventing total %s calculation for %s are: %s",
-                             q.c_str(),
-                             element.first.c_str(),
-                             devicesText.c_str() );
-                }
-            }
-        }
+        sendMeasurement(element, quantities);
     }
 }
 
