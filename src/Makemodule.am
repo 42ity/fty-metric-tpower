@@ -18,7 +18,6 @@ src_libfty_metric_tpower_la_SOURCES = \
     src/tpowerconfiguration.cc \
     src/metriclist.cc \
     src/tp_unit.cc \
-    src/proto_metric_unavailable.cc \
     src/fty_metric_tpower_server.cc \
     src/watchdog.cc \
     src/platform.h

@@ -48,8 +48,6 @@ fty_metric_tpower_private_selftest (bool verbose, const char *subtest)
         metriclist_test (verbose);
     if (streq (subtest, "$ALL") || streq (subtest, "tp_unit_test"))
         tp_unit_test (verbose);
-    if (streq (subtest, "$ALL") || streq (subtest, "proto_metric_unavailable_test"))
-        proto_metric_unavailable_test (verbose);
 }
 /*
 ################################################################################

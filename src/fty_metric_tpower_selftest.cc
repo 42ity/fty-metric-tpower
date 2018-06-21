@@ -60,7 +60,6 @@ all_tests [] = {
     { "tpowerconfiguration", NULL, true, false, "tpowerconfiguration_test" },
     { "metriclist", NULL, true, false, "metriclist_test" },
     { "tp_unit", NULL, true, false, "tp_unit_test" },
-    { "proto_metric_unavailable", NULL, true, false, "proto_metric_unavailable_test" },
     { "private_classes", NULL, false, false, "$ALL" }, // compat option for older projects
 #endif // FTY_METRIC_TPOWER_BUILD_DRAFT_API
     {NULL, NULL, 0, 0, NULL}          //  Sentinel
