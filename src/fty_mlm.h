@@ -67,7 +67,6 @@ public:
     /**
      * if the connection to malamute broker is lost for more than 5 minutes force
      * the process to exit.
-     * @return false when connection is lost for more than 5 minutes
      */
     void check_connection_alive_or_die();
 
