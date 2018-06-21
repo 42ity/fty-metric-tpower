@@ -193,7 +193,8 @@ void TotalPowerConfiguration::
                 for( auto &it: devices ) {
                     devicesText += it + " ";
                 }
-                zsys_info("Devices preventing total %s calculation for %s are: %s",
+                zsys_info("%zd devices preventing total %s calculation for %s: %s",
+                         devices.size(),
                          q.c_str(),
                          element.first.c_str(),
                          devicesText.c_str() );
