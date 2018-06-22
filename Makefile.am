@@ -57,13 +57,13 @@ EXTRA_DIST += \
 endif
 
 EXTRA_DIST += \
+    src/fty_mlm.h \
     src/metricinfo.h \
     src/calc_power.h \
     src/tpowerconfiguration.h \
     src/metriclist.h \
     src/tp_unit.h \
     src/proto_metric_unavailable.h \
-    src/fty_mlm.h \
     README.md \
     src/fty_metric_tpower_classes.h
 
