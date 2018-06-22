@@ -49,7 +49,7 @@ public:
     };
 
     void processMetric (const MetricInfo &M, const std::string &topic);
-    void processAsset (const std::string &topic);
+    void processAsset (fty_proto_t *message);
     void onPoll();
     //! \brief read configuration from database
     bool configure();

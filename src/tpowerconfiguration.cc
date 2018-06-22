@@ -121,14 +121,24 @@ void TotalPowerConfiguration::addDeviceToMap(
 
 
 void TotalPowerConfiguration::
-    processAsset( const std::string &topic)
+    processAsset(fty_proto_t *message)
 {
+    std::string operation(fty_proto_operation(message));
+    if (operation != FTY_PROTO_ASSET_OP_CREATE &&
+        operation != FTY_PROTO_ASSET_OP_UPDATE &&
+        operation != FTY_PROTO_ASSET_OP_DELETE &&
+        operation != FTY_PROTO_ASSET_OP_RETIRE) {
+        return;
+    }
+
     // something is beeing reconfigured, let things to settle down
     if( _reconfigPending == 0 ) {
         zsys_info("Reconfiguration scheduled");
         _reconfigPending = ::time(NULL) + 60; // in 60[s]
     }
     _timeout = getPollInterval();
+    zsys_info("ASSET %s %s operation processed", fty_proto_name(message),
+            operation.c_str());
 }
 
 bool TotalPowerConfiguration::isRackQuantity(const std::string &quantity) const
