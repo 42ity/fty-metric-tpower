@@ -38,6 +38,10 @@ class TPUnit {
 
     //\! \brief calculate total value for all interesting quantities
     void calculate(const std::vector<std::string> &quantities);
+    //\! \brief calculate total value for one quantity
+    void calculate(const std::string &quantity);
+    //\! \brief discard obsolete measurements
+    void dropOldMetricInfos();
 
     //\! \brief get value of particular quantity. Method throws an exception if quantity is unknown.
     double get( const std::string &quantity) const;
@@ -126,10 +130,6 @@ class TPUnit {
         const std::string &deviceName
     ) const;
 
-    //\! \brief calculate total value for one quantity
-    void calculate(const std::string &quantity);
-    //\! \brief discard obsolete measurements
-    void dropOldMetricInfos();
     //\! \brief calculate simple sum over devices considering the replacement table
     MetricInfo simpleSummarize(const std::string &quantity) const;
     //\! \brief calculate realpower sum over devices
