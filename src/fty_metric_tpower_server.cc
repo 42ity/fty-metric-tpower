@@ -88,20 +88,6 @@ static void
     config.processMetric (m, topic);
 }
 
-// ============================================================
-//         Functionality for ASSET processing
-// ============================================================
-static void
-    s_processAsset(
-        TotalPowerConfiguration &config,
-        const std::string &topic,
-        fty_proto_t **bmessage_p)
-{
-    //fty_proto_t *bmessage = *bmessage_p;
-    config.processAsset (topic);
-    zsys_info ("ASSET PROCESSED");
-}
-
 void
 fty_metric_tpower_server (zsock_t *pipe, void* args)
 {
@@ -234,7 +220,7 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
                 s_processMetric (tpower_conf, topic, &bmessage);
             }
             else if (fty_proto_id (bmessage) == FTY_PROTO_ASSET)  {
-                s_processAsset (tpower_conf, topic, &bmessage);
+                tpower_conf.processAsset(bmessage);
             }
             else {
                 zsys_error ("it is not an alert message, ignore it");

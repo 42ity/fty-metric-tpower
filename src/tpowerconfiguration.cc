@@ -36,6 +36,7 @@ extern int agent_tpower_verbose;
 #include <exception>
 #include <errno.h>
 #include <tntdb/connect.h>
+#include <algorithm>
 
 #include <stdlib.h>
 
@@ -120,14 +121,36 @@ void TotalPowerConfiguration::addDeviceToMap(
 
 
 void TotalPowerConfiguration::
-    processAsset( const std::string &topic)
+    processAsset(fty_proto_t *message)
 {
+    std::string operation(fty_proto_operation(message));
+    if (operation != FTY_PROTO_ASSET_OP_CREATE &&
+        operation != FTY_PROTO_ASSET_OP_UPDATE &&
+        operation != FTY_PROTO_ASSET_OP_DELETE &&
+        operation != FTY_PROTO_ASSET_OP_RETIRE) {
+        return;
+    }
+
     // something is beeing reconfigured, let things to settle down
     if( _reconfigPending == 0 ) {
         zsys_info("Reconfiguration scheduled");
         _reconfigPending = ::time(NULL) + 60; // in 60[s]
     }
     _timeout = getPollInterval();
+    zsys_info("ASSET %s %s operation processed", fty_proto_name(message),
+            operation.c_str());
+}
+
+bool TotalPowerConfiguration::isRackQuantity(const std::string &quantity) const
+{
+    return std::find(_rackQuantities.begin(), _rackQuantities.end(),
+            quantity) != _rackQuantities.end();
+}
+
+bool TotalPowerConfiguration::isDCQuantity(const std::string &quantity) const
+{
+    return std::find(_dcQuantities.begin(), _dcQuantities.end(),
+            quantity) != _dcQuantities.end();
 }
 
 void TotalPowerConfiguration::
@@ -135,8 +158,10 @@ void TotalPowerConfiguration::
         const MetricInfo &M,
         const std::string &topic)
 {
+    // realpower.input.L3@epdu-42
+    std::string quantity = topic.substr(0, topic.find('@'));
     // ASSUMTION: one device can affect only one ASSET of each type ( Datacenter or Rack )
-    if( _rackRegex.match(topic) ) {
+    if (isRackQuantity(quantity)) {
         auto affected_it = _affectedRacks.find( M.getElementName() );
         if( affected_it != _affectedRacks.end() ) {
             // this device affects some total rack power
@@ -145,11 +170,11 @@ void TotalPowerConfiguration::
             if( rack_it != _racks.end() ) {
                 // affected rack found
                 rack_it->second.setMeasurement(M);
-                sendMeasurement(*rack_it, _rackQuantities );
+                sendMeasurement(*rack_it, quantity);
             }
         }
     }
-    if( _dcRegex.match(topic) ) {
+    if (isDCQuantity(quantity)) {
         auto affected_it = _affectedDCs.find( M.getElementName() );
         if( affected_it != _affectedDCs.end() ) {
             // this device affects some total DC power
@@ -158,7 +183,7 @@ void TotalPowerConfiguration::
             if( dc_it != _DCs.end() ) {
                 // affected dc found
                 dc_it->second.setMeasurement(M);
-                sendMeasurement(*dc_it, _dcQuantities );
+                sendMeasurement(*dc_it, quantity);
             }
         }
     }
@@ -169,35 +194,34 @@ void TotalPowerConfiguration::
 void TotalPowerConfiguration::
     sendMeasurement(
         std::pair<const std::string, TPUnit > &element,
-        const std::vector<std::string> &quantities)
+        const std::string &quantity)
 {
     // renaming for better reading
     auto &powerUnit = element.second;
-    powerUnit.calculate( quantities );
-    for( const auto &q : quantities ) {
-        if( powerUnit.advertise(q) ) {
-            try {
-                MetricInfo M = powerUnit.getMetricInfo(q);
-                bool isSent = _sendingFunction(M);
-                if( isSent ) {
-                    powerUnit.advertised(q);
-                }
-            } catch (...) {
-                zsys_error ("Some unexpected error during sending new measurement");
-            };
-        } else {
-            // log something from time to time if device calculation is unknown
-            auto devices = element.second.devicesInUnknownState(q);
-            if( ! devices.empty() ) {
-                std::string devicesText;
-                for( auto &it: devices ) {
-                    devicesText += it + " ";
-                }
-                zsys_info("Devices preventing total %s calculation for %s are: %s",
-                         q.c_str(),
-                         element.first.c_str(),
-                         devicesText.c_str() );
+    powerUnit.calculate( quantity );
+    if( powerUnit.advertise(quantity) ) {
+        try {
+            MetricInfo M = powerUnit.getMetricInfo(quantity);
+            bool isSent = _sendingFunction(M);
+            if( isSent ) {
+                powerUnit.advertised(quantity);
             }
+        } catch (...) {
+            zsys_error ("Some unexpected error during sending new measurement");
+        };
+    } else {
+        // log something from time to time if device calculation is unknown
+        auto devices = element.second.devicesInUnknownState(quantity);
+        if( ! devices.empty() ) {
+            std::string devicesText;
+            for( auto &it: devices ) {
+                devicesText += it + " ";
+            }
+            zsys_info("%zd devices preventing total %s calculation for %s: %s",
+                     devices.size(),
+                     quantity.c_str(),
+                     element.first.c_str(),
+                     devicesText.c_str() );
         }
     }
 }
@@ -208,7 +232,12 @@ void TotalPowerConfiguration::
         const std::vector<std::string> &quantities)
 {
     for( auto &element : elements ) {
-        sendMeasurement(element, quantities);
+        // XXX: This overload is called by onPoll() periodically, hence the
+        // purging
+        element.second.dropOldMetricInfos();
+        for (auto &quantity : quantities) {
+            sendMeasurement(element, quantity);
+        }
     }
 }
 
