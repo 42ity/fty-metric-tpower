@@ -99,6 +99,10 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
 
     const char *endpoint = static_cast<const char *>(args);
 
+    // Setup the watchdog
+    Watchdog watchdog;
+    watchdog.start();
+
     // Signal need to be send as it is required by "actor_new"
     zsock_signal (pipe, 0);
 
@@ -212,6 +216,9 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
                 zsys_error ("cannot decode fty_proto message, ignore it");
                 continue;
             }
+            // As long as we are receiving metrics from malamute, everything
+            // is fine
+            watchdog.tick();
             if (fty_proto_id (bmessage) == FTY_PROTO_METRIC)  {
                 s_processMetric (tpower_conf, topic, &bmessage);
             }
