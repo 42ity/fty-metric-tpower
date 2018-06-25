@@ -20,6 +20,7 @@ src_libfty_metric_tpower_la_SOURCES = \
     src/tp_unit.cc \
     src/proto_metric_unavailable.cc \
     src/fty_metric_tpower_server.cc \
+    src/watchdog.cc \
     src/platform.h
 
 if ENABLE_DRAFTS
