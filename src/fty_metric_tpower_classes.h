@@ -60,6 +60,10 @@ typedef struct _tp_unit_t tp_unit_t;
 typedef struct _proto_metric_unavailable_t proto_metric_unavailable_t;
 #define PROTO_METRIC_UNAVAILABLE_T_DEFINED
 #endif
+#ifndef WATCHDOG_T_DEFINED
+typedef struct _watchdog_t watchdog_t;
+#define WATCHDOG_T_DEFINED
+#endif
 
 //  Internal API
 
@@ -69,6 +73,7 @@ typedef struct _proto_metric_unavailable_t proto_metric_unavailable_t;
 #include "metriclist.h"
 #include "tp_unit.h"
 #include "proto_metric_unavailable.h"
+#include "watchdog.h"
 
 //  *** To avoid double-definitions, only define if building without draft ***
 #ifndef FTY_METRIC_TPOWER_BUILD_DRAFT_API
