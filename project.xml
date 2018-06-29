@@ -66,7 +66,6 @@
     <class name = "tpowerconfiguration" private="1"> Configuration</class>
     <class name = "metriclist" private="1"> metriclist</class>
     <class name = "tp-unit" private="1"> Power unit </class>
-    <class name = "proto-metric-unavailable"    private = "1">metric unavailable protocol send part</class>
     <class name = "fty_metric_tpower_server" state = "stable" >Actor generating new metrics</class>
     <class name = "watchdog" private = "1" selftest = "0">Watchdog</class>
     <main name = "fty-metric-tpower" service = "1">

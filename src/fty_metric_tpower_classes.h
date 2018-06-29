@@ -56,10 +56,6 @@ typedef struct _metriclist_t metriclist_t;
 typedef struct _tp_unit_t tp_unit_t;
 #define TP_UNIT_T_DEFINED
 #endif
-#ifndef PROTO_METRIC_UNAVAILABLE_T_DEFINED
-typedef struct _proto_metric_unavailable_t proto_metric_unavailable_t;
-#define PROTO_METRIC_UNAVAILABLE_T_DEFINED
-#endif
 #ifndef WATCHDOG_T_DEFINED
 typedef struct _watchdog_t watchdog_t;
 #define WATCHDOG_T_DEFINED
@@ -72,7 +68,6 @@ typedef struct _watchdog_t watchdog_t;
 #include "tpowerconfiguration.h"
 #include "metriclist.h"
 #include "tp_unit.h"
-#include "proto_metric_unavailable.h"
 #include "watchdog.h"
 
 //  *** To avoid double-definitions, only define if building without draft ***
@@ -102,11 +97,6 @@ FTY_METRIC_TPOWER_PRIVATE void
 //  Self test of this class.
 FTY_METRIC_TPOWER_PRIVATE void
     tp_unit_test (bool verbose);
-
-//  *** Draft method, defined for internal use only ***
-//  Self test of this class.
-FTY_METRIC_TPOWER_PRIVATE void
-    proto_metric_unavailable_test (bool verbose);
 
 //  Self test for private classes
 FTY_METRIC_TPOWER_PRIVATE void

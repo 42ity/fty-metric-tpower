@@ -62,7 +62,6 @@ EXTRA_DIST += \
     src/tpowerconfiguration.h \
     src/metriclist.h \
     src/tp_unit.h \
-    src/proto_metric_unavailable.h \
     src/watchdog.h \
     src/fty_mlm.h \
     README.md \
