@@ -58,6 +58,8 @@ BuildRequires:  malamute-devel
 BuildRequires:  fty-proto-devel
 BuildRequires:  cxxtools-devel
 BuildRequires:  tntdb-devel
+BuildRequires:  log4cplus-devel
+BuildRequires:  fty-common-logging-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -89,6 +91,8 @@ Requires:       malamute-devel
 Requires:       fty-proto-devel
 Requires:       cxxtools-devel
 Requires:       tntdb-devel
+Requires:       log4cplus-devel
+Requires:       fty-common-logging-devel
 
 %description devel
 42ity component for power metrics computation development tools
