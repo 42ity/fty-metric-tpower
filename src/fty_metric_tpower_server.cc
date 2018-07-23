@@ -29,18 +29,13 @@
 // DO NOT CHANGE! as other agents can rely on this name
 static const char *AGENT_NAME = "agent-tpower";
 
-int agent_tpower_verbose = 0;
-
-#define zsys_debug1(...) \
-    do { if (agent_tpower_verbose) zsys_debug (__VA_ARGS__); } while (0);
-
 #include "fty_metric_tpower_classes.h"
 #include <string>
 // ============================================================
 //         Functionality for METRIC processing and publishing
 // ============================================================
 bool send_metrics (mlm_client_t* client, const MetricInfo &M){
-    zsys_debug1 ("Metric is sent: topic = %s , time = %s", M.generateTopic().c_str(), std::to_string(M.getTimestamp()).c_str());
+    log_trace ("Metric is sent: topic = %s , time = %s", M.generateTopic().c_str(), std::to_string(M.getTimestamp()).c_str());
     zmsg_t *msg = fty_proto_encode_metric (
             NULL,
             ::time (NULL),
@@ -75,7 +70,7 @@ static void
         if (errno == ERANGE)
             errno = 0;
 
-        zsys_info ("cannot convert value '%s' to double, ignore message\n", value);
+        log_info ("cannot convert value '%s' to double, ignore message\n", value);
         fty_proto_print (bmessage);
         return;
     }
@@ -86,7 +81,7 @@ static void
     uint32_t ttl = fty_proto_ttl(bmessage);
     uint64_t timestamp = fty_proto_time (bmessage);
 
-    zsys_debug1("Got message '%s' with value %s\n", topic.c_str(), value);
+    log_trace("Got message '%s' with value %s\n", topic.c_str(), value);
 
     MetricInfo m (element_src, type, unit, dvalue, timestamp, "", ttl);
     config.processMetric (m, topic);
@@ -95,8 +90,6 @@ static void
 void
 fty_metric_tpower_server (zsock_t *pipe, void* args)
 {
-    bool verbose = false;
-
     const char *endpoint = static_cast<const char *>(args);
 
     // Setup the watchdog
@@ -108,29 +101,29 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
 
     MlmClientGuard client(mlm_client_new());
     if (!client) {
-        zsys_error("mlm_client_new () failed");
+        log_error("mlm_client_new () failed");
         return;
     }
     if (mlm_client_connect(client, endpoint, 1000, AGENT_NAME) < 0) {
-        zsys_error("%s: can't connect to malamute endpoint '%s'",
+        log_error("%s: can't connect to malamute endpoint '%s'",
                 AGENT_NAME, endpoint);
         zstr_send(pipe, "$TERM");
         return;
     }
     if (mlm_client_set_producer(client, FTY_PROTO_STREAM_METRICS) < 0) {
-        zsys_error("%s: can't set producer on stream '%s'",
+        log_error("%s: can't set producer on stream '%s'",
                 AGENT_NAME, FTY_PROTO_STREAM_METRICS);
         zstr_send(pipe, "$TERM");
         return;
     }
     if (mlm_client_set_consumer(client, FTY_PROTO_STREAM_METRICS, "^realpower.*") < 0) {
-        zsys_error("%s: can't set consumer on stream '%s', '%s'",
+        log_error("%s: can't set consumer on stream '%s', '%s'",
                 AGENT_NAME, FTY_PROTO_STREAM_METRICS, "^realpower.*");
         zstr_send(pipe, "$TERM");
         return;
     }
     if (mlm_client_set_consumer(client, FTY_PROTO_STREAM_ASSETS, ".*") < 0) {
-        zsys_error("%s: can't set consumer on stream '%s', '%s'",
+        log_error("%s: can't set consumer on stream '%s', '%s'",
                 AGENT_NAME, FTY_PROTO_STREAM_ASSETS, ".*");
         zstr_send(pipe, "$TERM");
         return;
@@ -153,37 +146,29 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
         uint64_t now = zclock_mono();
         if (now - last >= static_cast<uint64_t>(tpower_conf.getTimeout())) {
             last = now;
-            zsys_debug("Periodic polling");
+            log_debug("Periodic polling");
             tpower_conf.onPoll();
         }
         if ( zpoller_expired (poller) ) {
             continue;
         }
         if ( zpoller_terminated (poller) ) {
-            zsys_info ("poller was terminated");
+            log_info ("poller was terminated");
             break;
         }
 
         if (which == pipe) {
             ZmsgGuard msg(zmsg_recv (pipe));
             ZstrGuard cmd(zmsg_popstr(msg));
-            if ( verbose ) {
-                zsys_debug1 ("actor command=%s", cmd.get());
-            }
+            log_trace ("actor command=%s", cmd.get());
 
             if (streq (cmd, "$TERM")) {
-                zsys_info ("Got $TERM");
+                log_info ("Got $TERM");
                 break;
             }
             else
-            if (streq (cmd, "VERBOSE")) {
-                verbose = true;
-                agent_tpower_verbose = true;
-                zsys_debug1 ("VERBOSE received");
-            }
-            else
             {
-                zsys_info ("unhandled command %s", cmd.get());
+                log_info ("unhandled command %s", cmd.get());
             }
             continue;
         }
@@ -195,9 +180,7 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
             continue;
         }
         std::string topic = mlm_client_subject(client);
-        if ( verbose ) {
-            zsys_debug1("Got message '%s'", topic.c_str());
-        }
+        log_trace("Got message '%s'", topic.c_str());
         // What is going on???
         //
         // Listen on metrics +
@@ -213,7 +196,7 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
         if (is_fty_proto (zmessage)) {
             fty_proto_t *bmessage = fty_proto_decode (&zmessage);
             if (!bmessage) {
-                zsys_error ("cannot decode fty_proto message, ignore it");
+                log_error ("cannot decode fty_proto message, ignore it");
                 continue;
             }
             // As long as we are receiving metrics from malamute, everything
@@ -226,12 +209,12 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
                 tpower_conf.processAsset(bmessage);
             }
             else {
-                zsys_error ("it is not an alert message, ignore it");
+                log_error ("it is not an alert message, ignore it");
             }
             fty_proto_destroy (&bmessage);
         }
         else {
-            zsys_error ("not fty proto");
+            log_error ("not fty proto");
         }
 
         // listen
@@ -250,13 +233,14 @@ fty_metric_tpower_server_test (bool verbose)
 {
     printf (" * fty_metric_tpower_server: ");
 
+    ManageFtyLog::setInstanceFtylog("fty_metric_tpower_server");
     //  @selftest
     static const char* endpoint = "inproc://bios-tpower-server-test";
 
     zactor_t *server = zactor_new (mlm_server, (void*) "Malamute");
     zstr_sendx (server, "BIND", endpoint, NULL);
     if (verbose)
-        zstr_send (server, "VERBOSE");
+         ManageFtyLog::getInstanceFtylog()->setVeboseMode();
 
     mlm_client_t *producer = mlm_client_new ();
     mlm_client_connect (producer, endpoint, 1000, "producer");

@@ -27,6 +27,7 @@
 */
 
 #include "watchdog.h"
+#include <fty_log.h>
 
 #define WATCHDOG_INTERVAL 60
 #define WATCHDOG_LIMIT 600
@@ -63,7 +64,7 @@ static void watchdog_thread(zsock_t *pipe, void* args)
         } else if (wd->check()) {
             continue;
         }
-        zsys_error("watchdog expired");
+        log_error("watchdog expired");
         exit(2);
     }
     zpoller_destroy(&poller);

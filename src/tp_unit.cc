@@ -17,10 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
-extern int agent_tpower_verbose;
-#define zsys_debug1(...) \
-    do { if (agent_tpower_verbose) zsys_debug (__VA_ARGS__); } while (0);
-
 
 #include "fty_metric_tpower_classes.h"
 #include <ctime>

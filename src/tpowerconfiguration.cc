@@ -25,9 +25,6 @@
 @discuss
 @end
 */
-extern int agent_tpower_verbose;
-#define zsys_debug1(...) \
-    do { if (agent_tpower_verbose) zsys_debug (__VA_ARGS__); } while (0);
 
 #include "fty_metric_tpower_classes.h"
 #include <stdio.h>
@@ -50,7 +47,7 @@ bool TotalPowerConfiguration::
     configure(void)
 {
     // TODO should be rewritten, for usinf messages
-    zsys_info ("loading power topology");
+    log_info ("loading power topology");
     try {
         // remove old topology
         _racks.clear();
@@ -65,10 +62,10 @@ bool TotalPowerConfiguration::
 
         if( ret.status ) {
             for( auto &rack_it: ret.item ) {
-                zsys_info("rack '%s' powerdevices:", rack_it.first.c_str() );
+                log_info("rack '%s' powerdevices:", rack_it.first.c_str() );
                 auto &devices = rack_it.second;
                 for( auto &device_it: devices ) {
-                    zsys_info("         -'%s'", device_it.c_str() );
+                    log_info("         -'%s'", device_it.c_str() );
                     addDeviceToMap(_racks, _affectedRacks, rack_it.first, device_it );
                 }
             }
@@ -77,10 +74,10 @@ bool TotalPowerConfiguration::
         ret = select_devices_total_power_dcs (connection);
         if( ret.status ) {
             for( auto &dc_it: ret.item ) {
-                zsys_info("DC '%s' powerdevices:", dc_it.first.c_str() );
+                log_info("DC '%s' powerdevices:", dc_it.first.c_str() );
                 auto &devices = dc_it.second;
                 for( auto &device_it: devices ) {
-                    zsys_info("         -'%s'", device_it.c_str() );
+                    log_info("         -'%s'", device_it.c_str() );
                     addDeviceToMap(_DCs, _affectedDCs, dc_it.first, device_it );
                 }
             }
@@ -88,14 +85,14 @@ bool TotalPowerConfiguration::
         connection.close();
         // no reconfiguration should be scheduled
         _reconfigPending = 0;
-        zsys_info ("topology loaded SUCCESS");
+        log_info ("topology loaded SUCCESS");
         return true;
     } catch (const std::exception &e) {
-        zsys_error("Failed to read configuration from database. Excepton caught: '%s'.", e.what ());
+        log_error("Failed to read configuration from database. Excepton caught: '%s'.", e.what ());
         _reconfigPending = ::time(NULL) + 60;
         return false;
     } catch (...) {
-        zsys_error ("Failed to read configuration from database. Unknown exception caught.");
+        log_error ("Failed to read configuration from database. Unknown exception caught.");
         _reconfigPending = ::time(NULL) + 60;
         return false;
     }
@@ -133,11 +130,11 @@ void TotalPowerConfiguration::
 
     // something is beeing reconfigured, let things to settle down
     if( _reconfigPending == 0 ) {
-        zsys_info("Reconfiguration scheduled");
+        log_info("Reconfiguration scheduled");
         _reconfigPending = ::time(NULL) + 60; // in 60[s]
     }
     _timeout = getPollInterval();
-    zsys_info("ASSET %s %s operation processed", fty_proto_name(message),
+    log_info("ASSET %s %s operation processed", fty_proto_name(message),
             operation.c_str());
 }
 
@@ -165,7 +162,7 @@ void TotalPowerConfiguration::
         auto affected_it = _affectedRacks.find( M.getElementName() );
         if( affected_it != _affectedRacks.end() ) {
             // this device affects some total rack power
-            zsys_debug1("measurement is interesting for rack %s", affected_it->second.c_str() );
+            log_trace("measurement is interesting for rack %s", affected_it->second.c_str() );
             auto rack_it = _racks.find( affected_it->second );
             if( rack_it != _racks.end() ) {
                 // affected rack found
@@ -178,7 +175,7 @@ void TotalPowerConfiguration::
         auto affected_it = _affectedDCs.find( M.getElementName() );
         if( affected_it != _affectedDCs.end() ) {
             // this device affects some total DC power
-            zsys_debug1("measurement is interesting for DC %s", affected_it->second.c_str() );
+            log_trace("measurement is interesting for DC %s", affected_it->second.c_str() );
             auto dc_it = _DCs.find( affected_it->second );
             if( dc_it != _DCs.end() ) {
                 // affected dc found
@@ -207,7 +204,7 @@ void TotalPowerConfiguration::
                 powerUnit.advertised(quantity);
             }
         } catch (...) {
-            zsys_error ("Some unexpected error during sending new measurement");
+            log_error ("Some unexpected error during sending new measurement");
         };
     } else {
         // log something from time to time if device calculation is unknown
@@ -217,7 +214,7 @@ void TotalPowerConfiguration::
             for( auto &it: devices ) {
                 devicesText += it + " ";
             }
-            zsys_info("%zd devices preventing total %s calculation for %s: %s",
+            log_info("%zd devices preventing total %s calculation for %s: %s",
                      devices.size(),
                      quantity.c_str(),
                      element.first.c_str(),
