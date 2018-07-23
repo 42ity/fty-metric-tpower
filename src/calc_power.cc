@@ -15,16 +15,13 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-extern int agent_tpower_verbose;
-
-#define zsys_debug1(...) \
-    do { if (agent_tpower_verbose) zsys_debug (__VA_ARGS__); } while (0);
 
 #include <set>
 #include <functional>
 #include "calc_power.h"
 #include <tntdb/row.h>
 #include <tntdb/result.h>
+#include <fty_log.h>
 
 //=================================================================
 //NOTE ACE: this is a copy paste functionality from assets part
@@ -117,7 +114,7 @@ int
          std::function<void(const tntdb::Row&)> cb,
          std::string status)
 {
-    zsys_debug1 ("container element_id = %" PRIu32, element_id);
+    log_trace ("container element_id = %" PRIu32, element_id);
 
     try {
         // Can return more than one row.
@@ -141,7 +138,7 @@ int
         tntdb::Result result = st.set("containerid", element_id).
                                   set("vstatus", status).
                                   select();
-        zsys_debug1("[v_bios_asset_element_super_parent]: were selected %" PRIu32 " rows",
+        log_trace("[v_bios_asset_element_super_parent]: were selected %" PRIu32 " rows",
                                                             result.size());
         for ( auto &row: result ) {
             cb(row);
@@ -149,7 +146,7 @@ int
         return 0;
     }
     catch (const std::exception& e) {
-        zsys_error ("Error: ",e.what());
+        log_error ("Error: ",e.what());
         return -1;
     }
 }
@@ -173,7 +170,7 @@ list_devices_with_status (tntdb::Connection &conn, std::string status)
         );
 
         tntdb::Result result = st.set("vstatus", status).select();
-        zsys_debug1("[v_bios_asset_element]: were selected %" PRIu32 " rows",
+        log_trace("[v_bios_asset_element]: were selected %" PRIu32 " rows",
                                                             result.size());
         for (auto &row : result) {
             std::string device;
@@ -199,7 +196,7 @@ db_reply <std::set <std::pair<a_elmnt_id_t ,a_elmnt_id_t>>>
          a_elmnt_id_t element_id,
          std::string status)
 {
-    zsys_debug1 ("  links are selected for element_id = %" PRIi32, element_id);
+    log_trace ("  links are selected for element_id = %" PRIi32, element_id);
     a_lnk_tp_id_t linktype = INPUT_POWER_CHAIN;
 
     //      all powerlinks are included into "resultpowers"
@@ -238,13 +235,13 @@ db_reply <std::set <std::pair<a_elmnt_id_t ,a_elmnt_id_t>>>
                                   set("linktypeid", linktype).
                                   set("vstatus", status).
                                   select();
-        zsys_debug1("[t_bios_asset_link]: were selected %" PRIu32 " rows",
+        log_trace("[t_bios_asset_link]: were selected %" PRIu32 " rows",
                                                          result.size());
         // debug helper
         std::vector <std::string> inactive = list_devices_with_status (conn,"nonactive");
-        zsys_debug1 ("Inactive devices omitted:");
+        log_trace ("Inactive devices omitted:");
         for (auto dev : inactive) {
-            zsys_debug1 ("\t- %s", dev.c_str ());
+            log_trace ("\t- %s", dev.c_str ());
         }
 
         // Go through the selected links
@@ -270,7 +267,7 @@ db_reply <std::set <std::pair<a_elmnt_id_t ,a_elmnt_id_t>>>
         ret.errtype    = DB_ERR;
         ret.errsubtype = DB_ERROR_INTERNAL;
         ret.msg        = e.what();
-        zsys_error (e.what());
+        log_error (e.what());
         return ret;
     }
 }
@@ -351,7 +348,7 @@ db_reply <std::vector<db_a_elmnt_t>>
         tntdb::Result result = st.set("typeid", type_id).
                                   set("vstatus", status).
                                   select();
-        zsys_debug1("[v_bios_asset_element]: were selected %" PRIu32 " rows",
+        log_trace("[v_bios_asset_element]: were selected %" PRIu32 " rows",
                                                             result.size());
 
         // Go through the selected elements
@@ -379,7 +376,7 @@ db_reply <std::vector<db_a_elmnt_t>>
         ret.errsubtype    = DB_ERROR_INTERNAL;
         ret.msg           = e.what();
         ret.item.clear();
-        zsys_error(e.what());
+        log_error(e.what());
         return ret;
     }
 }
@@ -459,9 +456,9 @@ static void
                 new_border_devices.insert(it->second);
             else
             {
-                zsys_error ("DB can be in inconsistant state or some device "
+                log_error ("DB can be in inconsistant state or some device "
                         "has power source in the other container");
-                zsys_error ("device(as element) %" PRIu32 " is not in container",
+                log_error ("device(as element) %" PRIu32 " is not in container",
                                                 adevice);
                 // do nothing in this case
             }
@@ -546,7 +543,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
         (tntdb::Connection  &conn,
          int8_t container_type_id)
 {
-    zsys_debug1 ("  container_type_id = %" PRIi8, container_type_id);
+    log_trace ("  container_type_id = %" PRIi8, container_type_id);
     // name of the container is mapped onto the vector of names of its power sources
     std::map<std::string, std::vector<std::string> > item{};
     db_reply <std::map<std::string, std::vector<std::string> > > ret =
@@ -562,7 +559,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
         ret.msg        = allContainers.msg;
         ret.errtype    = allContainers.errtype;
         ret.errsubtype = allContainers.errsubtype;
-        zsys_error ("some error appears, during selecting the containers");
+        log_error ("some error appears, during selecting the containers");
         return ret;
     }
     // if there is no containers, then it is an error
@@ -572,7 +569,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
         ret.msg        = "there is no containers of requested type";
         ret.errtype    = DB_ERR;
         ret.errsubtype = DB_ERROR_NOTFOUND;
-        zsys_warning (ret.msg.c_str());
+        log_warning (ret.msg.c_str());
         return ret;
     }
 
@@ -615,7 +612,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
         std::vector<std::string> result(0);
         if ( rv != 0 )
         {
-            zsys_warning ("'%s': problems appeared in selecting devices",
+            log_warning ("'%s': problems appeared in selecting devices",
                                                     container.name.c_str());
             // so return an empty set of power devices
             ret.item.insert(std::pair< std::string, std::vector<std::string> >
@@ -624,7 +621,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
         }
         if ( container_devices.empty() )
         {
-            zsys_warning ("'%s': has no devices", container.name.c_str());
+            log_warning ("'%s': has no devices", container.name.c_str());
             // so return an empty set of power devices
             ret.item.insert(std::pair< std::string, std::vector<std::string> >
                                                     (container.name, result));
@@ -634,7 +631,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
         auto links = select_links_by_container (conn, container.id, "active");
         if ( links.status == 0 )
         {
-            zsys_warning ("'%s': internal problems in links detecting",
+            log_warning ("'%s': internal problems in links detecting",
                                                     container.name.c_str());
             // so return an empty set of power devices
             ret.item.insert(std::pair< std::string, std::vector<std::string> >
@@ -644,7 +641,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
 
         if ( links.item.empty() )
         {
-            zsys_warning ("'%s': has no power links", container.name.c_str());
+            log_warning ("'%s': has no power links", container.name.c_str());
             // so return an empty set of power devices
             ret.item.insert(std::pair< std::string, std::vector<std::string> >
                                                     (container.name, result));
@@ -665,7 +662,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
         //   then A is border device
         for ( auto &oneLink : links.item )
         {
-            zsys_debug1 ("  cur_link: %d->%d", oneLink.first, oneLink.second);
+            log_trace ("  cur_link: %d->%d", oneLink.first, oneLink.second);
             auto it = container_devices.find (oneLink.first);
             if ( it == container_devices.end() )
                 // if in the link first point is out of the Container,

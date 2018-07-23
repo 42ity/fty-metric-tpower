@@ -30,6 +30,9 @@
 
 #include <getopt.h>
 
+#define TPOWER_AGENT    "fty-metric-tpower"
+#define LOG_CONFIG      "/etc/fty/ftylog.cfg"
+
 // malamute's endpoint
 // TODO make endpoint configurable on the start of the agent
 static const void *ENDPOINT = "ipc://@/malamute";
@@ -48,12 +51,6 @@ int main (int argc, char *argv [])
 {
     int verbose = 0;
     int help = 0;
-
-    // set defaults
-    char* fty_log_level = getenv ("BIOS_LOG_LEVEL");
-    if ( fty_log_level && streq (fty_log_level, "LOG_DEBUG") ) {
-        verbose = 1;
-    }
 
     // get options
     int c;
@@ -97,16 +94,17 @@ int main (int argc, char *argv [])
         exit(1);
     }
 
-    zsys_info ("fty_metric_tpower STARTED");
+    ManageFtyLog::setInstanceFtylog(TPOWER_AGENT, LOG_CONFIG);
+    log_info ("fty_metric_tpower STARTED");
 
     zactor_t *tpower_server = zactor_new (fty_metric_tpower_server, const_cast<void *>(ENDPOINT));
     if ( !tpower_server ) {
-        zsys_error ("cannot start the daemon");
+        log_error ("cannot start the daemon");
         exit(1);
     }
 
     if (verbose) {
-        zstr_sendx (tpower_server, "VERBOSE", NULL);
+        ManageFtyLog::getInstanceFtylog()->setVeboseMode();
     }
     //  Accept and print any message back from server
     //  copy from src/malamute.c under MPL license
@@ -124,6 +122,6 @@ int main (int argc, char *argv [])
     }
 
     zactor_destroy (&tpower_server);
-    zsys_info ("fty_metric_tpower ENDED");
+    log_info ("fty_metric_tpower ENDED");
     return 0;
 }
