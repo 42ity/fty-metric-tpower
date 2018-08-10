@@ -33,7 +33,6 @@
 #include "../include/fty_metric_tpower.h"
 
 //  Extra headers
-#include "fty_mlm.h"
 
 //  Opaque class structures to allow forward references
 #ifndef METRICINFO_T_DEFINED
@@ -62,6 +61,7 @@ typedef struct _watchdog_t watchdog_t;
 #endif
 
 //  Internal API
+
 
 #include "metricinfo.h"
 #include "calc_power.h"

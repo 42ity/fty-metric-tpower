@@ -31,6 +31,8 @@ static const char *AGENT_NAME = "agent-tpower";
 
 #include "fty_metric_tpower_classes.h"
 #include <string>
+#include <fty_common_mlm_guards.h>
+
 // ============================================================
 //         Functionality for METRIC processing and publishing
 // ============================================================
