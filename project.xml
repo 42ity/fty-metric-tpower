@@ -70,7 +70,15 @@
             />
     </use>
 
-    <header name = "fty_mlm" private = "1">Malamute connection helpers</header>
+    <use project = "fty-common-mlm" libname = "libfty_common_mlm" header="fty_common_mlm_guards.h"
+        repository = "https://github.com/42ity/fty-common-mlm.git"
+        release = "master" >
+
+      <use project = "fty-common" libname = "libfty_common" header="fty_common.h"
+           repository = "https://github.com/42ity/fty-common.git"
+           release = "master" />
+    </use>
+
     <class name = "metricinfo" private="1"> Measurement</class>
     <class name = "calc_power" private="1"> Power calculation</class>
     <class name = "tpowerconfiguration" private="1"> Configuration</class>

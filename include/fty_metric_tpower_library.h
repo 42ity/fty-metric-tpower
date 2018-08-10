@@ -36,6 +36,7 @@
 #include <cxxtools/allocator.h>
 #include <tntdb.h>
 #include <fty_log.h>
+#include <fty_common_mlm_guards.h>
 
 //  FTY_METRIC_TPOWER version macros for compile-time API detection
 #define FTY_METRIC_TPOWER_VERSION_MAJOR 1
@@ -46,6 +47,7 @@
     ((major) * 10000 + (minor) * 100 + (patch))
 #define FTY_METRIC_TPOWER_VERSION \
     FTY_METRIC_TPOWER_MAKE_VERSION(FTY_METRIC_TPOWER_VERSION_MAJOR, FTY_METRIC_TPOWER_VERSION_MINOR, FTY_METRIC_TPOWER_VERSION_PATCH)
+
 
 #if defined (__WINDOWS__)
 #   if defined FTY_METRIC_TPOWER_STATIC

@@ -60,6 +60,8 @@ BuildRequires:  cxxtools-devel
 BuildRequires:  tntdb-devel
 BuildRequires:  log4cplus-devel
 BuildRequires:  fty-common-logging-devel
+BuildRequires:  fty-common-devel
+BuildRequires:  fty-common-mlm-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -93,6 +95,8 @@ Requires:       cxxtools-devel
 Requires:       tntdb-devel
 Requires:       log4cplus-devel
 Requires:       fty-common-logging-devel
+Requires:       fty-common-devel
+Requires:       fty-common-mlm-devel
 
 %description devel
 42ity component for power metrics computation development tools
