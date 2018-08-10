@@ -41,24 +41,6 @@
         release = "1.0-FTY-master"
         />
 
-    <use project = "fty-proto" libname = "libfty_proto" header="ftyproto.h" prefix="fty_proto"
-        min_major = "1" min_minor = "0" min_patch = "0"
-        repository = "https://github.com/42ity/fty-proto.git"
-        test = "fty_proto_test" >
-        <use project = "malamute" />
-    </use>
-
-    <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec" header="cxxtools/allocator.h"
-        repository = "https://github.com/42ity/cxxtools.git"
-        release = "2.2-FTY-master"
-        />
-
-    <use project = "tntdb" test="tntdb::Date::gmtime"
-        repository = "https://github.com/42ity/tntdb.git"
-        release = "1.3-FTY-master"
-        builddir = "tntdb"
-        />
-    <!-- use project = "tntdb" test="tntdb::connectCached" header="tntdb/connect.h" / -->
     <use project = "fty-common-logging" libname = "libfty_common_logging" header="fty_log.h"
         repository = "https://github.com/42ity/fty-common-logging.git"
         release = "master"
@@ -68,7 +50,27 @@
             repository = "https://github.com/42ity/log4cplus.git"
             release = "1.1.2-FTY-master"
             />
+
+        <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec" header="cxxtools/allocator.h"
+            repository = "https://github.com/42ity/cxxtools.git"
+            release = "2.2-FTY-master"
+            />
+
     </use>
+
+    <use project = "fty-proto" libname = "libfty_proto" header="ftyproto.h" prefix="fty_proto"
+        min_major = "1" min_minor = "0" min_patch = "0"
+        repository = "https://github.com/42ity/fty-proto.git"
+        test = "fty_proto_test" >
+        <use project = "malamute" />
+    </use>
+
+    <use project = "tntdb" test="tntdb::Date::gmtime"
+        repository = "https://github.com/42ity/tntdb.git"
+        release = "1.3-FTY-master"
+        builddir = "tntdb"
+        />
+    <!-- use project = "tntdb" test="tntdb::connectCached" header="tntdb/connect.h" / -->
 
     <use project = "fty-common-mlm" libname = "libfty_common_mlm" header="fty_common_mlm_guards.h"
         repository = "https://github.com/42ity/fty-common-mlm.git"

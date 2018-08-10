@@ -499,93 +499,93 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for libmlm
 dnl END of enabled attempts to search for libmlm
 
 
-was_fty_proto_check_lib_detected=no
+was_log4cplus_check_lib_detected=no
 
-search_libfty_proto="yes"
+search_log4cplus="yes"
 
-AC_ARG_WITH([libfty_proto],
+AC_ARG_WITH([log4cplus],
     [
-        AS_HELP_STRING([--with-libfty_proto],
-        [yes or no. Optionally specify libfty_proto prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
+        AS_HELP_STRING([--with-log4cplus],
+        [yes or no. Optionally specify log4cplus prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
     ],
     [
-        search_libfty_proto="yes"
+        search_log4cplus="yes"
     ],
     [
-        search_libfty_proto="yes"
+        search_log4cplus="yes"
     ])
-AS_CASE([x"${with_libfty_proto}"],
-    [xyes], [search_libfty_proto="yes"],
-    [xno],  [search_libfty_proto="no"])
+AS_CASE([x"${with_log4cplus}"],
+    [xyes], [search_log4cplus="yes"],
+    [xno],  [search_log4cplus="no"])
 
 dnl We do not abort right now, because the maintainer/developer may have
 dnl something particular in mind, e.g. to build just parts of a project.
-AS_IF([test x"${search_libfty_proto}" = xno],
-    [AC_MSG_WARN([Required dependency on fty_proto was explicitly disabled during configuration by '--with-libfty_proto=no'; subsequent full build of fty-metric-tpower may fail])])
+AS_IF([test x"${search_log4cplus}" = xno],
+    [AC_MSG_WARN([Required dependency on log4cplus was explicitly disabled during configuration by '--with-log4cplus=no'; subsequent full build of fty-metric-tpower may fail])])
 
-AS_IF([test x"${search_libfty_proto}" = xyes], [
+AS_IF([test x"${search_log4cplus}" = xyes], [
     # Archive previously detected and supplied flags
     PRE_SEARCH_CFLAGS="${CFLAGS}"
     PRE_SEARCH_LIBS="${LIBS}"
 
     found_pkgconfig=""
     found_linkname=""
-    PKG_CHECK_MODULES([fty_proto], [libfty_proto >= 1.0.0],
+    PKG_CHECK_MODULES([log4cplus], [log4cplus >= 0.0.0],
     [
-        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $fty_proto_LIBS"
-        was_fty_proto_check_lib_detected=pkgcfg
-        found_pkgconfig="libfty_proto"
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $log4cplus_LIBS"
+        was_log4cplus_check_lib_detected=pkgcfg
+        found_pkgconfig="log4cplus"
     ],
     [
-        AC_MSG_NOTICE([Package libfty_proto not found with needed constraints; falling back to defined compilability tests])
+        AC_MSG_NOTICE([Package log4cplus not found; falling back to defined compilability tests])
 
-        fty_proto_synthetic_cflags=""
-        fty_proto_synthetic_libs="-lfty_proto"
+        log4cplus_synthetic_cflags=""
+        log4cplus_synthetic_libs="-llog4cplus"
 
-        if test -n "${with_libfty_proto}" && test x"${with_libfty_proto}" != xyes && test x"${with_libfty_proto}" != xno; then
-            if test -r "${with_libfty_proto}/include/ftyproto.h"; then
-                fty_proto_synthetic_cflags="-I${with_libfty_proto}/include"
-                fty_proto_synthetic_libs="-L${with_libfty_proto}/lib -lfty_proto"
+        if test -n "${with_log4cplus}" && test x"${with_log4cplus}" != xyes && test x"${with_log4cplus}" != xno; then
+            if test -r "${with_log4cplus}/include/log4cplus/logger.h"; then
+                log4cplus_synthetic_cflags="-I${with_log4cplus}/include"
+                log4cplus_synthetic_libs="-L${with_log4cplus}/lib -llog4cplus"
             else
-            AC_MSG_ERROR([Header file ${with_libfty_proto}/include/ftyproto.h was not found. Please check libfty_proto prefix])
+            AC_MSG_ERROR([Header file ${with_log4cplus}/include/log4cplus/logger.h was not found. Please check log4cplus prefix])
             fi
         else
-            AC_CHECK_HEADER([ftyproto.h], [],
-            AC_MSG_ERROR([Header file ftyproto.h was not found in default search paths])
+            AC_CHECK_HEADER([log4cplus/logger.h], [],
+            AC_MSG_ERROR([Header file log4cplus/logger.h was not found in default search paths])
                 )
         fi
 
-        AC_CHECK_LIB([fty_proto], [fty_proto_test],
+        AC_CHECK_LIB([log4cplus], [appender_test],
             [
-                was_fty_proto_check_lib_detected=yes
-                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lfty_proto"
-                found_linkname="fty_proto"
+                was_log4cplus_check_lib_detected=yes
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -llog4cplus"
+                found_linkname="log4cplus"
             ],
-            [AC_MSG_ERROR([cannot link with -lfty_proto, install libfty_proto])])
+            [AC_MSG_ERROR([cannot link with -llog4cplus, install log4cplus])])
     ])
 
-dnl END of PKG_CHECK_MODULES and/or direct tests for libfty_proto
-    AS_CASE(["x${was_fty_proto_check_lib_detected}"],
+dnl END of PKG_CHECK_MODULES and/or direct tests for log4cplus
+    AS_CASE(["x${was_log4cplus_check_lib_detected}"],
         [xpkgcfg], [
-                AC_SUBST([pkgconfig_name_libfty_proto],[${found_pkgconfig}])
-                CFLAGS="${fty_proto_CFLAGS} ${CFLAGS}"
-                LIBS="${fty_proto_LIBS} ${LIBS}"
+                AC_SUBST([pkgconfig_name_log4cplus],[${found_pkgconfig}])
+                CFLAGS="${log4cplus_CFLAGS} ${CFLAGS}"
+                LIBS="${log4cplus_LIBS} ${LIBS}"
             ],
         [xyes], [
-                AC_SUBST([pkgconfig_name_libfty_proto],[${found_linkname}])
-                CFLAGS="${fty_proto_synthetic_cflags} ${CFLAGS}"
-                LDFLAGS="${fty_proto_synthetic_libs} ${LDFLAGS}"
-                LIBS="${fty_proto_synthetic_libs} ${LIBS}"
+                AC_SUBST([pkgconfig_name_log4cplus],[${found_linkname}])
+                CFLAGS="${log4cplus_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${log4cplus_synthetic_libs} ${LDFLAGS}"
+                LIBS="${log4cplus_synthetic_libs} ${LIBS}"
 
-                AC_SUBST([fty_proto_CFLAGS],[${fty_proto_synthetic_cflags}])
-                AC_SUBST([fty_proto_LIBS],[${fty_proto_synthetic_libs}])
+                AC_SUBST([log4cplus_CFLAGS],[${log4cplus_synthetic_cflags}])
+                AC_SUBST([log4cplus_LIBS],[${log4cplus_synthetic_libs}])
             ],
         [xno], [
-                AC_SUBST([pkgconfig_name_libfty_proto],[libfty_proto])
-            AC_MSG_ERROR([Cannot find pkg-config metadata for libfty_proto 1.0.0 or higher])
+                AC_SUBST([pkgconfig_name_log4cplus],[log4cplus])
+            AC_MSG_ERROR([Cannot find pkg-config metadata for log4cplus 0.0.0 or higher])
     ])
 ])
-dnl END of enabled attempts to search for libfty_proto
+dnl END of enabled attempts to search for log4cplus
 
 
 was_cxxtools_check_lib_detected=no
@@ -677,184 +677,6 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for cxxtools
 dnl END of enabled attempts to search for cxxtools
 
 
-was_tntdb_check_lib_detected=no
-
-search_tntdb="yes"
-
-AC_ARG_WITH([tntdb],
-    [
-        AS_HELP_STRING([--with-tntdb],
-        [yes or no. Optionally specify tntdb prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
-    ],
-    [
-        search_tntdb="yes"
-    ],
-    [
-        search_tntdb="yes"
-    ])
-AS_CASE([x"${with_tntdb}"],
-    [xyes], [search_tntdb="yes"],
-    [xno],  [search_tntdb="no"])
-
-dnl We do not abort right now, because the maintainer/developer may have
-dnl something particular in mind, e.g. to build just parts of a project.
-AS_IF([test x"${search_tntdb}" = xno],
-    [AC_MSG_WARN([Required dependency on tntdb was explicitly disabled during configuration by '--with-tntdb=no'; subsequent full build of fty-metric-tpower may fail])])
-
-AS_IF([test x"${search_tntdb}" = xyes], [
-    # Archive previously detected and supplied flags
-    PRE_SEARCH_CFLAGS="${CFLAGS}"
-    PRE_SEARCH_LIBS="${LIBS}"
-
-    found_pkgconfig=""
-    found_linkname=""
-    PKG_CHECK_MODULES([tntdb], [tntdb >= 0.0.0],
-    [
-        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $tntdb_LIBS"
-        was_tntdb_check_lib_detected=pkgcfg
-        found_pkgconfig="tntdb"
-    ],
-    [
-        AC_MSG_NOTICE([Package tntdb not found; falling back to defined compilability tests])
-
-        tntdb_synthetic_cflags=""
-        tntdb_synthetic_libs="-ltntdb"
-
-        if test -n "${with_tntdb}" && test x"${with_tntdb}" != xyes && test x"${with_tntdb}" != xno; then
-            if test -r "${with_tntdb}/include/tntdb.h"; then
-                tntdb_synthetic_cflags="-I${with_tntdb}/include"
-                tntdb_synthetic_libs="-L${with_tntdb}/lib -ltntdb"
-            else
-            AC_MSG_ERROR([Header file ${with_tntdb}/include/tntdb.h was not found. Please check tntdb prefix])
-            fi
-        else
-            AC_CHECK_HEADER([tntdb.h], [],
-            AC_MSG_ERROR([Header file tntdb.h was not found in default search paths])
-                )
-        fi
-
-        AC_CHECK_LIB([tntdb], [tntdb::Date::gmtime],
-            [
-                was_tntdb_check_lib_detected=yes
-                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -ltntdb"
-                found_linkname="tntdb"
-            ],
-            [AC_MSG_ERROR([cannot link with -ltntdb, install tntdb])])
-    ])
-
-dnl END of PKG_CHECK_MODULES and/or direct tests for tntdb
-    AS_CASE(["x${was_tntdb_check_lib_detected}"],
-        [xpkgcfg], [
-                AC_SUBST([pkgconfig_name_tntdb],[${found_pkgconfig}])
-                CFLAGS="${tntdb_CFLAGS} ${CFLAGS}"
-                LIBS="${tntdb_LIBS} ${LIBS}"
-            ],
-        [xyes], [
-                AC_SUBST([pkgconfig_name_tntdb],[${found_linkname}])
-                CFLAGS="${tntdb_synthetic_cflags} ${CFLAGS}"
-                LDFLAGS="${tntdb_synthetic_libs} ${LDFLAGS}"
-                LIBS="${tntdb_synthetic_libs} ${LIBS}"
-
-                AC_SUBST([tntdb_CFLAGS],[${tntdb_synthetic_cflags}])
-                AC_SUBST([tntdb_LIBS],[${tntdb_synthetic_libs}])
-            ],
-        [xno], [
-                AC_SUBST([pkgconfig_name_tntdb],[tntdb])
-            AC_MSG_ERROR([Cannot find pkg-config metadata for tntdb 0.0.0 or higher])
-    ])
-])
-dnl END of enabled attempts to search for tntdb
-
-
-was_log4cplus_check_lib_detected=no
-
-search_log4cplus="yes"
-
-AC_ARG_WITH([log4cplus],
-    [
-        AS_HELP_STRING([--with-log4cplus],
-        [yes or no. Optionally specify log4cplus prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
-    ],
-    [
-        search_log4cplus="yes"
-    ],
-    [
-        search_log4cplus="yes"
-    ])
-AS_CASE([x"${with_log4cplus}"],
-    [xyes], [search_log4cplus="yes"],
-    [xno],  [search_log4cplus="no"])
-
-dnl We do not abort right now, because the maintainer/developer may have
-dnl something particular in mind, e.g. to build just parts of a project.
-AS_IF([test x"${search_log4cplus}" = xno],
-    [AC_MSG_WARN([Required dependency on log4cplus was explicitly disabled during configuration by '--with-log4cplus=no'; subsequent full build of fty-metric-tpower may fail])])
-
-AS_IF([test x"${search_log4cplus}" = xyes], [
-    # Archive previously detected and supplied flags
-    PRE_SEARCH_CFLAGS="${CFLAGS}"
-    PRE_SEARCH_LIBS="${LIBS}"
-
-    found_pkgconfig=""
-    found_linkname=""
-    PKG_CHECK_MODULES([log4cplus], [log4cplus >= 0.0.0],
-    [
-        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $log4cplus_LIBS"
-        was_log4cplus_check_lib_detected=pkgcfg
-        found_pkgconfig="log4cplus"
-    ],
-    [
-        AC_MSG_NOTICE([Package log4cplus not found; falling back to defined compilability tests])
-
-        log4cplus_synthetic_cflags=""
-        log4cplus_synthetic_libs="-llog4cplus"
-
-        if test -n "${with_log4cplus}" && test x"${with_log4cplus}" != xyes && test x"${with_log4cplus}" != xno; then
-            if test -r "${with_log4cplus}/include/log4cplus/logger.h"; then
-                log4cplus_synthetic_cflags="-I${with_log4cplus}/include"
-                log4cplus_synthetic_libs="-L${with_log4cplus}/lib -llog4cplus"
-            else
-            AC_MSG_ERROR([Header file ${with_log4cplus}/include/log4cplus/logger.h was not found. Please check log4cplus prefix])
-            fi
-        else
-            AC_CHECK_HEADER([log4cplus/logger.h], [],
-            AC_MSG_ERROR([Header file log4cplus/logger.h was not found in default search paths])
-                )
-        fi
-
-        AC_CHECK_LIB([log4cplus], [appender_test],
-            [
-                was_log4cplus_check_lib_detected=yes
-                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -llog4cplus"
-                found_linkname="log4cplus"
-            ],
-            [AC_MSG_ERROR([cannot link with -llog4cplus, install log4cplus])])
-    ])
-
-dnl END of PKG_CHECK_MODULES and/or direct tests for log4cplus
-    AS_CASE(["x${was_log4cplus_check_lib_detected}"],
-        [xpkgcfg], [
-                AC_SUBST([pkgconfig_name_log4cplus],[${found_pkgconfig}])
-                CFLAGS="${log4cplus_CFLAGS} ${CFLAGS}"
-                LIBS="${log4cplus_LIBS} ${LIBS}"
-            ],
-        [xyes], [
-                AC_SUBST([pkgconfig_name_log4cplus],[${found_linkname}])
-                CFLAGS="${log4cplus_synthetic_cflags} ${CFLAGS}"
-                LDFLAGS="${log4cplus_synthetic_libs} ${LDFLAGS}"
-                LIBS="${log4cplus_synthetic_libs} ${LIBS}"
-
-                AC_SUBST([log4cplus_CFLAGS],[${log4cplus_synthetic_cflags}])
-                AC_SUBST([log4cplus_LIBS],[${log4cplus_synthetic_libs}])
-            ],
-        [xno], [
-                AC_SUBST([pkgconfig_name_log4cplus],[log4cplus])
-            AC_MSG_ERROR([Cannot find pkg-config metadata for log4cplus 0.0.0 or higher])
-    ])
-])
-dnl END of enabled attempts to search for log4cplus
-
-
 was_fty_common_logging_check_lib_detected=no
 
 search_libfty_common_logging="yes"
@@ -942,6 +764,184 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for libfty_common_logging
     ])
 ])
 dnl END of enabled attempts to search for libfty_common_logging
+
+
+was_fty_proto_check_lib_detected=no
+
+search_libfty_proto="yes"
+
+AC_ARG_WITH([libfty_proto],
+    [
+        AS_HELP_STRING([--with-libfty_proto],
+        [yes or no. Optionally specify libfty_proto prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
+    ],
+    [
+        search_libfty_proto="yes"
+    ],
+    [
+        search_libfty_proto="yes"
+    ])
+AS_CASE([x"${with_libfty_proto}"],
+    [xyes], [search_libfty_proto="yes"],
+    [xno],  [search_libfty_proto="no"])
+
+dnl We do not abort right now, because the maintainer/developer may have
+dnl something particular in mind, e.g. to build just parts of a project.
+AS_IF([test x"${search_libfty_proto}" = xno],
+    [AC_MSG_WARN([Required dependency on fty_proto was explicitly disabled during configuration by '--with-libfty_proto=no'; subsequent full build of fty-metric-tpower may fail])])
+
+AS_IF([test x"${search_libfty_proto}" = xyes], [
+    # Archive previously detected and supplied flags
+    PRE_SEARCH_CFLAGS="${CFLAGS}"
+    PRE_SEARCH_LIBS="${LIBS}"
+
+    found_pkgconfig=""
+    found_linkname=""
+    PKG_CHECK_MODULES([fty_proto], [libfty_proto >= 1.0.0],
+    [
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $fty_proto_LIBS"
+        was_fty_proto_check_lib_detected=pkgcfg
+        found_pkgconfig="libfty_proto"
+    ],
+    [
+        AC_MSG_NOTICE([Package libfty_proto not found with needed constraints; falling back to defined compilability tests])
+
+        fty_proto_synthetic_cflags=""
+        fty_proto_synthetic_libs="-lfty_proto"
+
+        if test -n "${with_libfty_proto}" && test x"${with_libfty_proto}" != xyes && test x"${with_libfty_proto}" != xno; then
+            if test -r "${with_libfty_proto}/include/ftyproto.h"; then
+                fty_proto_synthetic_cflags="-I${with_libfty_proto}/include"
+                fty_proto_synthetic_libs="-L${with_libfty_proto}/lib -lfty_proto"
+            else
+            AC_MSG_ERROR([Header file ${with_libfty_proto}/include/ftyproto.h was not found. Please check libfty_proto prefix])
+            fi
+        else
+            AC_CHECK_HEADER([ftyproto.h], [],
+            AC_MSG_ERROR([Header file ftyproto.h was not found in default search paths])
+                )
+        fi
+
+        AC_CHECK_LIB([fty_proto], [fty_proto_test],
+            [
+                was_fty_proto_check_lib_detected=yes
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lfty_proto"
+                found_linkname="fty_proto"
+            ],
+            [AC_MSG_ERROR([cannot link with -lfty_proto, install libfty_proto])])
+    ])
+
+dnl END of PKG_CHECK_MODULES and/or direct tests for libfty_proto
+    AS_CASE(["x${was_fty_proto_check_lib_detected}"],
+        [xpkgcfg], [
+                AC_SUBST([pkgconfig_name_libfty_proto],[${found_pkgconfig}])
+                CFLAGS="${fty_proto_CFLAGS} ${CFLAGS}"
+                LIBS="${fty_proto_LIBS} ${LIBS}"
+            ],
+        [xyes], [
+                AC_SUBST([pkgconfig_name_libfty_proto],[${found_linkname}])
+                CFLAGS="${fty_proto_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${fty_proto_synthetic_libs} ${LDFLAGS}"
+                LIBS="${fty_proto_synthetic_libs} ${LIBS}"
+
+                AC_SUBST([fty_proto_CFLAGS],[${fty_proto_synthetic_cflags}])
+                AC_SUBST([fty_proto_LIBS],[${fty_proto_synthetic_libs}])
+            ],
+        [xno], [
+                AC_SUBST([pkgconfig_name_libfty_proto],[libfty_proto])
+            AC_MSG_ERROR([Cannot find pkg-config metadata for libfty_proto 1.0.0 or higher])
+    ])
+])
+dnl END of enabled attempts to search for libfty_proto
+
+
+was_tntdb_check_lib_detected=no
+
+search_tntdb="yes"
+
+AC_ARG_WITH([tntdb],
+    [
+        AS_HELP_STRING([--with-tntdb],
+        [yes or no. Optionally specify tntdb prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
+    ],
+    [
+        search_tntdb="yes"
+    ],
+    [
+        search_tntdb="yes"
+    ])
+AS_CASE([x"${with_tntdb}"],
+    [xyes], [search_tntdb="yes"],
+    [xno],  [search_tntdb="no"])
+
+dnl We do not abort right now, because the maintainer/developer may have
+dnl something particular in mind, e.g. to build just parts of a project.
+AS_IF([test x"${search_tntdb}" = xno],
+    [AC_MSG_WARN([Required dependency on tntdb was explicitly disabled during configuration by '--with-tntdb=no'; subsequent full build of fty-metric-tpower may fail])])
+
+AS_IF([test x"${search_tntdb}" = xyes], [
+    # Archive previously detected and supplied flags
+    PRE_SEARCH_CFLAGS="${CFLAGS}"
+    PRE_SEARCH_LIBS="${LIBS}"
+
+    found_pkgconfig=""
+    found_linkname=""
+    PKG_CHECK_MODULES([tntdb], [tntdb >= 0.0.0],
+    [
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $tntdb_LIBS"
+        was_tntdb_check_lib_detected=pkgcfg
+        found_pkgconfig="tntdb"
+    ],
+    [
+        AC_MSG_NOTICE([Package tntdb not found; falling back to defined compilability tests])
+
+        tntdb_synthetic_cflags=""
+        tntdb_synthetic_libs="-ltntdb"
+
+        if test -n "${with_tntdb}" && test x"${with_tntdb}" != xyes && test x"${with_tntdb}" != xno; then
+            if test -r "${with_tntdb}/include/tntdb.h"; then
+                tntdb_synthetic_cflags="-I${with_tntdb}/include"
+                tntdb_synthetic_libs="-L${with_tntdb}/lib -ltntdb"
+            else
+            AC_MSG_ERROR([Header file ${with_tntdb}/include/tntdb.h was not found. Please check tntdb prefix])
+            fi
+        else
+            AC_CHECK_HEADER([tntdb.h], [],
+            AC_MSG_ERROR([Header file tntdb.h was not found in default search paths])
+                )
+        fi
+
+        AC_CHECK_LIB([tntdb], [tntdb::Date::gmtime],
+            [
+                was_tntdb_check_lib_detected=yes
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -ltntdb"
+                found_linkname="tntdb"
+            ],
+            [AC_MSG_ERROR([cannot link with -ltntdb, install tntdb])])
+    ])
+
+dnl END of PKG_CHECK_MODULES and/or direct tests for tntdb
+    AS_CASE(["x${was_tntdb_check_lib_detected}"],
+        [xpkgcfg], [
+                AC_SUBST([pkgconfig_name_tntdb],[${found_pkgconfig}])
+                CFLAGS="${tntdb_CFLAGS} ${CFLAGS}"
+                LIBS="${tntdb_LIBS} ${LIBS}"
+            ],
+        [xyes], [
+                AC_SUBST([pkgconfig_name_tntdb],[${found_linkname}])
+                CFLAGS="${tntdb_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${tntdb_synthetic_libs} ${LDFLAGS}"
+                LIBS="${tntdb_synthetic_libs} ${LIBS}"
+
+                AC_SUBST([tntdb_CFLAGS],[${tntdb_synthetic_cflags}])
+                AC_SUBST([tntdb_LIBS],[${tntdb_synthetic_libs}])
+            ],
+        [xno], [
+                AC_SUBST([pkgconfig_name_tntdb],[tntdb])
+            AC_MSG_ERROR([Cannot find pkg-config metadata for tntdb 0.0.0 or higher])
+    ])
+])
+dnl END of enabled attempts to search for tntdb
 
 
 was_fty_common_check_lib_detected=no

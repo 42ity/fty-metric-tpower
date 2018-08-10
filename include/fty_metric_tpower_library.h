@@ -32,10 +32,9 @@
 //  External dependencies
 #include <czmq.h>
 #include <malamute.h>
-#include <ftyproto.h>
-#include <cxxtools/allocator.h>
-#include <tntdb.h>
 #include <fty_log.h>
+#include <ftyproto.h>
+#include <tntdb.h>
 #include <fty_common_mlm_guards.h>
 
 //  FTY_METRIC_TPOWER version macros for compile-time API detection
