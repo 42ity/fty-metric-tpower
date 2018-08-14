@@ -1074,6 +1074,95 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for libfty_common_mlm
 dnl END of enabled attempts to search for libfty_common_mlm
 
 
+was_fty_common_db_check_lib_detected=no
+
+search_libfty_common_db="yes"
+
+AC_ARG_WITH([libfty_common_db],
+    [
+        AS_HELP_STRING([--with-libfty_common_db],
+        [yes or no. Optionally specify libfty_common_db prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
+    ],
+    [
+        search_libfty_common_db="yes"
+    ],
+    [
+        search_libfty_common_db="yes"
+    ])
+AS_CASE([x"${with_libfty_common_db}"],
+    [xyes], [search_libfty_common_db="yes"],
+    [xno],  [search_libfty_common_db="no"])
+
+dnl We do not abort right now, because the maintainer/developer may have
+dnl something particular in mind, e.g. to build just parts of a project.
+AS_IF([test x"${search_libfty_common_db}" = xno],
+    [AC_MSG_WARN([Required dependency on fty_common_db was explicitly disabled during configuration by '--with-libfty_common_db=no'; subsequent full build of fty-metric-tpower may fail])])
+
+AS_IF([test x"${search_libfty_common_db}" = xyes], [
+    # Archive previously detected and supplied flags
+    PRE_SEARCH_CFLAGS="${CFLAGS}"
+    PRE_SEARCH_LIBS="${LIBS}"
+
+    found_pkgconfig=""
+    found_linkname=""
+    PKG_CHECK_MODULES([fty_common_db], [libfty_common_db >= 0.0.0],
+    [
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $fty_common_db_LIBS"
+        was_fty_common_db_check_lib_detected=pkgcfg
+        found_pkgconfig="libfty_common_db"
+    ],
+    [
+        AC_MSG_NOTICE([Package libfty_common_db not found; falling back to defined compilability tests])
+
+        fty_common_db_synthetic_cflags=""
+        fty_common_db_synthetic_libs="-lfty-common-db"
+
+        if test -n "${with_libfty_common_db}" && test x"${with_libfty_common_db}" != xyes && test x"${with_libfty_common_db}" != xno; then
+            if test -r "${with_libfty_common_db}/include/fty_common_db.h"; then
+                fty_common_db_synthetic_cflags="-I${with_libfty_common_db}/include"
+                fty_common_db_synthetic_libs="-L${with_libfty_common_db}/lib -lfty-common-db"
+            else
+            AC_MSG_ERROR([Header file ${with_libfty_common_db}/include/fty_common_db.h was not found. Please check libfty_common_db prefix])
+            fi
+        else
+            AC_CHECK_HEADER([fty_common_db.h], [],
+            AC_MSG_ERROR([Header file fty_common_db.h was not found in default search paths])
+                )
+        fi
+
+        AC_CHECK_LIB([fty-common-db], [fty_commmon_db_selftest],
+            [
+                was_fty_common_db_check_lib_detected=yes
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lfty-common-db"
+                found_linkname="fty-common-db"
+            ],
+            [AC_MSG_ERROR([cannot link with -lfty-common-db, install libfty_common_db])])
+    ])
+
+dnl END of PKG_CHECK_MODULES and/or direct tests for libfty_common_db
+    AS_CASE(["x${was_fty_common_db_check_lib_detected}"],
+        [xpkgcfg], [
+                AC_SUBST([pkgconfig_name_libfty_common_db],[${found_pkgconfig}])
+                CFLAGS="${fty_common_db_CFLAGS} ${CFLAGS}"
+                LIBS="${fty_common_db_LIBS} ${LIBS}"
+            ],
+        [xyes], [
+                AC_SUBST([pkgconfig_name_libfty_common_db],[${found_linkname}])
+                CFLAGS="${fty_common_db_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${fty_common_db_synthetic_libs} ${LDFLAGS}"
+                LIBS="${fty_common_db_synthetic_libs} ${LIBS}"
+
+                AC_SUBST([fty_common_db_CFLAGS],[${fty_common_db_synthetic_cflags}])
+                AC_SUBST([fty_common_db_LIBS],[${fty_common_db_synthetic_libs}])
+            ],
+        [xno], [
+                AC_SUBST([pkgconfig_name_libfty_common_db],[libfty_common_db])
+            AC_MSG_ERROR([Cannot find pkg-config metadata for libfty_common_db 0.0.0 or higher])
+    ])
+])
+dnl END of enabled attempts to search for libfty_common_db
+
+
 CFLAGS="${PREVIOUS_CFLAGS}"
 LIBS="${PREVIOUS_LIBS}"
 

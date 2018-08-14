@@ -37,7 +37,9 @@ static const char *AGENT_NAME = "agent-tpower";
 //         Functionality for METRIC processing and publishing
 // ============================================================
 bool send_metrics (mlm_client_t* client, const MetricInfo &M){
-    log_trace ("Metric is sent: topic = %s , time = %s", M.generateTopic().c_str(), std::to_string(M.getTimestamp()).c_str());
+    log_trace ("Metric is sent: topic = %s, time = %s, value = %s",
+        M.generateTopic().c_str(), std::to_string(M.getTimestamp()).c_str(),
+        std::to_string(M.getValue()).c_str());
     zmsg_t *msg = fty_proto_encode_metric (
             NULL,
             ::time (NULL),
