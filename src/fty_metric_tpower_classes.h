@@ -62,7 +62,6 @@ typedef struct _watchdog_t watchdog_t;
 
 //  Internal API
 
-
 #include "metricinfo.h"
 #include "calc_power.h"
 #include "tpowerconfiguration.h"

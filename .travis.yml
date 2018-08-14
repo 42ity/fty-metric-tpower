@@ -70,11 +70,13 @@ pkg_deps_prereqs_source: &pkg_deps_prereqs_source
     - libzmq3-dev
     - libczmq-dev
     - libmlm-dev
-    - libfty-proto-dev
-    - cxxtools-dev
-    - tntdb-dev
     - log4cplus-dev
+    - cxxtools-dev
     - libfty-common-logging-dev
+    - libfty-proto-dev
+    - tntdb-dev
+    - libfty-common-dev
+    - libfty-common-mlm-dev
 
 # NOTE: Our forks are checked out and built without pkg dependencies in use
 pkg_deps_prereqs: &pkg_deps_prereqs
