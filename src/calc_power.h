@@ -55,7 +55,7 @@ struct db_reply{
  *              output port on the source device.
  * Third  -- dest_id
  *              asset element id of the destination device.
- * Forth  -- dest_in
+ * Fourth -- dest_in
  *              input port on the destination device.
  */
 typedef std::tuple< uint32_t, std::string, std::string, uint32_t > device_info_t;

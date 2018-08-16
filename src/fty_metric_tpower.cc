@@ -27,16 +27,11 @@
 */
 
 #include "fty_metric_tpower_classes.h"
+#include <fty_common_str_defs.h>
 
 #include <getopt.h>
 
 #define TPOWER_AGENT    "fty-metric-tpower"
-#define LOG_CONFIG      "/etc/fty/ftylog.cfg"
-
-// malamute's endpoint
-// TODO make endpoint configurable on the start of the agent
-static const void *ENDPOINT = "ipc://@/malamute";
-
 
 void usage ()
 {
@@ -94,10 +89,10 @@ int main (int argc, char *argv [])
         exit(1);
     }
 
-    ManageFtyLog::setInstanceFtylog(TPOWER_AGENT, LOG_CONFIG);
+    ManageFtyLog::setInstanceFtylog(TPOWER_AGENT, FTY_COMMON_LOGGING_DEFAULT_CFG);
     log_info ("fty_metric_tpower STARTED");
 
-    zactor_t *tpower_server = zactor_new (fty_metric_tpower_server, const_cast<void *>(ENDPOINT));
+    zactor_t *tpower_server = zactor_new (fty_metric_tpower_server, const_cast<char *>(MLM_ENDPOINT));
     if ( !tpower_server ) {
         log_error ("cannot start the daemon");
         exit(1);

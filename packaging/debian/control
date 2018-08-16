@@ -35,6 +35,7 @@ Build-Depends: debhelper (>= 9),
     libtntdb-dev,
     libfty-common-dev,
     libfty-common-mlm-dev,
+    libfty-common-db-dev,
     systemd,
     dh-systemd,
     asciidoc-base | asciidoc, xmlto,
@@ -63,6 +64,7 @@ Depends:
     libtntdb-dev,
     libfty-common-dev,
     libfty-common-mlm-dev,
+    libfty-common-db-dev,
     libfty-metric-tpower0 (= ${binary:Version})
 Description: fty-metric-tpower development tools
  This package contains development files for fty-metric-tpower:

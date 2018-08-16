@@ -32,16 +32,12 @@
 #include <string>
 #include <exception>
 #include <errno.h>
-#include <tntdb/connect.h>
+#include <fty_common_db_asset.h>
+#include <fty_common_db_dbpath.h>
+#include <fty_common_str_defs.h>
+#include <fty_common.h>
 #include <algorithm>
-
 #include <stdlib.h>
-
-static std::string url =
-    std::string("mysql:db=box_utf8;user=") +
-    ((getenv("DB_USER")   == NULL) ? "root" : getenv("DB_USER")) +
-    ((getenv("DB_PASSWD") == NULL) ? ""     :
-    std::string(";password=") + getenv("DB_PASSWD"));
 
 bool TotalPowerConfiguration::
     configure(void)
@@ -56,7 +52,7 @@ bool TotalPowerConfiguration::
         _affectedDCs.clear();
 
         // connect to the database
-        tntdb::Connection connection = tntdb::connectCached(url);
+        tntdb::Connection connection = tntdb::connectCached(DBConn::url);
         // reading racks
         auto ret = select_devices_total_power_racks (connection);
 

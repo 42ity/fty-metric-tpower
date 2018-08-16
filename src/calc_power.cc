@@ -22,6 +22,8 @@
 #include <tntdb/row.h>
 #include <tntdb/result.h>
 #include <fty_log.h>
+#include <fty_common_db.h>
+#include <fty_common_asset_types.h>
 
 //=================================================================
 //NOTE ACE: this is a copy paste functionality from assets part
@@ -79,80 +81,6 @@ inline db_reply<T> db_reply_new(T& item) {
         a.item = item;
     return a;
 }
-namespace persist {
-
-enum asset_type {
-    TUNKNOWN     = 0,
-    GROUP       = 1,
-    DATACENTER  = 2,
-    ROOM        = 3,
-    ROW         = 4,
-    RACK        = 5,
-    DEVICE      = 6
-};
-
-enum asset_subtype {
-    SUNKNOWN = 0,
-    UPS = 1,
-    GENSET,
-    EPDU,
-    PDU,
-    SERVER,
-    FEED,
-    STS,
-    SWITCH,
-    STORAGE,
-    VIRTUAL,
-    N_A = 11
-    /* ATTENTION: don't change N_A id. It is used as default value in init.sql for types, that don't have N_A */
-};
-
-int
-    select_assets_by_container
-        (tntdb::Connection &conn,
-         a_elmnt_id_t element_id,
-         std::function<void(const tntdb::Row&)> cb,
-         std::string status)
-{
-    log_trace ("container element_id = %" PRIu32, element_id);
-
-    try {
-        // Can return more than one row.
-        tntdb::Statement st = conn.prepareCached(
-            " SELECT "
-            "   v.name, "
-            "   v.id_asset_element as asset_id, "
-            "   v.id_asset_device_type as subtype_id, "
-            "   v.type_name as subtype_name, "
-            "   v.id_type as type_id "
-            " FROM "
-            "   v_bios_asset_element_super_parent v "
-            " WHERE "
-            "   :containerid in (v.id_parent1, v.id_parent2, v.id_parent3, "
-            "                    v.id_parent4, v.id_parent5, v.id_parent6, "
-            "                    v.id_parent7, v.id_parent8, v.id_parent9, "
-            "                    v.id_parent10)   AND                      "
-            "                    v.status = :vstatus                       "
-        );
-
-        tntdb::Result result = st.set("containerid", element_id).
-                                  set("vstatus", status).
-                                  select();
-        log_trace("[v_bios_asset_element_super_parent]: were selected %" PRIu32 " rows",
-                                                            result.size());
-        for ( auto &row: result ) {
-            cb(row);
-        }
-        return 0;
-    }
-    catch (const std::exception& e) {
-        log_error ("Error: ",e.what());
-        return -1;
-    }
-}
-
-
-} // namespace end
 
 // debug helper
 // returns vector with either active or inactive devices
@@ -387,28 +315,19 @@ db_reply <std::vector<db_a_elmnt_t>>
 
 bool is_epdu (const device_info_t &device)
 {
-    if ( std::get<3>(device) == persist::asset_subtype::EPDU )
-        return true;
-    else
-        return false;
+    return (persist::is_epdu( std::get<3>(device) ));
 }
 
 
 bool is_pdu (const device_info_t &device)
 {
-    if ( std::get<3>(device) ==  persist::asset_subtype::PDU )
-        return true;
-    else
-        return false;
+    return (persist::is_pdu( std::get<3>(device) ));
 }
 
 
 bool is_ups (const device_info_t &device)
 {
-    if ( std::get<3>(device) ==  persist::asset_subtype::UPS )
-        return true;
-    else
-        return false;
+    return (persist::is_ups( std::get<3>(device) ));
 }
 
 
@@ -604,11 +523,10 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
                 }
             };
 
-
-        auto rv = persist::select_assets_by_container
+        auto rv = DBAssets::select_assets_by_container
             (conn, container.id, func, "active");
 
-        // here would be placed names of devices to summ up
+        // here would be placed names of devices to sum up
         std::vector<std::string> result(0);
         if ( rv != 0 )
         {
