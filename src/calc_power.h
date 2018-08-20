@@ -32,19 +32,7 @@
 
 #include <czmq.h>
 #include <tntdb/connect.h>
-
-
-template <typename T>
-struct db_reply{
-    int status; // ok/fail
-    int errtype;
-    int errsubtype;
-    uint64_t rowid;  // insert/update or http error code if status == 0
-    uint64_t affected_rows; // for update/insert/delete
-    std::string msg;
-    zhash_t *addinfo;
-    T item;
-};
+#include <fty_common_db.h>
 
 /**
  * \brief A type for storing basic information about powerlink.
