@@ -25,294 +25,6 @@
 #include <fty_common_db.h>
 #include <fty_common_asset_types.h>
 
-//=================================================================
-//NOTE ACE: this is a copy paste functionality from assets part
-//should be removed after it would be ported to the asset agent
-//=================================================================
-#define INPUT_POWER_CHAIN     1
-
-//! Possible error types
-enum errtypes {
-    //! First error should be UNKNOWN as it maps to zero and zero is weird
-    UNKNOWN_ERR,
-    DB_ERR,
-    BAD_INPUT,
-    INTERNAL_ERR,
-};
-
-//! Constants for database errors
-enum db_err_nos {
-    //! First error should be UNKNOWN as it maps to zero and zero is weird
-    DB_ERROR_UNKNOWN,
-    DB_ERROR_INTERNAL,
-    // Probably should be removed at some point and replaced with bad_input_err
-    DB_ERROR_BADINPUT,
-    DB_ERROR_NOTFOUND,
-    DB_ERROR_NOTIMPLEMENTED,
-    DB_ERROR_DBCORRUPTED,
-    DB_ERROR_NOTHINGINSERTED,
-    DB_ERROR_DELETEFAIL,
-    DB_ERROR_CANTCONNECT,
-};
-// ----- table:  t_bios_asset_element_type ------------
-// ----- column: id_asset_element_type  ---------------
-// TODO tntdb can't manage uint8_t, so for now there is
-// uint16_t
-typedef uint16_t  a_elmnt_tp_id_t;
-// ----- table:  t_bios_asset_element -----------------
-// ----- column: id_asset_element ---------------------
-typedef uint32_t a_elmnt_id_t;
-// ----- table:  t_bios_asset_element_type ------------
-// ----- column: id_asset_element_type  ---------------
-// TODO tntdb can't manage uint8_t, so for now there is
-// uint16_t
-typedef uint16_t  a_elmnt_stp_id_t;
-template <typename T>
-inline db_reply<T> db_reply_new(T& item) {
-    db_reply<T> a;
-
-        a.status = 1;
-        a.errtype = 0;
-        a.errsubtype = 0;
-        a.rowid = 0;
-        a.affected_rows = 0;
-        a.msg = "";
-        a.addinfo = NULL;
-        a.item = item;
-    return a;
-}
-
-// debug helper
-// returns vector with either active or inactive devices
-std::vector <std::string>
-list_devices_with_status (tntdb::Connection &conn, std::string status)
-{
-    std::vector <std::string> inactive_list;
-    try {
-        tntdb::Statement st = conn.prepareCached(
-            " SELECT"
-            "   v.name, v.id_subtype"
-            " FROM"
-            "   v_bios_asset_element v"
-            " WHERE v.status = :vstatus "
-        );
-
-        tntdb::Result result = st.set("vstatus", status).select();
-        log_trace("[v_bios_asset_element]: were selected %" PRIu32 " rows",
-                                                            result.size());
-        for (auto &row : result) {
-            std::string device;
-            row [0].get (device);
-            inactive_list.push_back (device);
-        }
-
-    }
-    catch (const std::exception &e) {
-        throw std::runtime_error("Reading from DB failed.");
-    }
-    return inactive_list;
-}
-
-
-// ----- table:  t_bios_asset_link_type ---------------
-// ----- column: id_asset_link_type -------------------
-typedef uint8_t  a_lnk_tp_id_t;
-
-db_reply <std::set <std::pair<a_elmnt_id_t ,a_elmnt_id_t>>>
-    select_links_by_container
-        (tntdb::Connection &conn,
-         a_elmnt_id_t element_id,
-         std::string status)
-{
-    log_trace ("  links are selected for element_id = %" PRIi32, element_id);
-    a_lnk_tp_id_t linktype = INPUT_POWER_CHAIN;
-
-    //      all powerlinks are included into "resultpowers"
-    std::set <std::pair<a_elmnt_id_t ,a_elmnt_id_t>> item{};
-    db_reply <std::set<std::pair<a_elmnt_id_t ,a_elmnt_id_t>>> ret = db_reply_new(item);
-
-    try{
-        // v_bios_asset_link are only devices,
-        // so there is no need to add more constrains
-        tntdb::Statement st = conn.prepareCached(
-            " SELECT"
-            "   v.id_asset_element_src,"
-            "   v.id_asset_element_dest"
-            " FROM"
-            "   v_bios_asset_link AS v,"
-            "   v_bios_asset_element_super_parent AS v1,"
-            "   v_bios_asset_element_super_parent AS v2"
-            " WHERE"
-            "   v.id_asset_link_type = :linktypeid AND"
-            "   v.id_asset_element_dest = v2.id_asset_element AND"
-            "   v.id_asset_element_src = v1.id_asset_element AND"
-            "   ("
-            "       ( :containerid IN (v2.id_parent1, v2.id_parent2 ,v2.id_parent3,"
-            "                          v2.id_parent4, v2.id_parent5, v2.id_parent6,"
-            "                          v2.id_parent7, v2.id_parent8, v2.id_parent9,"
-            "                          v2.id_parent10) AND v1.status = :vstatus AND v2.status = :vstatus) OR"
-            "       ( :containerid IN (v1.id_parent1, v1.id_parent2 ,v1.id_parent3,"
-            "                          v1.id_parent4, v1.id_parent5, v1.id_parent6,"
-            "                          v1.id_parent7, v1.id_parent8, v1.id_parent9,"
-            "                          v1.id_parent10) AND v1.status = :vstatus AND v2.status = :vstatus)"
-            "   )"
-        );
-
-        // can return more than one row
-        tntdb::Result result = st.set("containerid", element_id).
-                                  set("linktypeid", linktype).
-                                  set("vstatus", status).
-                                  select();
-        log_trace("[t_bios_asset_link]: were selected %" PRIu32 " rows",
-                                                         result.size());
-        // debug helper
-        std::vector <std::string> inactive = list_devices_with_status (conn,"nonactive");
-        log_trace ("Inactive devices omitted:");
-        for (auto dev : inactive) {
-            log_trace ("\t- %s", dev.c_str ());
-        }
-
-        // Go through the selected links
-        for ( auto &row: result )
-        {
-            // id_asset_element_src, required
-            a_elmnt_id_t id_asset_element_src = 0;
-            row[0].get(id_asset_element_src);
-            assert ( id_asset_element_src );
-
-            // id_asset_element_dest, required
-            a_elmnt_id_t id_asset_element_dest = 0;
-            row[1].get(id_asset_element_dest);
-            assert ( id_asset_element_dest );
-
-            ret.item.insert(std::pair<a_elmnt_id_t ,a_elmnt_id_t>(id_asset_element_src, id_asset_element_dest));
-        } // end for
-        ret.status = 1;
-        return ret;
-    }
-    catch (const std::exception &e) {
-        ret.status     = 0;
-        ret.errtype    = DB_ERR;
-        ret.errsubtype = DB_ERROR_INTERNAL;
-        ret.msg        = e.what();
-        log_error (e.what());
-        return ret;
-    }
-}
-
-// ----- table:  t_bios_asset_element -----------------
-// ----- column: priority -----------------------------
-typedef uint16_t a_elmnt_pr_t;
-
-/**
- * \brief helper structure for results of v_bios_asset_element
- */
-struct db_a_elmnt_t {
-    a_elmnt_id_t     id;
-    std::string      name;
-    std::string      status;
-    a_elmnt_id_t     parent_id;
-    a_elmnt_pr_t     priority;
-    a_elmnt_tp_id_t  type_id;
-    a_elmnt_stp_id_t subtype_id;
-    std::string      asset_tag;
-    std::map <std::string, std::string> ext;
-
-    db_a_elmnt_t () :
-        id{},
-        name{},
-        status{},
-        parent_id{},
-        priority{},
-        type_id{},
-        subtype_id{},
-        asset_tag{},
-        ext{}
-    {}
-
-    db_a_elmnt_t (
-        a_elmnt_id_t     id,
-        std::string      name,
-        std::string      status,
-        a_elmnt_id_t     parent_id,
-        a_elmnt_pr_t     priority,
-        a_elmnt_tp_id_t  type_id,
-        a_elmnt_stp_id_t subtype_id,
-        std::string      asset_tag) :
-
-        id(id),
-        name(name),
-        status(status),
-        parent_id(parent_id),
-        priority(priority),
-        type_id(type_id),
-        subtype_id(subtype_id),
-        asset_tag(asset_tag),
-        ext{}
-    {}
-};
-
-db_reply <std::vector<db_a_elmnt_t>>
-    select_asset_elements_by_type
-        (tntdb::Connection &conn,
-         a_elmnt_tp_id_t type_id,
-         std::string status)
-{
-
-    std::vector<db_a_elmnt_t> item{};
-    db_reply <std::vector<db_a_elmnt_t>> ret = db_reply_new(item);
-
-    try{
-        // Can return more than one row.
-        tntdb::Statement st = conn.prepareCached(
-            " SELECT"
-            "   v.name , v.id_parent, v.status, v.priority, v.id, v.id_subtype"
-            " FROM"
-            "   v_bios_asset_element v"
-            " WHERE v.id_type = :typeid AND"
-            "   v.status = :vstatus "
-        );
-
-        tntdb::Result result = st.set("typeid", type_id).
-                                  set("vstatus", status).
-                                  select();
-        log_trace("[v_bios_asset_element]: were selected %" PRIu32 " rows",
-                                                            result.size());
-
-        // Go through the selected elements
-        for ( auto &row: result )
-        {
-            db_a_elmnt_t m{0,"","",0,5,0,0,""};
-
-            row[0].get(m.name);
-            assert ( !m.name.empty() );  // database is corrupted
-
-            row[1].get(m.parent_id);
-            row[2].get(m.status);
-            row[3].get(m.priority);
-            row[4].get(m.id);
-            row[5].get(m.subtype_id);
-
-            ret.item.push_back(m);
-        }
-        ret.status = 1;
-        return ret;
-    }
-    catch (const std::exception &e) {
-        ret.status        = 0;
-        ret.errtype       = DB_ERR;
-        ret.errsubtype    = DB_ERROR_INTERNAL;
-        ret.msg           = e.what();
-        ret.item.clear();
-        log_error(e.what());
-        return ret;
-    }
-}
-
-//=================================================================
-//NOTE ACE: this is the end of copy paste functionality
-//=================================================================
-
 bool is_epdu (const device_info_t &device)
 {
     return (persist::is_epdu( std::get<3>(device) ));
@@ -336,12 +48,12 @@ bool is_ups (const device_info_t &device)
  *  a dest device in a link.
  *  link is: from to
  */
-static std::set<a_elmnt_id_t>
+static std::set<uint32_t>
     find_dests
-        (const std::set <std::pair<a_elmnt_id_t, a_elmnt_id_t> > &links,
-         a_elmnt_id_t element_id)
+        (const std::set <std::pair<uint32_t, uint32_t> > &links,
+         uint32_t element_id)
 {
-    std::set<a_elmnt_id_t> dests;
+    std::set<uint32_t> dests;
 
     for ( auto &one_link: links )
     {
@@ -360,8 +72,8 @@ static std::set<a_elmnt_id_t>
  */
 static void
     update_border_devices
-        (const std::map <a_elmnt_id_t, device_info_t> &container_devices,
-         const std::set <std::pair<a_elmnt_id_t, a_elmnt_id_t> > &links,
+        (const std::map <uint32_t, device_info_t> &container_devices,
+         const std::set <std::pair<uint32_t, uint32_t> > &links,
          std::set <device_info_t> &border_devices)
 {
     std::set<device_info_t> new_border_devices;
@@ -392,8 +104,8 @@ static void
 bool
     is_powering_other_rack (
         const device_info_t &border_device,
-        const std::map <a_elmnt_id_t, device_info_t> &devices_in_container,
-        const std::set <std::pair<a_elmnt_id_t, a_elmnt_id_t> > &links)
+        const std::map <uint32_t, device_info_t> &devices_in_container,
+        const std::set <std::pair<uint32_t, uint32_t> > &links)
 {
     auto adevice_dests = find_dests (links, std::get<0>(border_device));
     for ( auto &adevice: adevice_dests )
@@ -417,8 +129,8 @@ bool
  */
 static std::vector<std::string>
     compute_total_power_v2(
-        const std::map <a_elmnt_id_t, device_info_t> &devices_in_container,
-        const std::set <std::pair<a_elmnt_id_t, a_elmnt_id_t> > &links,
+        const std::map <uint32_t, device_info_t> &devices_in_container,
+        const std::set <std::pair<uint32_t, uint32_t> > &links,
         std::set <device_info_t> border_devices)
 {
     std::vector <std::string> dvc{};
@@ -470,7 +182,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
 
     // there is no need to do all in one select, so let's do it by steps
     // select all containers by type
-    auto allContainers = select_asset_elements_by_type (conn, container_type_id, "active");
+    auto allContainers = DBAssets::select_asset_elements_by_type (conn, container_type_id, "active");
 
     if  ( allContainers.status == 0 )
     {
@@ -496,11 +208,11 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
     for ( auto &container : allContainers.item )
     {
         // select all devices in the container
-        std::map <a_elmnt_id_t, device_info_t> container_devices{};
+        std::map <uint32_t, device_info_t> container_devices{};
         std::function<void(const tntdb::Row&)> func = \
             [&container_devices](const tntdb::Row& row)
             {
-                a_elmnt_tp_id_t type_id = 0;
+                uint16_t type_id = 0;
                 row["type_id"].get(type_id);
 
                 if ( type_id == persist::asset_type::DEVICE )
@@ -508,10 +220,10 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
                     std::string device_name = "";
                     row["name"].get(device_name);
 
-                    a_elmnt_id_t asset_id = 0;
+                    uint32_t asset_id = 0;
                     row["asset_id"].get(asset_id);
 
-                    a_elmnt_stp_id_t device_type_id = 0;
+                    uint16_t device_type_id = 0;
                     row["subtype_id"].get(device_type_id);
 
                     std::string device_type_name = "";
@@ -546,7 +258,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
             continue;
         }
 
-        auto links = select_links_by_container (conn, container.id, "active");
+        auto links = DBAssets::select_links_by_container (conn, container.id, "active");
         if ( links.status == 0 )
         {
             log_warning ("'%s': internal problems in links detecting",
@@ -569,7 +281,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
         // the set of all border devices ("starting points")
         std::set <device_info_t> border_devices;
         // the set of all destination devices in selected links
-        std::set <a_elmnt_id_t> dest_dvcs{};
+        std::set <uint32_t> dest_dvcs{};
         //  from (first)   to (second)
         //           +--------------+
         //  B________|______A__C    |
