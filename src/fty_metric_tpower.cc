@@ -33,6 +33,10 @@
 
 #define TPOWER_AGENT    "fty-metric-tpower"
 
+
+// FIXME: mlm_endpoint is defined in fty-common but causes coredump,its definition turned out to be mess, let's hardcode it for a while to fix coredump and wait until the fty-common is fixed
+static const void *MLM_ENDPOINT_local = "ipc://@/malamute";
+
 void usage ()
 {
     puts ("fty-metric-tpower [options]\n"
@@ -92,7 +96,8 @@ int main (int argc, char *argv [])
     ManageFtyLog::setInstanceFtylog(TPOWER_AGENT, FTY_COMMON_LOGGING_DEFAULT_CFG);
     log_info ("fty_metric_tpower STARTED");
 
-    zactor_t *tpower_server = zactor_new (fty_metric_tpower_server, const_cast<char *>(MLM_ENDPOINT));
+    zactor_t *tpower_server = zactor_new (fty_metric_tpower_server, const_cast<void *>(MLM_ENDPOINT_local));
+
     if ( !tpower_server ) {
         log_error ("cannot start the daemon");
         exit(1);
