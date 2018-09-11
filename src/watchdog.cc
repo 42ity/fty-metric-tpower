@@ -64,8 +64,14 @@ static void watchdog_thread(zsock_t *pipe, void* args)
         } else if (wd->check()) {
             continue;
         }
-        log_error("watchdog expired");
-        exit(2);
+        log_error ("watchdog expired");
+
+        int rv = kill (getpid (), SIGTERM);
+        zclock_sleep (1000);
+
+        if (rv != 0)
+            rv = kill (getpid (), SIGKILL);
+
     }
     zpoller_destroy(&poller);
 }
@@ -81,4 +87,3 @@ bool Watchdog::check()
 {
     return last_tick_.load() + WATCHDOG_LIMIT > zclock_mono() / 1000;
 }
-
