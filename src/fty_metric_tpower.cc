@@ -28,13 +28,8 @@
 
 #include "fty_metric_tpower_classes.h"
 #include <fty_common_mlm_utils.h>
+#include <fty_common_agents.h>
 #include <getopt.h>
-
-#define TPOWER_AGENT    "fty-metric-tpower"
-
-
-// FIXME: mlm_endpoint is defined in fty-common but causes coredump,its definition turned out to be mess, let's hardcode it for a while to fix coredump and wait until the fty-common is fixed
-//static const void *MLM_ENDPOINT_local = "ipc://@/malamute";
 
 void usage ()
 {
@@ -92,7 +87,7 @@ int main (int argc, char *argv [])
         exit(1);
     }
 
-    ManageFtyLog::setInstanceFtylog(TPOWER_AGENT, FTY_COMMON_LOGGING_DEFAULT_CFG);
+    ManageFtyLog::setInstanceFtylog(AGENT_FTY_METRIC_TPOWER, FTY_COMMON_LOGGING_DEFAULT_CFG);
     log_info ("fty_metric_tpower STARTED");
 
     zactor_t *tpower_server = zactor_new (fty_metric_tpower_server, (void *)MLM_ENDPOINT);
