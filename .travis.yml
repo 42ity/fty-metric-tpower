@@ -36,8 +36,9 @@ env:
     - CI_TIME=false
     - CI_TRACE=false
     - CI_CONFIG_QUIET=true
-    - CI_REQUIRE_GOOD_GITIGNORE=false
+    - CI_REQUIRE_GOOD_GITIGNORE=true
     - CI_REQUIRE_GOOD_CLANG_FORMAT=true
+    - CI_TEST_DISTCHECK=true
     # tokens to deploy releases on OBS and create/delete temporary branch on Github.
     # 1) Create a token on https://github.com/settings/tokens/new with "public_repo"
     #    capability and encrypt it with travis encrypt --org -r <org>/<repo> GH_TOKEN="<token>"
@@ -60,9 +61,9 @@ env:
 # NOTE: Database pkgs added to the list manually as prereqs to compile tntdb
 pkg_deps_prereqs_distro: &pkg_deps_prereqs_distro
     - libssl-dev
-     - libmysqlclient-dev
-     - libsqlite3-dev
-     - libpq-dev
+    - libmysqlclient-dev
+    - libsqlite3-dev
+    - libpq-dev
 
 # Prerequisite packages that may be built from source or used from
 # prebuilt packages of that source (usually not from an OS distro)

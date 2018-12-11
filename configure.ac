@@ -958,7 +958,7 @@ AS_IF([test x"${search_libfty_common}" = xyes], [
                 )
         fi
 
-        AC_CHECK_LIB([fty-common], [fty_commmon_selftest],
+        AC_CHECK_LIB([fty-common], [fty_common_selftest],
             [
                 was_fty_common_check_lib_detected=yes
                 PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lfty-common"
@@ -1045,7 +1045,7 @@ AS_IF([test x"${search_libfty_common_mlm}" = xyes], [
                 )
         fi
 
-        AC_CHECK_LIB([fty-common-mlm], [fty_commmon_mlm_selftest],
+        AC_CHECK_LIB([fty-common-mlm], [fty_common_mlm_selftest],
             [
                 was_fty_common_mlm_check_lib_detected=yes
                 PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lfty-common-mlm"
@@ -1219,7 +1219,7 @@ AS_IF([test x"${search_libfty_common_db}" = xyes], [
                 )
         fi
 
-        AC_CHECK_LIB([fty-common-db], [fty_commmon_db_selftest],
+        AC_CHECK_LIB([fty-common-db], [fty_common_db_selftest],
             [
                 was_fty_common_db_check_lib_detected=yes
                 PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lfty-common-db"
