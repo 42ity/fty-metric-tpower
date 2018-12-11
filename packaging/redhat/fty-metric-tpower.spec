@@ -55,13 +55,14 @@ BuildRequires:  libsodium-devel
 BuildRequires:  zeromq-devel
 BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
-BuildRequires:  log4cplus-devel
 BuildRequires:  cxxtools-devel
+BuildRequires:  log4cplus-devel
 BuildRequires:  fty-common-logging-devel
 BuildRequires:  fty-proto-devel
-BuildRequires:  tntdb-devel
+BuildRequires:  openssl-devel
 BuildRequires:  fty-common-devel
 BuildRequires:  fty-common-mlm-devel
+BuildRequires:  tntdb-devel
 BuildRequires:  fty-common-db-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
@@ -91,13 +92,14 @@ Requires:       libsodium-devel
 Requires:       zeromq-devel
 Requires:       czmq-devel
 Requires:       malamute-devel
-Requires:       log4cplus-devel
 Requires:       cxxtools-devel
+Requires:       log4cplus-devel
 Requires:       fty-common-logging-devel
 Requires:       fty-proto-devel
-Requires:       tntdb-devel
+Requires:       openssl-devel
 Requires:       fty-common-devel
 Requires:       fty-common-mlm-devel
+Requires:       tntdb-devel
 Requires:       fty-common-db-devel
 
 %description devel
