@@ -32,7 +32,10 @@ static const char *AGENT_NAME = "agent-tpower";
 #include "fty_metric_tpower_classes.h"
 #include <string>
 #include <fty_common_mlm_guards.h>
+#include <mutex>
+#include <fty_shm.h>
 
+std::mutex mtx_tpowerConf;
 // ============================================================
 //         Functionality for METRIC processing and publishing
 // ============================================================
@@ -40,6 +43,12 @@ bool send_metrics (mlm_client_t* client, const MetricInfo &M){
     log_trace ("Metric is sent: topic = %s, time = %s, value = %s",
         M.generateTopic().c_str(), std::to_string(M.getTimestamp()).c_str(),
         std::to_string(M.getValue()).c_str());
+    
+    int r = fty::shm::write_metric(M.getElementName(), M.getSource(), std::to_string(M.getValue()), M.getUnits(), M.getTtl());
+    if ( r == -1 ) {
+        return false;
+    }
+    
     zmsg_t *msg = fty_proto_encode_metric (
             NULL,
             ::time (NULL),
@@ -48,7 +57,7 @@ bool send_metrics (mlm_client_t* client, const MetricInfo &M){
             M.getElementName().c_str(),
             std::to_string(M.getValue()).c_str(),
             M.getUnits().c_str());
-    int r = mlm_client_send (client, M.generateTopic().c_str(), &msg);
+    r = mlm_client_send (client, M.generateTopic().c_str(), &msg);
     if ( r == -1 ) {
         return false;
     }
@@ -67,6 +76,7 @@ static void
 
     const char *value = fty_proto_value(bmessage);
     char *end;
+    errno = 0;
     double dvalue = strtod (value, &end);
 
     if (errno == ERANGE || end == value || *end != '\0') {
@@ -89,6 +99,68 @@ static void
 
     MetricInfo m (element_src, type, unit, dvalue, timestamp, "", ttl);
     config.processMetric (m, topic);
+}
+
+static void
+    s_processMetrics(
+        TotalPowerConfiguration &config,
+        fty::shm::shmMetrics& metrics)
+{
+    for (auto &element : metrics) {
+      const char *value = fty_proto_value(element);
+      char *end;
+      errno = 0;
+      double dvalue = strtod (value, &end);
+
+      if (errno == ERANGE || end == value || *end != '\0') {
+          log_info ("cannot convert value '%s' to double, ignore message\n", value);
+          fty_proto_print (element);
+          continue;
+      }
+
+      const char *type = fty_proto_type(element);
+      const char *element_src = fty_proto_name (element);
+      const char *unit = fty_proto_unit(element);
+      uint32_t ttl = fty_proto_ttl(element);
+      uint64_t timestamp = fty_proto_time (element);
+      std::string topic(type);
+      topic.append("@");
+      topic.append(element_src);
+
+      log_trace("Got message '%s' with value %s\n", topic.c_str(), value);
+
+      MetricInfo m (element_src, type, unit, dvalue, timestamp, "", ttl);
+      mtx_tpowerConf.lock();
+      config.processMetric (m, topic);
+      mtx_tpowerConf.unlock();
+    }
+}
+
+void
+fty_metric_tpower_metric_pull (zsock_t *pipe, void* args)
+{
+   zpoller_t *poller = zpoller_new (pipe, NULL);
+  zsock_signal (pipe, 0);
+
+  TotalPowerConfiguration *tpower_conf = (TotalPowerConfiguration*) args;
+  uint64_t timeout = fty_get_polling_interval() * 1000;
+  //int64_t timeCash = zclock_mono();
+  while (!zsys_interrupted) {
+      void *which = zpoller_wait (poller, timeout);
+      if (which == NULL) {
+        if (zpoller_terminated (poller) || zsys_interrupted) {
+            break;
+        }
+        if (zpoller_expired (poller)) {
+          fty::shm::shmMetrics result;
+          log_debug("read metrics !");
+          fty::shm::read_metrics("metric", ".*", "^realpower.*",  result);
+          log_debug("metric reads : %d", result.size());
+          s_processMetrics((*tpower_conf), result);
+        }
+      }
+      timeout = fty_get_polling_interval() * 1000;
+  }
 }
 
 void
@@ -120,12 +192,12 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
         zstr_send(pipe, "$TERM");
         return;
     }
-    if (mlm_client_set_consumer(client, FTY_PROTO_STREAM_METRICS, "^realpower.*") < 0) {
-        log_error("%s: can't set consumer on stream '%s', '%s'",
-                AGENT_NAME, FTY_PROTO_STREAM_METRICS, "^realpower.*");
-        zstr_send(pipe, "$TERM");
-        return;
-    }
+//    if (mlm_client_set_consumer(client, FTY_PROTO_STREAM_METRICS, "^realpower.*") < 0) {
+//        log_error("%s: can't set consumer on stream '%s', '%s'",
+//                AGENT_NAME, FTY_PROTO_STREAM_METRICS, "^realpower.*");
+//        zstr_send(pipe, "$TERM");
+//        return;
+//    }
     if (mlm_client_set_consumer(client, FTY_PROTO_STREAM_ASSETS, ".*") < 0) {
         log_error("%s: can't set consumer on stream '%s', '%s'",
                 AGENT_NAME, FTY_PROTO_STREAM_ASSETS, ".*");
@@ -144,6 +216,7 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
     // initial set up
     TotalPowerConfiguration tpower_conf(fff);
     tpower_conf.configure();
+    zactor_t *tpower_metrics_pull = zactor_new (fty_metric_tpower_metric_pull, (void*) &tpower_conf);
     uint64_t last = zclock_mono ();
     while (!zsys_interrupted) {
         void *which = zpoller_wait (poller, tpower_conf.getTimeout());
@@ -151,7 +224,9 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
         if (now - last >= static_cast<uint64_t>(tpower_conf.getTimeout())) {
             last = now;
             log_debug("Periodic polling");
+            mtx_tpowerConf.lock();
             tpower_conf.onPoll();
+            mtx_tpowerConf.unlock();
         }
         if ( zpoller_expired (poller) ) {
             continue;
@@ -210,7 +285,9 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
                 s_processMetric (tpower_conf, topic, &bmessage);
             }
             else if (fty_proto_id (bmessage) == FTY_PROTO_ASSET)  {
+                mtx_tpowerConf.lock();
                 tpower_conf.processAsset(bmessage);
+                mtx_tpowerConf.unlock();
             }
             else {
                 log_error ("it is not an alert message, ignore it");
@@ -225,6 +302,7 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
         zmsg_destroy (&zmessage);
     }
     //TODO:  save info to persistence before I die
+    zactor_destroy (&tpower_metrics_pull);
 }
 
 

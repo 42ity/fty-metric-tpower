@@ -86,6 +86,9 @@
         repository = "https://github.com/42ity/fty-common-db.git"
         test = "fty_commmon_db_selftest"  />
 
+    <use project = "fty_shm" libname = "libfty_shm" header="fty_shm.h" min_major = "1" test = "fty_shm_test" 
+        repository = "https://github.com/42ity/fty-shm.git"/>
+
     <class name = "metricinfo" private="1"> Measurement</class>
     <class name = "calc_power" private="1"> Power calculation</class>
     <class name = "tpowerconfiguration" private="1"> Configuration</class>
