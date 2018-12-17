@@ -323,6 +323,8 @@ fty_metric_tpower_server_test (bool verbose)
     zstr_sendx (server, "BIND", endpoint, NULL);
     if (verbose)
          ManageFtyLog::getInstanceFtylog()->setVeboseMode();
+    
+    fty_shm_set_test_dir("src/selftest-rw");
 
     mlm_client_t *producer = mlm_client_new ();
     mlm_client_connect (producer, endpoint, 1000, "producer");
@@ -334,7 +336,7 @@ fty_metric_tpower_server_test (bool verbose)
 
     uint64_t timestamp = ::time(NULL);
     MetricInfo M("someUPS", "realpower.default", "W", 456.66, timestamp, "", 500);
-    send_metrics (producer, M);
+    assert (send_metrics (producer, M));
 
     zmsg_t *msg = mlm_client_recv (consumer);
     assert ( msg != NULL);
@@ -352,5 +354,6 @@ fty_metric_tpower_server_test (bool verbose)
     mlm_client_destroy (&consumer);
     mlm_client_destroy (&producer);
     zactor_destroy(&server);
+    fty_shm_delete_test_dir();
     printf ("OK\n");
 }

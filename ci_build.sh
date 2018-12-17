@@ -313,16 +313,16 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         cd "${BASE_PWD}"
     fi
 
-    # Start of recipe for dependency: log4cplus
-    if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list log4cplus-dev >/dev/null 2>&1) || \
-           (command -v brew >/dev/null 2>&1 && brew ls --versions log4cplus >/dev/null 2>&1) \
+    # Start of recipe for dependency: cxxtools
+    if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list cxxtools-dev >/dev/null 2>&1) || \
+           (command -v brew >/dev/null 2>&1 && brew ls --versions cxxtools >/dev/null 2>&1) \
     ; then
         echo ""
         BASE_PWD=${PWD}
-        echo "`date`: INFO: Building prerequisite 'log4cplus' from Git repository..." >&2
+        echo "`date`: INFO: Building prerequisite 'cxxtools' from Git repository..." >&2
         cd ./tmp-deps
-        $CI_TIME git clone --quiet --depth 1 -b 1.1.2-FTY-master https://github.com/42ity/log4cplus.git log4cplus
-        cd ./log4cplus
+        $CI_TIME git clone --quiet --depth 1 -b 2.2-FTY-master https://github.com/42ity/cxxtools.git cxxtools
+        cd ./cxxtools
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
         git --no-pager log --oneline -n1
@@ -346,16 +346,16 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         cd "${BASE_PWD}"
     fi
 
-    # Start of recipe for dependency: cxxtools
-    if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list cxxtools-dev >/dev/null 2>&1) || \
-           (command -v brew >/dev/null 2>&1 && brew ls --versions cxxtools >/dev/null 2>&1) \
+    # Start of recipe for dependency: log4cplus
+    if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list log4cplus-dev >/dev/null 2>&1) || \
+           (command -v brew >/dev/null 2>&1 && brew ls --versions log4cplus >/dev/null 2>&1) \
     ; then
         echo ""
         BASE_PWD=${PWD}
-        echo "`date`: INFO: Building prerequisite 'cxxtools' from Git repository..." >&2
+        echo "`date`: INFO: Building prerequisite 'log4cplus' from Git repository..." >&2
         cd ./tmp-deps
-        $CI_TIME git clone --quiet --depth 1 -b 2.2-FTY-master https://github.com/42ity/cxxtools.git cxxtools
-        cd ./cxxtools
+        $CI_TIME git clone --quiet --depth 1 -b 1.1.2-FTY-master https://github.com/42ity/log4cplus.git log4cplus
+        cd ./log4cplus
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
         git --no-pager log --oneline -n1
@@ -420,7 +420,7 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         BASE_PWD=${PWD}
         echo "`date`: INFO: Building prerequisite 'fty-proto' from Git repository..." >&2
         cd ./tmp-deps
-        $CI_TIME git clone --quiet --depth 1 https://github.com/42ity/fty-proto.git fty-proto
+        $CI_TIME git clone --quiet --depth 1 -b master https://github.com/42ity/fty-proto.git fty-proto
         cd ./fty-proto
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
@@ -445,38 +445,14 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         cd "${BASE_PWD}"
     fi
 
-    # Start of recipe for dependency: tntdb
-    if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list tntdb-dev >/dev/null 2>&1) || \
-           (command -v brew >/dev/null 2>&1 && brew ls --versions tntdb >/dev/null 2>&1) \
+    # Start of recipe for dependency: openssl
+    if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libssl-dev >/dev/null 2>&1) || \
+           (command -v brew >/dev/null 2>&1 && brew ls --versions openssl >/dev/null 2>&1) \
     ; then
         echo ""
-        BASE_PWD=${PWD}
-        echo "`date`: INFO: Building prerequisite 'tntdb' from Git repository..." >&2
-        cd ./tmp-deps
-        $CI_TIME git clone --quiet --depth 1 -b 1.3-FTY-master https://github.com/42ity/tntdb.git tntdb
-        cd ./tntdb
-        cd ./tntdb
-        CCACHE_BASEDIR=${PWD}
-        export CCACHE_BASEDIR
-        git --no-pager log --oneline -n1
-        if [ -e autogen.sh ]; then
-            $CI_TIME ./autogen.sh 2> /dev/null
-        fi
-        if [ -e buildconf ]; then
-            $CI_TIME ./buildconf 2> /dev/null
-        fi
-        if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
-            $CI_TIME libtoolize --copy --force && \
-            $CI_TIME aclocal -I . && \
-            $CI_TIME autoheader && \
-            $CI_TIME automake --add-missing --copy && \
-            $CI_TIME autoconf || \
-            $CI_TIME autoreconf -fiv
-        fi
-        $CI_TIME ./configure "${CONFIG_OPTS[@]}"
-        $CI_TIME make -j4
-        $CI_TIME make install
-        cd "${BASE_PWD}"
+        echo "WARNING: Can not build prerequisite 'openssl'" >&2
+        echo "because neither tarball nor repository sources are known for it," >&2
+        echo "and it was not installed as a package; this may cause the test to fail!" >&2
     fi
 
     # Start of recipe for dependency: fty-common
@@ -545,6 +521,40 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         cd "${BASE_PWD}"
     fi
 
+    # Start of recipe for dependency: tntdb
+    if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list tntdb-dev >/dev/null 2>&1) || \
+           (command -v brew >/dev/null 2>&1 && brew ls --versions tntdb >/dev/null 2>&1) \
+    ; then
+        echo ""
+        BASE_PWD=${PWD}
+        echo "`date`: INFO: Building prerequisite 'tntdb' from Git repository..." >&2
+        cd ./tmp-deps
+        $CI_TIME git clone --quiet --depth 1 -b 1.3-FTY-master https://github.com/42ity/tntdb.git tntdb
+        cd ./tntdb
+        cd ./tntdb
+        CCACHE_BASEDIR=${PWD}
+        export CCACHE_BASEDIR
+        git --no-pager log --oneline -n1
+        if [ -e autogen.sh ]; then
+            $CI_TIME ./autogen.sh 2> /dev/null
+        fi
+        if [ -e buildconf ]; then
+            $CI_TIME ./buildconf 2> /dev/null
+        fi
+        if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ]; then
+            $CI_TIME libtoolize --copy --force && \
+            $CI_TIME aclocal -I . && \
+            $CI_TIME autoheader && \
+            $CI_TIME automake --add-missing --copy && \
+            $CI_TIME autoconf || \
+            $CI_TIME autoreconf -fiv
+        fi
+        $CI_TIME ./configure "${CONFIG_OPTS[@]}"
+        $CI_TIME make -j4
+        $CI_TIME make install
+        cd "${BASE_PWD}"
+    fi
+
     # Start of recipe for dependency: fty-common-db
     if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libfty_common_db-dev >/dev/null 2>&1) || \
            (command -v brew >/dev/null 2>&1 && brew ls --versions fty-common-db >/dev/null 2>&1) \
@@ -553,7 +563,7 @@ default|default-Werror|default-with-docs|valgrind|clang-format-check)
         BASE_PWD=${PWD}
         echo "`date`: INFO: Building prerequisite 'fty-common-db' from Git repository..." >&2
         cd ./tmp-deps
-        $CI_TIME git clone --quiet --depth 1 https://github.com/42ity/fty-common-db.git fty-common-db
+        $CI_TIME git clone --quiet --depth 1 -b master https://github.com/42ity/fty-common-db.git fty-common-db
         cd ./fty-common-db
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR

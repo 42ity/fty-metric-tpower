@@ -10,90 +10,239 @@
 
     <target name = "debian" />
     <target name = "redhat" />
-    <target name = "travis" />
+    <target name = "travis" >
+        <!-- option name = "clangformat_implem" value = "autotools" / -->
+        <option name = "use_cmake" value = "0" />
+        <!-- option name = "clangformat_require_good" value = "1" / -->
+        <option name = "clangformat_allow_failures" value = "1" />
+        <option name = "use_pkg_deps_prereqs_source" value = "0" />
+        <option name = "require_gitignore" value = "1" />
+    </target>
     <target name = "jenkins" >
         <option name = "agent_label" value = "devel-image &amp;&amp; x86_64" />
         <option name = "triggers_pollSCM" value = "H/2 * * * *" />
         <option name = "test_cppcheck" value = "1" />
         <option name = "build_docs" value = "1" />
         <option name = "dist_docs" value = "1" />
+
+        <!-- Try to avoid avalanche rebuilds of same code on our CI -->
+        <option name = "use_earlymilestone" value = "1" />
+        <option name = "use_deploymilestone" value = "1" />
+        <option name = "use_build_nonconcurrent" value = "1" />
+        <option name = "use_checkout_explicit" value = "1" />
     </target>
 
     <include filename = "license.xml" />
     <version major = "1" minor = "0" patch = "0" />
 
     <use project = "czmq"
-        repository="https://github.com/42ity/czmq.git"
+        repository = "https://github.com/42ity/czmq.git"
         release = "v3.0.2-FTY-master"
         min_major = "3" min_minor = "0" min_patch = "2" >
+
         <use project = "libzmq"
-            repository="https://github.com/42ity/libzmq.git"
+            repository = "https://github.com/42ity/libzmq.git"
             release = "4.2.0-FTY-master" >
+
             <use project = "libsodium" prefix = "sodium"
                 repository = "https://github.com/42ity/libsodium.git"
                 release = "1.0.5-FTY-master"
-                test = "sodium_init" />
+                test = "sodium_init"
+                />
         </use>
     </use>
 
     <use project = "malamute" min_major = "1" test = "mlm_server_test"
-        repository="https://github.com/42ity/malamute.git"
+        repository = "https://github.com/42ity/malamute.git"
         release = "1.0-FTY-master"
         />
 
-    <use project = "fty-common-logging" libname = "libfty_common_logging" header="fty_log.h"
+    <use project = "cxxtools"
+        test = "cxxtools::Utf8Codec::Utf8Codec"
+        header = "cxxtools/allocator.h"
+        repository = "https://github.com/42ity/cxxtools.git"
+        release = "2.2-FTY-master"
+        />
+
+    <!-- Note: pure C projects should use fty-log/fty_logger.h, C++ use fty_log.h -->
+    <use project = "fty-common-logging" libname = "libfty_common_logging"
+        header = "fty_log.h"
         repository = "https://github.com/42ity/fty-common-logging.git"
         release = "master"
         test = "fty_common_logging_selftest" >
 
-        <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
+        <!-- Note: pure C projects should use clogger.h, C++ use logger.h -->
+        <use project = "log4cplus"
+            header = "log4cplus/logger.h"
+            test = "appender_test"
             repository = "https://github.com/42ity/log4cplus.git"
             release = "1.1.2-FTY-master"
             />
+    </use>
 
-        <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec" header="cxxtools/allocator.h"
+    <use project = "fty-proto" libname = "libfty_proto" header = "ftyproto.h" prefix = "fty_proto"
+        min_major = "1" min_minor = "0" min_patch = "0"
+        repository = "https://github.com/42ity/fty-proto.git"
+        release = "master"
+        test = "fty_proto_test" >
+
+        <use project = "czmq"
+            repository = "https://github.com/42ity/czmq.git"
+            release = "v3.0.2-FTY-master"
+            min_major = "3" min_minor = "0" min_patch = "2" >
+
+            <use project = "libzmq"
+                repository = "https://github.com/42ity/libzmq.git"
+                release = "4.2.0-FTY-master" >
+
+                <use project = "libsodium" prefix = "sodium"
+                    repository = "https://github.com/42ity/libsodium.git"
+                    release = "1.0.5-FTY-master"
+                    test = "sodium_init"
+                    />
+            </use>
+        </use>
+
+        <use project = "malamute" min_major = "1" test = "mlm_server_test"
+            repository = "https://github.com/42ity/malamute.git"
+            release = "1.0-FTY-master"
+            />
+
+        <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
+            repository = "https://github.com/42ity/fty-common-logging.git"
+            release = "master"
+            test = "fty_common_logging_selftest" >
+
+            <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
+                repository = "https://github.com/42ity/log4cplus.git"
+                release = "1.1.2-FTY-master"
+                />
+        </use>
+    </use>
+
+    <use project = "fty-common-mlm" libname = "libfty_common_mlm" header = "fty_common_mlm.h"
+        repository = "https://github.com/42ity/fty-common-mlm.git"
+        release = "master"
+        test = "fty_common_mlm_selftest" >
+
+        <use project = "czmq"
+            repository = "https://github.com/42ity/czmq.git"
+            release = "v3.0.2-FTY-master"
+            min_major = "3" min_minor = "0" min_patch = "2" >
+
+            <use project = "libzmq"
+                repository = "https://github.com/42ity/libzmq.git"
+                release = "4.2.0-FTY-master" >
+
+                <use project = "libsodium" prefix = "sodium"
+                    repository = "https://github.com/42ity/libsodium.git"
+                    release = "1.0.5-FTY-master"
+                    test = "sodium_init"
+                    />
+            </use>
+        </use>
+
+        <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
             repository = "https://github.com/42ity/cxxtools.git"
             release = "2.2-FTY-master"
             />
 
+        <use project = "malamute" min_major = "1" test = "mlm_server_test"
+            repository = "https://github.com/42ity/malamute.git"
+            release = "1.0-FTY-master"
+            />
+
+        <use project = "openssl" header = "openssl/sha.h" debian_name = "libssl-dev"/>
+
+        <use project = "fty-common" libname = "libfty_common" header = "fty_common.h"
+            repository = "https://github.com/42ity/fty-common.git"
+            release = "master"
+            test = "fty_common_selftest" >
+
+            <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
+                repository = "https://github.com/42ity/fty-common-logging.git"
+                release = "master"
+                test = "fty_common_logging_selftest" >
+
+                <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
+                    repository = "https://github.com/42ity/log4cplus.git"
+                    release = "1.1.2-FTY-master"
+                    />
+           </use>
+        </use>
+
+        <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
+            repository = "https://github.com/42ity/fty-common-logging.git"
+            release = "master"
+            test = "fty_common_logging_selftest" >
+
+            <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
+                repository = "https://github.com/42ity/log4cplus.git"
+                release = "1.1.2-FTY-master"
+                />
+        </use>
     </use>
 
-    <use project = "fty-proto" libname = "libfty_proto" header="ftyproto.h" prefix="fty_proto"
-        min_major = "1" min_minor = "0" min_patch = "0"
-        repository = "https://github.com/42ity/fty-proto.git"
-        test = "fty_proto_test" >
-        <use project = "malamute" />
-    </use>
-
-    <!-- do we still need this? -->
-    <use project = "tntdb" test="tntdb::Date::gmtime"
-        repository = "https://github.com/42ity/tntdb.git"
-        release = "1.3-FTY-master"
-        builddir = "tntdb"
-        />
-    <!-- use project = "tntdb" test="tntdb::connectCached" header="tntdb/connect.h" / -->
-
-    <use project = "fty-common-mlm" libname = "libfty_common_mlm" header="fty_common_mlm_guards.h"
-        repository = "https://github.com/42ity/fty-common-mlm.git"
-        release = "master" >
-
-      <use project = "fty-common" libname = "libfty_common" header="fty_common.h"
-           repository = "https://github.com/42ity/fty-common.git"
-           release = "master" />
-    </use>
-
-    <use project = "fty-common-db" libname = "libfty_common_db" header="fty_common_db.h"
+    <use project = "fty-common-db" libname = "libfty_common_db" header = "fty_common_db.h"
         repository = "https://github.com/42ity/fty-common-db.git"
-        test = "fty_commmon_db_selftest"  />
+        release = "master"
+        test = "fty_common_db_selftest" >
+
+        <use project = "czmq"
+            repository = "https://github.com/42ity/czmq.git"
+            release = "v3.0.2-FTY-master"
+            min_major = "3" min_minor = "0" min_patch = "2" >
+
+            <use project = "libzmq"
+                repository = "https://github.com/42ity/libzmq.git"
+                release = "4.2.0-FTY-master" >
+
+                <use project = "libsodium" prefix = "sodium"
+                    repository = "https://github.com/42ity/libsodium.git"
+                    release = "1.0.5-FTY-master"
+                    test = "sodium_init"
+                    />
+            </use>
+        </use>
+
+        <use project = "tntdb"
+            test = "tntdb::Date::gmtime"
+            repository = "https://github.com/42ity/tntdb.git"
+            release = "1.3-FTY-master"
+            builddir = "tntdb">
+
+            <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
+                repository = "https://github.com/42ity/cxxtools.git"
+                release = "2.2-FTY-master"
+                />
+        </use>
+
+        <use project = "fty-common" libname = "libfty_common" header = "fty_common.h"
+            repository = "https://github.com/42ity/fty-common.git"
+            release = "master"
+            test = "fty_common_selftest" >
+
+            <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
+                repository = "https://github.com/42ity/fty-common-logging.git"
+                release = "master"
+                test = "fty_common_logging_selftest" >
+
+                <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
+                    repository = "https://github.com/42ity/log4cplus.git"
+                    release = "1.1.2-FTY-master"
+                    />
+           </use>
+        </use>
+    </use>
 
     <use project = "fty_shm" libname = "libfty_shm" header="fty_shm.h" min_major = "1" test = "fty_shm_test" 
         repository = "https://github.com/42ity/fty-shm.git"/>
 
-    <class name = "metricinfo" private="1"> Measurement</class>
-    <class name = "calc_power" private="1"> Power calculation</class>
-    <class name = "tpowerconfiguration" private="1"> Configuration</class>
-    <class name = "metriclist" private="1"> metriclist</class>
-    <class name = "tp-unit" private="1"> Power unit </class>
+    <class name = "metricinfo" private = "1"> Measurement</class>
+    <class name = "calc_power" private = "1"> Power calculation</class>
+    <class name = "tpowerconfiguration" private = "1"> Configuration</class>
+    <class name = "metriclist" private = "1"> metriclist</class>
+    <class name = "tp-unit" private = "1"> Power unit </class>
     <class name = "fty_metric_tpower_server" state = "stable" >Actor generating new metrics</class>
     <class name = "watchdog" private = "1" selftest = "0">Watchdog</class>
     <main name = "fty-metric-tpower" service = "1">

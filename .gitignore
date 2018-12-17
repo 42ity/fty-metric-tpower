@@ -3,7 +3,6 @@
 ### Note: Customized after generation; take care upon regens
 
 save.xml
-
 # Object files
 *.o
 *.so
@@ -81,17 +80,7 @@ CMake*
 *.cmake
 
 # Repositories downloaded by CI integration scripts
-libsodium/
-libzmq/
-czmq/
-malamute/
-log4cplus/
-cxxtools/
-fty-common-logging/
-fty-proto/
-tntdb/
-fty-common/
-fty-common-mlm/
+tmp-deps/
 
 # Travis build area
 tmp/
