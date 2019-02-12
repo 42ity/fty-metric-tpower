@@ -134,6 +134,9 @@ static void
       config.processMetric (m, topic);
       mtx_tpowerConf.unlock();
     }
+    mtx_tpowerConf.lock();
+    config.setPollInterval();
+    mtx_tpowerConf.unlock();
 }
 
 void
@@ -154,7 +157,7 @@ fty_metric_tpower_metric_pull (zsock_t *pipe, void* args)
         if (zpoller_expired (poller)) {
           fty::shm::shmMetrics result;
           log_debug("read metrics !");
-          fty::shm::read_metrics(".*", "^realpower.*",  result);
+          fty::shm::read_metrics(".*", "realpower\\.(default|((output|input)\\.L(1|2|3)))",  result);
           log_debug("metric reads : %d", result.size());
           s_processMetrics((*tpower_conf), result);
         }

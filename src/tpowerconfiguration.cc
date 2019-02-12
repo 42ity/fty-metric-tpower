@@ -180,7 +180,6 @@ void TotalPowerConfiguration::
             }
         }
     }
-    _timeout = getPollInterval();
 }
 
 
@@ -244,7 +243,7 @@ int64_t TotalPowerConfiguration::getPollInterval() {
             }
         }
     }
-    for( auto &dc_it : _racks ) {
+    for( auto &dc_it : _DCs ) {
         for( auto &q : _dcQuantities ) {
             int64_t Tx = dc_it.second.timeToAdvertisement(q);
             if( Tx > 0 && Tx < T ) T = Tx;
@@ -266,6 +265,11 @@ void TotalPowerConfiguration::onPoll() {
         configure();
     }
     _timeout = getPollInterval();
+}
+
+void TotalPowerConfiguration::setPollInterval()
+{
+  _timeout = getPollInterval();
 }
 
 

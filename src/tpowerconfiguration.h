@@ -51,6 +51,7 @@ public:
     void processMetric (const MetricInfo &M, const std::string &topic);
     void processAsset (fty_proto_t *message);
     void onPoll();
+    void setPollInterval();
     //! \brief read configuration from database
     bool configure();
 
