@@ -349,8 +349,6 @@ fty_metric_tpower_server_test (bool verbose)
     fty_proto_print(bmessage);
     assert ( bmessage != NULL );
     assert ( fty_proto_id (bmessage) == FTY_PROTO_METRIC );
-    uint64_t timestamp_new = fty_proto_time (bmessage);
-    assert ( timestamp == timestamp_new);
 
     fty_proto_destroy (&bmessage);
     zmsg_destroy (&msg);
