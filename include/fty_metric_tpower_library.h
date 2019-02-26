@@ -37,6 +37,7 @@
 #include <ftyproto.h>
 #include <fty_common_mlm.h>
 #include <fty_common_db.h>
+#include <fty_shm.h>
 
 //  FTY_METRIC_TPOWER version macros for compile-time API detection
 #define FTY_METRIC_TPOWER_VERSION_MAJOR 1
