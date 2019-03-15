@@ -39,7 +39,7 @@ std::mutex mtx_tpowerConf;
 // ============================================================
 //         Functionality for METRIC processing and publishing
 // ============================================================
-bool send_metrics (mlm_client_t* client, const MetricInfo &M){
+bool send_metrics (const MetricInfo &M){
     log_trace ("Metric is sent: topic = %s, time = %s, value = %s",
         M.generateTopic().c_str(), std::to_string(M.getTimestamp()).c_str(),
         std::to_string(M.getValue()).c_str());
@@ -47,58 +47,9 @@ bool send_metrics (mlm_client_t* client, const MetricInfo &M){
     int r = fty::shm::write_metric(M.getElementName(), M.getSource(), std::to_string(M.getValue()), M.getUnits(), M.getTtl());
     if ( r == -1 ) {
         return false;
+    } else {
+      return true;
     }
-    
-    zmsg_t *msg = fty_proto_encode_metric (
-            NULL,
-            ::time (NULL),
-            M.getTtl (),
-            M.getSource().c_str(),
-            M.getElementName().c_str(),
-            std::to_string(M.getValue()).c_str(),
-            M.getUnits().c_str());
-    r = mlm_client_send (client, M.generateTopic().c_str(), &msg);
-    if ( r == -1 ) {
-        return false;
-    }
-    else {
-        return true;
-    }
-}
-
-static void
-    s_processMetric(
-        TotalPowerConfiguration &config,
-        const std::string &topic,
-        fty_proto_t **bmessage_p)
-{
-    fty_proto_t *bmessage = *bmessage_p;
-
-    const char *value = fty_proto_value(bmessage);
-    char *end;
-    errno = 0;
-    double dvalue = strtod (value, &end);
-
-    if (errno == ERANGE || end == value || *end != '\0') {
-
-        if (errno == ERANGE)
-            errno = 0;
-
-        log_info ("cannot convert value '%s' to double, ignore message\n", value);
-        fty_proto_print (bmessage);
-        return;
-    }
-
-    const char *type = fty_proto_type(bmessage);
-    const char *element_src = fty_proto_name (bmessage);
-    const char *unit = fty_proto_unit(bmessage);
-    uint32_t ttl = fty_proto_ttl(bmessage);
-    uint64_t timestamp = fty_proto_time (bmessage);
-
-    log_trace("Got message '%s' with value %s\n", topic.c_str(), value);
-
-    MetricInfo m (element_src, type, unit, dvalue, timestamp, "", ttl);
-    config.processMetric (m, topic);
 }
 
 static void
@@ -189,18 +140,6 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
         zstr_send(pipe, "$TERM");
         return;
     }
-    if (mlm_client_set_producer(client, FTY_PROTO_STREAM_METRICS) < 0) {
-        log_error("%s: can't set producer on stream '%s'",
-                AGENT_NAME, FTY_PROTO_STREAM_METRICS);
-        zstr_send(pipe, "$TERM");
-        return;
-    }
-//    if (mlm_client_set_consumer(client, FTY_PROTO_STREAM_METRICS, "^realpower.*") < 0) {
-//        log_error("%s: can't set consumer on stream '%s', '%s'",
-//                AGENT_NAME, FTY_PROTO_STREAM_METRICS, "^realpower.*");
-//        zstr_send(pipe, "$TERM");
-//        return;
-//    }
     if (mlm_client_set_consumer(client, FTY_PROTO_STREAM_ASSETS, ".*") < 0) {
         log_error("%s: can't set consumer on stream '%s', '%s'",
                 AGENT_NAME, FTY_PROTO_STREAM_ASSETS, ".*");
@@ -213,8 +152,8 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
     // Such trick with function is used, because tpower_configuration
     // wants itself to control "advertise time".
     // But We want to separate logic from messaging -> use function as parameter
-    std::function<bool(const MetricInfo&)> fff= [&client] (const MetricInfo& M) -> bool {
-        return send_metrics (client, M);
+    std::function<bool(const MetricInfo&)> fff= [] (const MetricInfo& M) -> bool {
+        return send_metrics (M);
     };
     // initial set up
     TotalPowerConfiguration tpower_conf(fff);
@@ -284,10 +223,7 @@ fty_metric_tpower_server (zsock_t *pipe, void* args)
             // As long as we are receiving metrics from malamute, everything
             // is fine
             watchdog.tick();
-            if (fty_proto_id (bmessage) == FTY_PROTO_METRIC)  {
-                s_processMetric (tpower_conf, topic, &bmessage);
-            }
-            else if (fty_proto_id (bmessage) == FTY_PROTO_ASSET)  {
+            if (fty_proto_id (bmessage) == FTY_PROTO_ASSET)  {
                 mtx_tpowerConf.lock();
                 tpower_conf.processAsset(bmessage);
                 mtx_tpowerConf.unlock();
@@ -327,33 +263,19 @@ fty_metric_tpower_server_test (bool verbose)
     if (verbose)
          ManageFtyLog::getInstanceFtylog()->setVeboseMode();
     
-    fty_shm_set_test_dir("src/selftest-rw");
-
-    mlm_client_t *producer = mlm_client_new ();
-    mlm_client_connect (producer, endpoint, 1000, "producer");
-    mlm_client_set_producer (producer, "METRICS");
-
-    mlm_client_t *consumer = mlm_client_new ();
-    mlm_client_connect (consumer, endpoint, 1000, "consumer");
-    mlm_client_set_consumer (consumer, "METRICS", ".*");
+    assert (fty_shm_set_test_dir("src/selftest-rw") == 0);
 
     uint64_t timestamp = ::time(NULL);
     MetricInfo M("someUPS", "realpower.default", "W", 456.66, timestamp, "", 500);
-    assert (send_metrics (producer, M));
-
-    zmsg_t *msg = mlm_client_recv (consumer);
-    assert ( msg != NULL);
-    assert ( M.generateTopic() == std::string(mlm_client_subject(consumer)));
-    assert ( is_fty_proto (msg));
-    fty_proto_t *bmessage = fty_proto_decode (&msg);
+    assert (send_metrics (M));
+    
+    fty_proto_t *bmessage;
+    assert(fty::shm::read_metric("someUPS", "realpower.default", &bmessage)==0);
+    assert ( bmessage != NULL );    
     fty_proto_print(bmessage);
-    assert ( bmessage != NULL );
     assert ( fty_proto_id (bmessage) == FTY_PROTO_METRIC );
 
     fty_proto_destroy (&bmessage);
-    zmsg_destroy (&msg);
-    mlm_client_destroy (&consumer);
-    mlm_client_destroy (&producer);
     zactor_destroy(&server);
     fty_shm_delete_test_dir();
     printf ("OK\n");
