@@ -293,16 +293,21 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
         for ( auto &oneLink : links.item )
         {
             log_trace ("  cur_link: %d->%d", oneLink.first, oneLink.second);
-            auto it = container_devices.find (oneLink.first);
-            if ( it == container_devices.end() )
+            auto it1 = container_devices.find (oneLink.first);
+            auto it2 = container_devices.find (oneLink.second);
+            if ( it1 == container_devices.end() )
                 // if in the link first point is out of the Container,
                 // the second definitely should be in Container,
                 // otherwise it is not a "container"-link
             {
-                border_devices.insert(
+                if ( it2 == container_devices.end() )
+                    log_warning ("Trying to insert non-container link %d->%d", oneLink.first, oneLink.second);
+                else
+                    border_devices.insert(
                             container_devices.find(oneLink.second)->second);
             }
-            dest_dvcs.insert(oneLink.second);
+            if ( it2 != container_devices.end() )
+                dest_dvcs.insert(oneLink.second);
         }
         //  from (first)   to (second)
         //           +-----------+
