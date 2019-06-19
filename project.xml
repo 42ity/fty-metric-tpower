@@ -11,6 +11,8 @@
     <target name = "debian" />
     <target name = "redhat" />
     <target name = "travis" >
+        <option name = "dist" value = "trusty" />
+        <option name = "shadow_gcc" value = "2" />
         <!-- option name = "clangformat_implem" value = "autotools" / -->
         <option name = "use_cmake" value = "0" />
         <!-- option name = "clangformat_require_good" value = "1" / -->
@@ -236,7 +238,9 @@
     </use>
 
     <use project = "fty_shm" libname = "libfty_shm" header="fty_shm.h" min_major = "1" test = "fty_shm_test" 
-        repository = "https://github.com/42ity/fty-shm.git"/>
+        repository = "https://github.com/42ity/fty-shm.git"
+        release = "master"
+    />
 
     <class name = "metricinfo" private = "1"> Measurement</class>
     <class name = "calc_power" private = "1"> Power calculation</class>

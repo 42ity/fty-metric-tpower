@@ -32,8 +32,6 @@
 //  External API
 #include "../include/fty_metric_tpower.h"
 
-//  Extra headers
-
 //  Opaque class structures to allow forward references
 #ifndef METRICINFO_T_DEFINED
 typedef struct _metricinfo_t metricinfo_t;
@@ -59,6 +57,8 @@ typedef struct _tp_unit_t tp_unit_t;
 typedef struct _watchdog_t watchdog_t;
 #define WATCHDOG_T_DEFINED
 #endif
+
+//  Extra headers
 
 //  Internal API
 
