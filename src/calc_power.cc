@@ -25,6 +25,7 @@
 #include <fty_common_db.h>
 #include <fty_common_asset_types.h>
 
+// FIXME: extract device First  -- src_id
 bool is_epdu (const device_info_t &device)
 {
     return (persist::is_epdu( std::get<3>(device) ));
@@ -42,6 +43,11 @@ bool is_ups (const device_info_t &device)
     return (persist::is_ups( std::get<3>(device) ));
 }
 
+
+bool is_powermeter (const device_info_t &device)
+{
+    return (persist::is_powermeter( std::get<3>(device) ));
+}
 
 /**
  *  \brief From set of links derives set of elements that at least once were
@@ -123,9 +129,10 @@ bool
 /**
  *  \brief An implementation of the algorithm.
  *
- *  Take a first "smart" device in every powerchain thatis closest to "main"
+ *  Take a first "smart" device in every powerchain that is closest to "Main" feed
+ *  (a powermeter attached to the Main feed with location == datacenter wins)
  *  If device is not smart, try to look at upper level. Repeat until
- *  chain ends or until all chains are processed
+ *  chain ends or until all chains are processed.
  */
 static std::vector<std::string>
     compute_total_power_v2(
@@ -143,7 +150,7 @@ static std::vector<std::string>
     {
         for ( auto &border_device: border_devices )
         {
-            if ( ( is_epdu(border_device) ) ||
+            if ( ( is_powermeter(border_device) ) || ( is_epdu(border_device) ) ||
                  ( is_ups(border_device) &&  ( !is_powering_other_rack (border_device, devices_in_container, links) ) ) )
             {
                 dvc.push_back(std::get<1>(border_device));
@@ -340,6 +347,7 @@ db_reply <std::map<std::string, std::vector<std::string> > >
     select_devices_total_power_dcs
         (tntdb::Connection  &conn)
 {
+    // FIXME: check if Main feed (location DC)-> powermeter would do it
     return select_devices_total_power_container (conn, persist::asset_type::DATACENTER);
 }
 
