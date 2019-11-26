@@ -8,3 +8,4 @@
    fty-metric-tpower -> fty-common-mlm;
    fty-metric-tpower -> fty-common-db;
    fty-metric-tpower -> fty_shm;
+   fty-metric-tpower -> tntdb;

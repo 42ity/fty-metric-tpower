@@ -65,6 +65,7 @@ BuildRequires:  fty-proto-devel >= 1.0.0
 BuildRequires:  fty-common-mlm-devel
 BuildRequires:  fty-common-db-devel
 BuildRequires:  fty_shm-devel >= 1.0.0
+BuildRequires:  tntdb-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -99,6 +100,7 @@ Requires:       fty-proto-devel >= 1.0.0
 Requires:       fty-common-mlm-devel
 Requires:       fty-common-db-devel
 Requires:       fty_shm-devel >= 1.0.0
+Requires:       tntdb-devel
 
 %description devel
 42ity component for power metrics computation development tools

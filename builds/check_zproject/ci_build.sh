@@ -19,6 +19,7 @@ git clone --quiet --depth 1 https://github.com/42ity/fty-proto.git fty-proto
 git clone --quiet --depth 1 https://github.com/42ity/fty-common-mlm.git fty-common-mlm
 git clone --quiet --depth 1 https://github.com/42ity/fty-common-db.git fty-common-db
 git clone --quiet --depth 1 https://github.com/42ity/fty-shm.git fty_shm
+git clone --quiet --depth 1 https://github.com/42ity/tntdb.git tntdb
 cd -
 
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list zproject >/dev/null 2>&1) || \

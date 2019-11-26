@@ -71,6 +71,7 @@ pkg_deps_prereqs_source: &pkg_deps_prereqs_source
     - libfty-common-mlm-dev
     - libfty-common-db-dev
     - libfty-shm-dev
+    - tntdb-dev
 
 # NOTE: Our forks are checked out and built without pkg dependencies in use
 pkg_deps_prereqs: &pkg_deps_prereqs
