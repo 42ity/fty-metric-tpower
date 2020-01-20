@@ -29,14 +29,9 @@
 #include <string>
 #include <ctime>
 
-
 class MetricInfo {
 
 public:
-    std::string generateTopic(void) const {
-        return _source + "@" + _element_name;
-    };
-
     MetricInfo()
     :
         _value{0},
@@ -50,7 +45,6 @@ public:
         const std::string &units,
         double value,
         uint64_t timestamp,
-        const std::string &destination,
         uint64_t ttl
         ):
         _element_name (element_name),
@@ -58,23 +52,38 @@ public:
         _units (units),
         _value (value),
         _timestamp (timestamp),
-        _element_destination_name (destination),
         _ttl (ttl)
     {};
 
-    double getValue (void) const{
-        return _value;
-    };
-
     std::string getElementName (void) const{
         return _element_name;
+    };
+
+    std::string getSource (void) const {
+        return _source;
+    };
+
+    std::string getUnits (void) const {
+        return _units;
+    };
+
+    double getValue (void) const{
+        return _value;
     };
 
     uint64_t getTimestamp (void) const {
         return _timestamp;
     };
 
-    bool isUnknown(void) const {
+    uint64_t getTtl(void) const {
+        return _ttl;
+    };
+
+    std::string generateTopic (void) const {
+        return _source + "@" + _element_name;
+    };
+
+    bool isUnknown (void) const {
         if ( _element_name.empty() ||
              _source.empty() ||
              _units.empty() ) {
@@ -83,37 +92,25 @@ public:
         return false;
     };
 
-    uint64_t getTtl(void) const {
-        return _ttl;
-    };
+    void setUnits (const std::string &units) { _units = units; };
 
-    std::string getUnits(void) const {
-        return _units;
-    };
+    void setTime (void) { _timestamp = std::time(NULL); }; // timetamp = now
 
-    std::string getSource (void) const {
-        return _source;
-    };
-    void setTime(void) { _timestamp = std::time(NULL); };
-    void setUnits(const std::string &U) { _units = U; };
     friend inline bool operator==( const MetricInfo &lhs, const MetricInfo &rhs );
     friend inline bool operator!=( const MetricInfo &lhs, const MetricInfo &rhs );
 
-    // This class is very close to metric info
-    // So let it use fields directly
+    // This class is very close to metric info, so let it use fields directly
     friend class MetricList;
 
 private:
-    std::string _element_name;
-    std::string _source;
+    std::string _element_name; // 'epdu-42'
+    std::string _source; // 'realpower.input.L3'  (as fty_proto_t METRIC type, or quantity)
     std::string _units;
     double      _value;
-    uint64_t    _timestamp;
+    uint64_t    _timestamp; // [s]
+    uint64_t    _ttl; // time to live [s]
+
     std::string _element_destination_name;
-
-    // time to live [s]
-    uint64_t _ttl;
-
 };
 
 inline bool operator==( const MetricInfo &lhs, const MetricInfo &rhs ) {
@@ -125,6 +122,7 @@ inline bool operator==( const MetricInfo &lhs, const MetricInfo &rhs ) {
 inline bool operator!=( const MetricInfo &lhs, const MetricInfo &rhs ) {
     return ! ( lhs == rhs );
 }
+
 void
 metricinfo_test (bool verbose);
 

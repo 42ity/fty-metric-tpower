@@ -40,6 +40,7 @@ class TPUnit {
     void calculate(const std::vector<std::string> &quantities);
     //\! \brief calculate total value for one quantity
     void calculate(const std::string &quantity);
+
     //\! \brief discard obsolete measurements
     void dropOldMetricInfos();
 
@@ -50,9 +51,8 @@ class TPUnit {
     // TODO const &
     void set(const std::string &quantity, MetricInfo &measurement);
 
-    //\! \brief Metric Info per articular quantity.
+    //\! \brief Metric Info per particular quantity.
     MetricInfo getMetricInfo(const std::string &quantity) const;
-
 
     //\! \brief get set unit name
     std::string name() const { return _name; };
@@ -92,6 +92,7 @@ class TPUnit {
 
     //! \brief return timestamp for quantity change
     uint64_t timestamp( const std::string &quantity ) const;
+
  protected:
     //! \brief A list of the last measurement values:  topic -> MetricInfo
     MetricList _lastValue;
@@ -136,12 +137,14 @@ class TPUnit {
     MetricInfo realpowerDefault(const std::string &quantity) const;
     //\! send realpower output or null in case of phase incompatibilities
     MetricInfo realpowerOutput(const std::string &quantity) const;
+
 private:
     std::string generateTopic (const std::string &quantity) const;
 
     // time to live of the generated metrics [s]
     static const uint64_t TTL = 6*60;
 };
+
 void tp_unit_test(bool verbose);
 
 #endif // TP_UNIT_H_INCLUDED
