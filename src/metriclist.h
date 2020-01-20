@@ -31,14 +31,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 /*
  * \brief This class is intended to handle set of current known metrics.
  *
- * You can create it, ad new metrics, find known metrics by topic,
+ * You can create it, add new metrics, find known metrics by topic,
  * and remove metrics that are not valid.
  */
+
 class MetricList {
 public:
 
     /*
-     * \brief Constrocts the empty list
+     * \brief Constructs the empty list
      */
     MetricList() {};
 
@@ -57,34 +58,7 @@ public:
      *
      * \param[in] metricInfo - metric to add
      */
-    void addMetric (const MetricInfo &metricInfo);
-
-    /*
-     * \brief Finds a value of the metric in the list and checks if
-     *        it is still valid.
-     *
-     * This method doesn't remove metric from the list if it is too old.
-     * To check is value is NAN or not use isnan() function from math.h
-     *
-     * \param[in] topic - topic we are looking for
-     *
-     * \return NAN   - if metric is too old or
-     *                  it is not present in the list
-     *         value - otherwise
-     */
-    double findAndCheck (const std::string &topic) const;
-
-    /*
-     * \brief Finds a value of the metric in the list
-     *
-     * To check is value is NAN or not use isnan() function from math.h
-     *
-     * \param[in] topic - topic we are looking for
-     *
-     * \return NAN   - if metric is not present in the list
-     *         value - otherwise
-     */
-    double find (const std::string &topic) const;
+    void addMetricInfo (const MetricInfo &metricInfo);
 
     /*
      * \brief Gets metric by the topic
@@ -99,26 +73,26 @@ public:
         const std::string &topic) const;
 
     /*
-     * \brief Removes old metrics from the list
+     * \brief Finds a value of the metric in the list
+     *
+     * To check if value is NAN or not use isnan() function from math.h
+     *
+     * \param[in] topic - topic we are looking for
+     *
+     * \return NAN   - if metric is not present in the list
+     *         value - otherwise
+     */
+    double find (const std::string &topic) const;
+
+    /*
+     * \brief Removes old metrics from the list (related to ttl of metrics)
      */
     void removeOldMetrics (void);
 
-    /*
-     * \brief Gets the last added metric
-     *
-     * \return last added (or updated) metric
-     */
-    MetricInfo getLastMetric (void) const {
-        return _lastInsertedMetric;
-    };
-
 private:
 
-    // Metric list <topic, Metric>
+    // Metric list <topic, MetricInfo>
     std::map <std::string, MetricInfo> _knownMetrics;
-
-    // Keep track of last inserted metric
-    MetricInfo _lastInsertedMetric;
 };
 
 void
