@@ -144,43 +144,73 @@ MetricInfo TPUnit::
     std::string topic = generateTopic(quantity);
     log_trace("realpowerOutput %s", topic.c_str());
 
-    double value = NAN;
+    double sum = 0;
+    int devCnt = 0;
     int phases = 0;
 
     for( const auto it : _powerdevices ) //std::map< std::string, MetricList> it
     {
-        value = getMetricValue( it.second, quantity, it.first );
+        double value = getMetricValue( it.second, quantity, it.first );
+        if (std::isnan (value)) {
+            throw std::runtime_error(quantity + "@" + it.first + " is missing");
+        }
 
-        double roL2 = getMetricValue (it.second, "realpower.output.L2", it.first);
-
-        // detect a mix of single and three phase devices - return NAN for this case
+        // detect a mix of single, bi and three phases devices
         if (phases == 0) { // first time
-            if (std::isnan (roL2))
-                phases = 1; // 1-phase
+            double roL3 = getMetricValue (it.second, "realpower.output.L3", it.first);
+            if (std::isnan (roL3))
+            {
+                double roL2 = getMetricValue (it.second, "realpower.output.L2", it.first);
+                if (std::isnan (roL2))
+                    phases = 1; // 1-phase
+                else
+                    phases = 2; // 2-phase
+            }
             else
                 phases = 3; // 3-phase
 
-            log_debug("%s calculation: choose %d phases (%s@%s)",
+            log_debug("%s calculation: choose %d phases output (%s@%s)",
                 topic.c_str(), phases, quantity.c_str(), it.first.c_str());
         }
         else {
-            if ((std::isnan (roL2) && (phases == 3)) ||
-                (!std::isnan (roL2) && (phases == 1)))
+            bool mixedPhaseOuput = false;
+            switch (phases) {
+                case 1: { // 1-phase
+                    double roL2 = getMetricValue (it.second, "realpower.output.L2", it.first);
+                    if (!std::isnan (roL2))
+                        mixedPhaseOuput = true;
+                    break;
+                }
+                case 2: { // 2-phase
+                    double roL3 = getMetricValue (it.second, "realpower.output.L3", it.first);
+                    if (!std::isnan (roL3))
+                        mixedPhaseOuput = true;
+                    break;
+                }
+                case 3: // 3-phase
+                default: {
+                    double roL3 = getMetricValue (it.second, "realpower.output.L3", it.first);
+                    if (std::isnan (roL3))
+                        mixedPhaseOuput = true;
+                    break;
+                }
+            }
+
+            if (mixedPhaseOuput)
             {
                 log_debug(ANSI_COLOR_LIGHTMAGENTA "%s calculation: avoid mixed phases (%s@%s, phases: %d)" ANSI_COLOR_RESET,
                     topic.c_str(), quantity.c_str(), it.first.c_str(), phases);
 
-                // return NAN instead of throw an exception?
-                return MetricInfo ( _name, quantity, "W", NAN, ::time (NULL), TTL);
+                throw std::runtime_error("avoid mixed phases output (phases: " + std::to_string(phases)
+                    + ", device: " + it.first + ")");
             }
         }
+
+        devCnt++;
+        sum += value;
     }
 
-    // Here value is NAN, or the latest getMetricValue()
-    // ZZZ Is there a bug ?!
-
-    MetricInfo result ( _name, quantity, "W", value, ::time (NULL), TTL);
-    return result;
+    return MetricInfo ( _name, quantity, "W", ((devCnt > 0) ? sum : NAN), ::time (NULL), TTL);
 }
 
 void TPUnit::
