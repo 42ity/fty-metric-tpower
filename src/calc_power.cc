@@ -182,6 +182,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
          int8_t container_type_id)
 {
     log_trace ("  container_type_id = %" PRIi8, container_type_id);
+
     // name of the container is mapped onto the vector of names of its power sources
     std::map<std::string, std::vector<std::string> > item{};
     db_reply <std::map<std::string, std::vector<std::string> > > ret =
@@ -310,8 +311,7 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
                 if ( it2 == container_devices.end() )
                     log_warning ("Trying to insert non-container link %d->%d", oneLink.first, oneLink.second);
                 else
-                    border_devices.insert(
-                            container_devices.find(oneLink.second)->second);
+                    border_devices.insert(container_devices.find(oneLink.second)->second);
             }
             if ( it2 != container_devices.end() )
                 dest_dvcs.insert(oneLink.second);
@@ -342,7 +342,6 @@ static db_reply <std::map<std::string, std::vector<std::string> > >
     return ret;
 }
 
-
 db_reply <std::map<std::string, std::vector<std::string> > >
     select_devices_total_power_dcs
         (tntdb::Connection  &conn)
@@ -351,7 +350,6 @@ db_reply <std::map<std::string, std::vector<std::string> > >
     return select_devices_total_power_container (conn, persist::asset_type::DATACENTER);
 }
 
-
 db_reply <std::map<std::string, std::vector<std::string> > >
     select_devices_total_power_racks
         (tntdb::Connection  &conn)
@@ -359,7 +357,8 @@ db_reply <std::map<std::string, std::vector<std::string> > >
     return select_devices_total_power_container (conn, persist::asset_type::RACK);
 }
 
-void calc_power_test(bool)
+void calc_power_test(bool verbose)
 {
-    assert(true);
+    printf (" * calc_power: ");
+    printf ("OK\n");
 }

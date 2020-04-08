@@ -47,10 +47,10 @@
  *              input port on the destination device.
  */
 typedef std::tuple< uint32_t, std::string, std::string, uint32_t > device_info_t;
+
 // ===========================================================================
 // Device type check functions
 // ===========================================================================
-
 
 /**
  * \brief Checks the type of device.
@@ -62,7 +62,6 @@ typedef std::tuple< uint32_t, std::string, std::string, uint32_t > device_info_t
  */
 bool is_epdu (const device_info_t &device);
 
-
 /**
  * \brief Checks the type of device.
  *
@@ -73,7 +72,6 @@ bool is_epdu (const device_info_t &device);
  */
 bool is_pdu (const device_info_t &device);
 
-
 /**
  * \brief Checks the type of device.
  *
@@ -83,7 +81,6 @@ bool is_pdu (const device_info_t &device);
  *         false if it is not a ups.
  */
 bool is_ups (const device_info_t &device);
-
 
 // ===========================================================================
 // Functions that find power sources
@@ -112,7 +109,6 @@ db_reply <std::map<std::string, std::vector<std::string> > >
     select_devices_total_power_racks
         (tntdb::Connection  &conn);
 
-
 /**
  * \brief For every dc analyses its power topology and
  *        for each dc returns a list of power devices
@@ -136,6 +132,6 @@ db_reply <std::map<std::string, std::vector<std::string> > >
     select_devices_total_power_dcs
         (tntdb::Connection  &conn);
 
-void calc_power_test(bool);
+void calc_power_test(bool verbose);
 
 #endif //SRC_CALC_POWER_H_

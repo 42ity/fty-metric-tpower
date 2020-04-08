@@ -1,7 +1,6 @@
 # Travis CI script
 # This is a skeleton created by zproject.
 # You can add hand-written code here.
-### Note: Customized after generation; take care upon regens
 
 language:
 - cpp
@@ -11,6 +10,9 @@ cache:
 
 os:
 - linux
+
+#Sudo is need because we need to be able to install package for the depencies using apt-get
+sudo: required
 
 # The default distro for env:/matrix:/* and unspecified-dist matrix:/* tests;
 # for the latter see also addons/apt/sources with the package repos in use.
@@ -54,12 +56,7 @@ env:
 #   - BUILD_TYPE=check-py
 
 # Prerequisite packages provided by OS distro and used "as is"
-# NOTE: Database pkgs added to the list manually as prereqs to compile tntdb
 pkg_deps_prereqs_distro: &pkg_deps_prereqs_distro
-    - libssl-dev
-    - libmysqlclient-dev
-    - libsqlite3-dev
-    - libpq-dev
 
 # Prerequisite packages that may be built from source or used from
 # prebuilt packages of that source (usually not from an OS distro)
@@ -69,14 +66,12 @@ pkg_deps_prereqs_source: &pkg_deps_prereqs_source
     - libczmq-dev
     - libmlm-dev
     - cxxtools-dev
-    - log4cplus-dev
     - libfty-common-logging-dev
     - libfty-proto-dev
-    - libfty-common-dev
     - libfty-common-mlm-dev
-    - tntdb-dev
     - libfty-common-db-dev
     - libfty-shm-dev
+    - tntdb-dev
 
 # NOTE: Our forks are checked out and built without pkg dependencies in use
 pkg_deps_prereqs: &pkg_deps_prereqs
