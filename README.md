@@ -45,7 +45,7 @@ fty-metric-tpower has 1 actor:
 
 * fty-metric-tpower-server: main actor
 
-It also has one built-in timer, which runs each minute, sends metrics for racks/DCS  
+It also has one built-in timer, which runs each minute, sends metrics for racks/DCS
 which request it and reloads the topology if reconfig was pending.
 
 ## Protocols
@@ -96,10 +96,10 @@ Agent doesn't receive any mailbox requests.
 
 If the metric is not realpower metric, ignore it.
 
-Otherwise, check whether the metric is relevant for any known rack/DC,  
+Otherwise, check whether the metric is relevant for any known rack/DC,
 recompute its power metrics and publish them if asked to do so.
 
 # ASSETS stream
 
-On any ASSET message, postpone the reconfig if we are currently in the middle of one  
+On any ASSET message, postpone the reconfig if we are currently in the middle of one
 and set the timer to the next metric publish request.
