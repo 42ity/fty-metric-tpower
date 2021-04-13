@@ -7,10 +7,11 @@ Agent fty-metric-tpower computes power metrics for racks and DCs.
 To build fty-metric-tpower project run:
 
 ```bash
-./autogen.sh
-./configure
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=usr -DBUILD_TESTING=On ..
 make
 make check # to run self-test
+sudo make install
 ```
 
 ## How to run

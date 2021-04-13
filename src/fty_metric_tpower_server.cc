@@ -302,7 +302,7 @@ fty_metric_tpower_server_test (bool verbose)
     if (verbose)
          ManageFtyLog::getInstanceFtylog()->setVeboseMode();
 
-    assert (fty_shm_set_test_dir("src/selftest-rw") == 0);
+    assert (fty_shm_set_test_dir("selftest-rw") == 0);
 
     uint64_t timestamp = ::time(NULL);
     uint32_t ttl = 500;
