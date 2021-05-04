@@ -23,17 +23,18 @@ Priority:       optional
 Maintainer:     fty-metric-tpower Developers <eatonipcopensource@eaton.com>
 Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
+    cmake (>=3.0),
+    fty-cmake-dev,
     pkg-config,
     libsodium-dev,
-    libzmq3-dev,
     libczmq-dev (>= 3.0.2),
     libmlm-dev (>= 1.0.0),
     libcxxtools-dev,
     libfty-common-logging-dev,
-    libfty-proto-dev (>= 1.0.0),
+    libfty-proto-dev,
     libfty-common-mlm-dev,
     libfty-common-db-dev,
-    libfty-shm-dev (>= 1.0.0),
+    libfty-shm-dev,
     libtntdb-dev,
     gcc (>= 4.9.0), g++ (>= 4.9.0),
     systemd,
@@ -41,48 +42,10 @@ Build-Depends: debhelper (>= 9),
     asciidoc-base | asciidoc, xmlto,
     dh-autoreconf
 
-Package: libfty-metric-tpower0
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: fty-metric-tpower shared library
- This package contains shared library for fty-metric-tpower:
- 42ity component for power metrics computation
-
-Package: libfty-metric-tpower-dev
-Architecture: any
-Section: libdevel
-Depends:
-    ${misc:Depends},
-    libsodium-dev,
-    libzmq3-dev,
-    libczmq-dev (>= 3.0.2),
-    libmlm-dev (>= 1.0.0),
-    libcxxtools-dev,
-    libfty-common-logging-dev,
-    libfty-proto-dev (>= 1.0.0),
-    libfty-common-mlm-dev,
-    libfty-common-db-dev,
-    libfty-shm-dev (>= 1.0.0),
-    libtntdb-dev,
-    libfty-metric-tpower0 (= ${binary:Version})
-Description: fty-metric-tpower development tools
- This package contains development files for fty-metric-tpower:
- 42ity component for power metrics computation
-
 Package: fty-metric-tpower
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends},
+Depends: ${misc:Depends},
+    ${shlibs:Depends}
 Description: runnable binaries from fty-metric-tpower
  Main package for fty-metric-tpower:
  42ity component for power metrics computation
-
-Package: fty-metric-tpower-dbg
-Architecture: any
-Section: debug
-Priority: optional
-Depends:
-    fty-metric-tpower (= ${binary:Version}),
-    ${misc:Depends}
-Description: fty-metric-tpower debugging symbols
- This package contains the debugging symbols for fty-metric-tpower:
- 42ity component for power metrics computation.
