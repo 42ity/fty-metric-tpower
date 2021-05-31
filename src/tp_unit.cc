@@ -18,16 +18,21 @@
  *
  */
 
-#include "fty_metric_tpower_classes.h"
+#include "tp_unit.h"
+#include "tpowerconfiguration.h"
+#include <cmath>
 #include <ctime>
 #include <exception>
+#include <fty_log.h>
+#include <stdexcept>
 
-#define ANSI_COLOR_BOLD  "\x1b[1;39m"
-#define ANSI_COLOR_RED     "\x1b[1;31m"
-#define ANSI_COLOR_LIGHTMAGENTA    "\x1b[1;95m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
+#define ANSI_COLOR_BOLD         "\x1b[1;39m"
+#define ANSI_COLOR_RED          "\x1b[1;31m"
+#define ANSI_COLOR_LIGHTMAGENTA "\x1b[1;95m"
+#define ANSI_COLOR_RESET        "\x1b[0m"
 
-enum TPowerMethod {
+enum TPowerMethod
+{
     TPOWER_REALPOWER_UNDEFINED = 0,
     TPOWER_REALPOWER_DEFAULT   = 1,
     TPOWER_REALPOWER_OUTPUT_L1 = 2,
@@ -35,174 +40,158 @@ enum TPowerMethod {
     TPOWER_REALPOWER_OUTPUT_L3 = 4,
 };
 
-const std::map<std::string,int> TPUnit::_calculations = {
-    { "realpower.default",   TPOWER_REALPOWER_DEFAULT   },
-    { "realpower.output.L1", TPOWER_REALPOWER_OUTPUT_L1 },
-    { "realpower.output.L2", TPOWER_REALPOWER_OUTPUT_L2 },
-    { "realpower.output.L3", TPOWER_REALPOWER_OUTPUT_L3 },
+const std::map<std::string, int> TPUnit::_calculations = {
+    {"realpower.default", TPOWER_REALPOWER_DEFAULT},
+    {"realpower.output.L1", TPOWER_REALPOWER_OUTPUT_L1},
+    {"realpower.output.L2", TPOWER_REALPOWER_OUTPUT_L2},
+    {"realpower.output.L3", TPOWER_REALPOWER_OUTPUT_L3},
 };
 
-double TPUnit::
-    get( const std::string &quantity) const
+double TPUnit::get(const std::string& quantity) const
 {
-    double result = _lastValue.find( quantity );
-    if ( std::isnan(result) ) {
+    double result = _lastValue.find(quantity);
+    if (std::isnan(result)) {
         throw std::runtime_error("Unknown quantity (" + generateTopic(quantity) + ")");
     }
     return result;
 }
 
-MetricInfo TPUnit::
-    getMetricInfo(const std::string &quantity) const
+MetricInfo TPUnit::getMetricInfo(const std::string& quantity) const
 {
-    auto result = _lastValue.getMetricInfo( generateTopic(quantity) );
-    if ( result.isUnknown() ) {
+    auto result = _lastValue.getMetricInfo(generateTopic(quantity));
+    if (result.isUnknown()) {
         throw std::runtime_error("Unknown quantity");
     }
     return result;
 }
 
-void TPUnit::
-    set(const std::string &quantity, MetricInfo &measurement)
+void TPUnit::set(const std::string& quantity, const MetricInfo& measurement)
 {
     double currentValue = _lastValue.find(generateTopic(quantity));
 
-    if( std::isnan(currentValue) || ( abs(currentValue - measurement.getValue()) > 0.00001) )
-    {
+    if (std::isnan(currentValue) || (abs(currentValue - measurement.getValue()) > 0.00001)) {
         _lastValue.addMetricInfo(measurement);
-        _changed[quantity] = true;
+        _changed[quantity]         = true;
         _changetimestamp[quantity] = measurement.getTimestamp();
     }
 }
 
-MetricInfo TPUnit::
-    simpleSummarize(const std::string &quantity) const
+MetricInfo TPUnit::simpleSummarize(const std::string& quantity) const
 {
     log_trace("simpleSummarize %s", generateTopic(quantity).c_str());
 
     double sum = 0;
-    for( const auto &it : _powerdevices ) //std::map< std::string, MetricList> it
+    for (const auto& it : _powerdevices) // std::map< std::string, MetricList> it
     {
-        double value = getMetricValue( it.second, quantity, it.first );
-        if( std::isnan(value) ) {
-            log_debug(ANSI_COLOR_LIGHTMAGENTA "%s@%s is NAN" ANSI_COLOR_RESET,
-                quantity.c_str(), it.first.c_str());
+        double value = getMetricValue(it.second, quantity, it.first);
+        if (std::isnan(value)) {
+            log_debug(ANSI_COLOR_LIGHTMAGENTA "%s@%s is NAN" ANSI_COLOR_RESET, quantity.c_str(), it.first.c_str());
 
             throw std::runtime_error(quantity + "@" + it.first + " is missing");
-        }
-        else {
+        } else {
             sum += value;
         }
     }
 
-    MetricInfo result ( _name, quantity, "W", sum, ::time (NULL), TTL);
+    MetricInfo result(_name, quantity, "W", sum, uint64_t(::time(NULL)), TTL);
     return result;
 }
 
-MetricInfo TPUnit::
-    realpowerDefault(const std::string &quantity) const
+MetricInfo TPUnit::realpowerDefault(const std::string& quantity) const
 {
     std::string topic = generateTopic(quantity);
     log_trace("realpowerDefault %s", topic.c_str());
 
     double sum = 0;
-    for( const auto it : _powerdevices ) //std::map< std::string, MetricList> it
-    {
-        double value = getMetricValue( it.second, quantity, it.first );
-        if( std::isnan (value) ) {
-            //ZZZ continue; // ignore NAN values
+    for (const auto& it : _powerdevices) {
+        double value = getMetricValue(it.second, quantity, it.first);
+        if (std::isnan(value)) {
+            // ZZZ continue; // ignore NAN values
 
             // realpower.default not present, try to sum the phases
-            log_debug(ANSI_COLOR_LIGHTMAGENTA "%s calculation: %s@%s is NAN" ANSI_COLOR_RESET,
-                topic.c_str(), quantity.c_str(), it.first.c_str());
+            log_debug(ANSI_COLOR_LIGHTMAGENTA "%s calculation: %s@%s is NAN" ANSI_COLOR_RESET, topic.c_str(),
+                quantity.c_str(), it.first.c_str());
 
-            for( int phase = 1 ; phase <= 3 ; ++phase )
-            {
-                const std::string quant = "realpower.output.L" + std::to_string( phase );
-                value = getMetricValue( it.second, quant, it.first );
-                if( std::isnan (value) ) {
-                    log_debug(ANSI_COLOR_LIGHTMAGENTA "%s calculation: %s@%s is NAN" ANSI_COLOR_RESET,
-                        topic.c_str(), quant.c_str(), it.first.c_str());
+            for (int phase = 1; phase <= 3; ++phase) {
+                const std::string quant = "realpower.output.L" + std::to_string(phase);
+                value                   = getMetricValue(it.second, quant, it.first);
+                if (std::isnan(value)) {
+                    log_debug(ANSI_COLOR_LIGHTMAGENTA "%s calculation: %s@%s is NAN" ANSI_COLOR_RESET, topic.c_str(),
+                        quant.c_str(), it.first.c_str());
 
                     throw std::runtime_error(quant + "@" + it.first + " is missing");
                 }
                 sum += value;
             }
-        }
-        else {
+        } else {
             sum += value;
         }
     }
 
-    MetricInfo result ( _name, quantity, "W", sum, ::time (NULL), TTL);
+    MetricInfo result(_name, quantity, "W", sum, uint64_t(::time(NULL)), TTL);
     return result;
 }
 
-MetricInfo TPUnit::
-    realpowerOutput(const std::string &quantity) const
+MetricInfo TPUnit::realpowerOutput(const std::string& quantity) const
 {
     std::string topic = generateTopic(quantity);
     log_trace("realpowerOutput %s", topic.c_str());
 
-    double sum = 0;
-    int devCnt = 0;
-    int phases = 0;
+    double sum    = 0;
+    int    devCnt = 0;
+    int    phases = 0;
 
-    for( const auto it : _powerdevices ) //std::map< std::string, MetricList> it
-    {
-        double value = getMetricValue( it.second, quantity, it.first );
-        if (std::isnan (value)) {
+    for (const auto& it : _powerdevices) {
+        double value = getMetricValue(it.second, quantity, it.first);
+        if (std::isnan(value)) {
             throw std::runtime_error(quantity + "@" + it.first + " is missing");
         }
 
         // detect a mix of single, bi and three phases devices
         if (phases == 0) { // first time
-            double roL3 = getMetricValue (it.second, "realpower.output.L3", it.first);
-            if (std::isnan (roL3))
-            {
-                double roL2 = getMetricValue (it.second, "realpower.output.L2", it.first);
-                if (std::isnan (roL2))
+            double roL3 = getMetricValue(it.second, "realpower.output.L3", it.first);
+            if (std::isnan(roL3)) {
+                double roL2 = getMetricValue(it.second, "realpower.output.L2", it.first);
+                if (std::isnan(roL2))
                     phases = 1; // 1-phase
                 else
                     phases = 2; // 2-phase
-            }
-            else
+            } else
                 phases = 3; // 3-phase
 
-            log_debug("%s calculation: choose %d phases output (%s@%s)",
-                topic.c_str(), phases, quantity.c_str(), it.first.c_str());
-        }
-        else {
+            log_debug("%s calculation: choose %d phases output (%s@%s)", topic.c_str(), phases, quantity.c_str(),
+                it.first.c_str());
+        } else {
             bool mixedPhaseOuput = false;
             switch (phases) {
                 case 1: { // 1-phase
-                    double roL2 = getMetricValue (it.second, "realpower.output.L2", it.first);
-                    if (!std::isnan (roL2))
+                    double roL2 = getMetricValue(it.second, "realpower.output.L2", it.first);
+                    if (!std::isnan(roL2))
                         mixedPhaseOuput = true;
                     break;
                 }
                 case 2: { // 2-phase
-                    double roL3 = getMetricValue (it.second, "realpower.output.L3", it.first);
-                    if (!std::isnan (roL3))
+                    double roL3 = getMetricValue(it.second, "realpower.output.L3", it.first);
+                    if (!std::isnan(roL3))
                         mixedPhaseOuput = true;
                     break;
                 }
                 case 3: // 3-phase
                 default: {
-                    double roL3 = getMetricValue (it.second, "realpower.output.L3", it.first);
-                    if (std::isnan (roL3))
+                    double roL3 = getMetricValue(it.second, "realpower.output.L3", it.first);
+                    if (std::isnan(roL3))
                         mixedPhaseOuput = true;
                     break;
                 }
             }
 
-            if (mixedPhaseOuput)
-            {
-                log_debug(ANSI_COLOR_LIGHTMAGENTA "%s calculation: avoid mixed phases (%s@%s, phases: %d)" ANSI_COLOR_RESET,
+            if (mixedPhaseOuput) {
+                log_debug(ANSI_COLOR_LIGHTMAGENTA
+                    "%s calculation: avoid mixed phases (%s@%s, phases: %d)" ANSI_COLOR_RESET,
                     topic.c_str(), quantity.c_str(), it.first.c_str(), phases);
 
-                throw std::runtime_error("avoid mixed phases output (phases: " + std::to_string(phases)
-                    + ", device: " + it.first + ")");
+                throw std::runtime_error(
+                    "avoid mixed phases output (phases: " + std::to_string(phases) + ", device: " + it.first + ")");
             }
         }
 
@@ -210,196 +199,165 @@ MetricInfo TPUnit::
         sum += value;
     }
 
-    return MetricInfo ( _name, quantity, "W", ((devCnt > 0) ? sum : NAN), ::time (NULL), TTL);
+    return MetricInfo(_name, quantity, "W", ((devCnt > 0) ? sum : std::nan("")), uint64_t(::time(NULL)), TTL);
 }
 
-void TPUnit::
-    calculate(const std::string &quantity)
+void TPUnit::calculate(const std::string& quantity)
 {
     const std::string topic = generateTopic(quantity);
-    log_trace(ANSI_COLOR_BOLD "%s calculate" ANSI_COLOR_RESET,
-        topic.c_str());
+    log_trace(ANSI_COLOR_BOLD "%s calculate" ANSI_COLOR_RESET, topic.c_str());
 
     try {
-        const auto it = _calculations.find(quantity);
-        int calcMethod = (it != _calculations.cend()) ? it->second : TPOWER_REALPOWER_UNDEFINED;
+        const auto it         = _calculations.find(quantity);
+        int        calcMethod = (it != _calculations.cend()) ? it->second : TPOWER_REALPOWER_UNDEFINED;
 
         MetricInfo result;
-        switch( calcMethod ) {
+        switch (calcMethod) {
             case TPOWER_REALPOWER_DEFAULT:
-                result = realpowerDefault( quantity );
+                result = realpowerDefault(quantity);
                 break;
             case TPOWER_REALPOWER_OUTPUT_L1:
             case TPOWER_REALPOWER_OUTPUT_L2:
             case TPOWER_REALPOWER_OUTPUT_L3:
-                result = realpowerOutput ( quantity );
+                result = realpowerOutput(quantity);
                 break;
             case TPOWER_REALPOWER_UNDEFINED:
             default:
-                result = simpleSummarize( quantity );
+                result = simpleSummarize(quantity);
                 break;
         }
 
-        set( quantity, result );
+        set(quantity, result);
 
-        log_trace("%s calculate " ANSI_COLOR_BOLD "succeeded" ANSI_COLOR_RESET,
-            topic.c_str());
-    }
-    catch (std::exception &e) {
-        log_debug(ANSI_COLOR_RED "%s calculate failed on exception (%s)" ANSI_COLOR_RESET,
-            topic.c_str(), e.what());
-    }
-    catch (...) {
-        log_debug(ANSI_COLOR_RED "%s calculate failed" ANSI_COLOR_RESET,
-            topic.c_str());
+        log_trace("%s calculate " ANSI_COLOR_BOLD "succeeded" ANSI_COLOR_RESET, topic.c_str());
+    } catch (std::exception& e) {
+        log_debug(ANSI_COLOR_RED "%s calculate failed on exception (%s)" ANSI_COLOR_RESET, topic.c_str(), e.what());
+    } catch (...) {
+        log_debug(ANSI_COLOR_RED "%s calculate failed" ANSI_COLOR_RESET, topic.c_str());
     }
 }
 
-void TPUnit::
-    calculate(const std::vector<std::string> &quantities)
+void TPUnit::calculate(const std::vector<std::string>& quantities)
 {
     dropOldMetricInfos();
-    for( const auto it : quantities ) {
-        calculate( it );
+    for (const auto& it : quantities) {
+        calculate(it);
     }
 }
 
-double TPUnit::
-    getMetricValue(
-        const MetricList  &measurements,
-        const std::string &quantity,
-        const std::string &deviceName
-    ) const
+double TPUnit::getMetricValue(
+    const MetricList& measurements, const std::string& quantity, const std::string& deviceName) const
 {
     std::string topic = quantity + "@" + deviceName;
     return measurements.find(topic);
 }
 
 // TODO setup max life time metric
-void TPUnit::
-    dropOldMetricInfos()
+void TPUnit::dropOldMetricInfos()
 {
-    for( auto & device : _powerdevices ) {
-        auto &measurements = device.second;
+    for (auto& device : _powerdevices) {
+        auto& measurements = device.second;
         measurements.removeOldMetrics();
     }
     _lastValue.removeOldMetrics();
 }
 
-std::string TPUnit::
-    generateTopic (const std::string &quantity) const
+std::string TPUnit::generateTopic(const std::string& quantity) const
 {
     return quantity + "@" + _name;
 }
 
-bool TPUnit::
-    quantityIsUnknown(const std::string &topic) const
+bool TPUnit::quantityIsUnknown(const std::string& topic) const
 {
     return std::isnan(_lastValue.find(topic));
 }
 
-std::vector<std::string> TPUnit::
-    devicesInUnknownState(const std::string &quantity) const
+std::vector<std::string> TPUnit::devicesInUnknownState(const std::string& quantity) const
 {
     std::vector<std::string> result;
 
-    if ( quantityIsKnown( generateTopic(quantity) ) ) {
+    if (quantityIsKnown(generateTopic(quantity))) {
         return result; // empty vector
     }
 
-    uint64_t now = ::time(NULL);
-    for( const auto &device : _powerdevices ) {
-        const auto &deviceMetrics = device.second; // TPUnit
-        std::string topic = quantity + "@" + device.first;
-        auto measurement = deviceMetrics.getMetricInfo(topic);
-        if ( ( std::isnan (measurement.getValue()) ) ||
-             ( (now - measurement.getTimestamp()) > (measurement.getTtl() * 2) )
-           )
-        {
-            result.push_back( device.first );
+    uint64_t now = uint64_t(::time(NULL));
+    for (const auto& device : _powerdevices) {
+        const auto& deviceMetrics = device.second; // TPUnit
+        std::string topic         = quantity + "@" + device.first;
+        auto        measurement   = deviceMetrics.getMetricInfo(topic);
+        if ((std::isnan(measurement.getValue())) || ((now - measurement.getTimestamp()) > (measurement.getTtl() * 2))) {
+            result.push_back(device.first);
         }
     }
     return result;
 }
 
-void TPUnit::
-    addPowerDevice(const std::string &device)
+void TPUnit::addPowerDevice(const std::string& device)
 {
     _powerdevices[device] = {};
 }
 
-void TPUnit::
-    setMeasurement(const MetricInfo &M)
+void TPUnit::setMeasurement(const MetricInfo& M)
 {
-    auto device = _powerdevices.find( M.getElementName() );
-    if( device != _powerdevices.end() ) //std::map< std::string, MetricList> device
-        device->second.addMetricInfo (M);
+    auto device = _powerdevices.find(M.getElementName());
+    if (device != _powerdevices.end()) // std::map< std::string, MetricList> device
+        device->second.addMetricInfo(M);
 }
 
-bool TPUnit::
-    changed(const std::string &quantity) const
+bool TPUnit::changed(const std::string& quantity) const
 {
     auto it = _changed.find(quantity);
-    if( it == _changed.end() )
+    if (it == _changed.end())
         return false;
     return it->second;
 }
 
-void TPUnit::
-    changed(const std::string &quantity, bool newStatus)
+void TPUnit::changed(const std::string& quantity, bool newStatus)
 {
-    if( changed( quantity ) != newStatus )
-    {
-        _changed[quantity] = newStatus;
-        _changetimestamp[quantity] = ::time(NULL);
-        if( _advertisedtimestamp.find(quantity) == _advertisedtimestamp.end() ) {
+    if (changed(quantity) != newStatus) {
+        _changed[quantity]         = newStatus;
+        _changetimestamp[quantity] = uint64_t(::time(NULL));
+        if (_advertisedtimestamp.find(quantity) == _advertisedtimestamp.end()) {
             _advertisedtimestamp[quantity] = 0;
         }
     }
 }
 
-uint64_t TPUnit::
-    timestamp( const std::string &quantity ) const
+uint64_t TPUnit::timestamp(const std::string& quantity) const
 {
     auto it = _changetimestamp.find(quantity);
-    if( it == _changetimestamp.end() )
+    if (it == _changetimestamp.end())
         return 0;
     return it->second;
 }
 
-int64_t TPUnit::
-    timeToAdvertisement ( const std::string &quantity ) const
+int64_t TPUnit::timeToAdvertisement(const std::string& quantity) const
 {
-    auto quantityTimestamp = timestamp (quantity);
-    if ( ( quantityTimestamp == 0 ) ||
-           quantityIsUnknown(generateTopic(quantity))
-       )
-    {
+    auto quantityTimestamp = timestamp(quantity);
+    if ((quantityTimestamp == 0) || quantityIsUnknown(generateTopic(quantity))) {
         // if quantity didn't change and it is still unknown
         return TPOWER_MEASUREMENT_REPEAT_AFTER;
     }
-    uint64_t dt = ::time(NULL) - quantityTimestamp;
-    if ( dt > TPOWER_MEASUREMENT_REPEAT_AFTER ) {
+    uint64_t dt = uint64_t(::time(NULL)) - quantityTimestamp;
+    if (dt > TPOWER_MEASUREMENT_REPEAT_AFTER) {
         // no time left for waiting -> Need to advertise
         return 0;
     }
     // we should wait a little bit, before advertising
-    return TPOWER_MEASUREMENT_REPEAT_AFTER - dt;
+    return int64_t(TPOWER_MEASUREMENT_REPEAT_AFTER - dt);
 }
 
-bool TPUnit::advertise( const std::string &quantity ) const
+bool TPUnit::advertise(const std::string& quantity) const
 {
-    if ( quantityIsUnknown(generateTopic(quantity)) ) {
+    if (quantityIsUnknown(generateTopic(quantity))) {
         // if we don't know the quantity -> nothing to advertise
         return false;
     }
 
-    uint64_t now_timestamp = ::time(NULL);
+    uint64_t now_timestamp = uint64_t(::time(NULL));
     // find the time, when quantity was advertised last time
     const auto it = _advertisedtimestamp.find(quantity);
-    if ( ( it != _advertisedtimestamp.end() ) &&
-         ( it->second == now_timestamp ) )
-    {
+    if ((it != _advertisedtimestamp.end()) && (it->second == now_timestamp)) {
         // if time is known and
         //    time is just now was advertised -> nothing to advertise
         return false;
@@ -408,20 +366,13 @@ bool TPUnit::advertise( const std::string &quantity ) const
     // advertise if
     // * value changed or
     // * we should advertise according schedule
-    return ( changed(quantity) || ( (now_timestamp - timestamp(quantity)) > TPOWER_MEASUREMENT_REPEAT_AFTER ) );
+    return (changed(quantity) || ((now_timestamp - timestamp(quantity)) > TPOWER_MEASUREMENT_REPEAT_AFTER));
 }
 
-void TPUnit::
-    advertised(const std::string &quantity)
+void TPUnit::advertised(const std::string& quantity)
 {
-    changed( quantity, false );
-    int64_t now_timestamp = ::time(NULL);
-    _changetimestamp[quantity] = now_timestamp;
-    _advertisedtimestamp[quantity] = now_timestamp;
-}
-
-void tp_unit_test(bool verbose)
-{
-    printf (" * tp_unit: ");
-    printf ("OK\n");
+    changed(quantity, false);
+    int64_t now_timestamp          = ::time(NULL);
+    _changetimestamp[quantity]     = uint64_t(now_timestamp);
+    _advertisedtimestamp[quantity] = uint64_t(now_timestamp);
 }

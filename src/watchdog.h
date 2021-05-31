@@ -19,16 +19,15 @@
     =========================================================================
 */
 
-#ifndef WATCHDOG_H_INCLUDED
-#define WATCHDOG_H_INCLUDED
+#pragma once
 
-#include <sys/types.h>
 #include <atomic>
 #include <czmq.h>
+#include <sys/types.h>
 
-
-// Band-aid for malamute going AWOL
-class Watchdog {
+/// Band-aid for malamute going AWOL
+class Watchdog
+{
 public:
     Watchdog();
     ~Watchdog();
@@ -38,9 +37,8 @@ public:
         last_tick_.store(zclock_mono() / 1000);
     }
     bool check();
+
 private:
     std::atomic<time_t> last_tick_;
-    zactor_t *thread_;
+    zactor_t*           thread_;
 };
-
-#endif

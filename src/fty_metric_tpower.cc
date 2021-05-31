@@ -19,31 +19,29 @@
     =========================================================================
 */
 
-/*
-@header
-    fty_metric_tpower - Evaluates some metrics and produces new power metrics
-@discuss
-@end
-*/
+/// fty_metric_tpower - Evaluates some metrics and produces new power metrics
 
-#include "fty_metric_tpower_classes.h"
-#include <fty_common_mlm_utils.h>
+#include "fty_metric_tpower_server.h"
 #include <fty_common_agents.h>
+#include <fty_common_mlm_guards.h>
+#include <fty_common_mlm_utils.h>
+#include <fty_log.h>
 #include <getopt.h>
 
-void usage ()
+void usage()
 {
-    puts ("fty-metric-tpower [options]\n"
-          "  -v|--verbose          verbose test output\n"
-          "  -h|--help             print this information\n"
-          "Environment variables for parameters are BIOS_LOG_LEVEL.\n"
-          "Command line option takes precedence over variable.");
+    puts(
+        "fty-metric-tpower [options]\n"
+        "  -v|--verbose          verbose test output\n"
+        "  -h|--help             print this information\n"
+        "Environment variables for parameters are BIOS_LOG_LEVEL.\n"
+        "Command line option takes precedence over variable.");
 }
 
-int main (int argc, char *argv [])
+int main(int argc, char* argv[])
 {
     int verbose = 0;
-    int help = 0;
+    int help    = 0;
 
     // get options
     int c;
@@ -52,20 +50,16 @@ int main (int argc, char *argv [])
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
-    static const char *short_options = "hv";
-    static struct option long_options[] =
-    {
-        {"help",       no_argument,       &help,    1},
-        {"verbose",    no_argument,       &verbose, 1},
-        {NULL, 0, 0, 0}
-    };
+    static const char*   short_options  = "hv";
+    static struct option long_options[] = {
+        {"help", no_argument, &help, 1}, {"verbose", no_argument, &verbose, 1}, {NULL, 0, 0, 0}};
 #if defined(__GNUC__) || defined(__GNUG__)
 #pragma GCC diagnostic pop
 #endif
 
-    while(true) {
+    while (true) {
         int option_index = 0;
-        c = getopt_long (argc, argv, short_options, long_options, &option_index);
+        c                = getopt_long(argc, argv, short_options, long_options, &option_index);
         if (c == -1) {
             break;
         }
@@ -82,18 +76,18 @@ int main (int argc, char *argv [])
                 break;
         }
     }
-    if ( help ) {
+    if (help) {
         usage();
         exit(1);
     }
 
     ManageFtyLog::setInstanceFtylog(AGENT_FTY_METRIC_TPOWER, FTY_COMMON_LOGGING_DEFAULT_CFG);
-    log_info ("fty_metric_tpower STARTED");
+    log_info("fty_metric_tpower STARTED");
 
-    zactor_t *tpower_server = zactor_new (fty_metric_tpower_server, (void *)MLM_ENDPOINT);
+    zactor_t* tpower_server = zactor_new(fty_metric_tpower_server, const_cast<char*>(MLM_ENDPOINT));
 
-    if ( !tpower_server ) {
-        log_error ("cannot start the daemon");
+    if (!tpower_server) {
+        log_error("cannot start the daemon");
         exit(1);
     }
 
@@ -110,12 +104,12 @@ int main (int argc, char *argv [])
             if (streq(message, "$TERM"))
                 break;
         } else {
-            puts ("interrupted");
+            puts("interrupted");
             break;
         }
     }
 
-    zactor_destroy (&tpower_server);
-    log_info ("fty_metric_tpower ENDED");
+    zactor_destroy(&tpower_server);
+    log_info("fty_metric_tpower ENDED");
     return 0;
 }
