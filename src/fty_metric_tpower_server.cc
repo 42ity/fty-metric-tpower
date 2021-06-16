@@ -246,7 +246,7 @@ void fty_metric_tpower_server(zsock_t* pipe, void* args)
         // TODO: move it to asset agent and receive this info
         // as message
 
-        if (is_fty_proto(zmessage)) {
+        if (fty_proto_is(zmessage)) {
             fty_proto_t* bmessage = fty_proto_decode(&zmessage);
             if (!bmessage) {
                 log_error("cannot decode fty_proto message, ignore it");
