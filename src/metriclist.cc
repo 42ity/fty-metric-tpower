@@ -17,53 +17,43 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "metriclist.h"
-
-#include <cmath> // NAN is here
 #include <cassert>
+#include <cmath> // NAN is here
 
-void MetricList::addMetricInfo (const MetricInfo &metricInfo)
+void MetricList::addMetricInfo(const MetricInfo& metricInfo)
 {
     std::string topic = metricInfo.generateTopic();
 
     // find topic; if found -> replace metric, else add it
-    auto it = _knownMetrics.find (topic);
-    if ( it != _knownMetrics.cend() )
+    auto it = _knownMetrics.find(topic);
+    if (it != _knownMetrics.cend())
         it->second = metricInfo;
     else
-        _knownMetrics.emplace (topic, metricInfo);
+        _knownMetrics.emplace(topic, metricInfo);
 }
 
-MetricInfo MetricList::getMetricInfo (const std::string &topic) const
+MetricInfo MetricList::getMetricInfo(const std::string& topic) const
 {
     auto it = _knownMetrics.find(topic);
-    return ( it != _knownMetrics.cend() ) ? it->second : MetricInfo();
+    return (it != _knownMetrics.cend()) ? it->second : MetricInfo();
 }
 
-double MetricList::find (const std::string &topic) const
+double MetricList::find(const std::string& topic) const
 {
     auto it = _knownMetrics.find(topic);
-    return ( it != _knownMetrics.cend() ) ? it->second._value : NAN;
+    return (it != _knownMetrics.cend()) ? it->second._value : std::nan("");
 }
 
 void MetricList::removeOldMetrics()
 {
-    uint64_t now = ::time(NULL);
+    uint64_t now = uint64_t(::time(NULL));
 
     std::map<std::string, MetricInfo>::iterator iter = _knownMetrics.begin();
-    while (iter != _knownMetrics.end())
-    {
-        if ( (now - iter->second._timestamp) > iter->second.getTtl() ) {
+    while (iter != _knownMetrics.end()) {
+        if ((now - iter->second._timestamp) > iter->second.getTtl()) {
             _knownMetrics.erase(iter++);
-        }
-        else {
+        } else {
             ++iter;
         }
     }
-}
-
-void
-metriclist_test (bool verbose)
-{
-    printf (" * metriclist: ");
-    printf ("OK\n");
 }

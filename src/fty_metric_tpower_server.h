@@ -1,5 +1,5 @@
 /*  =========================================================================
-    agent-tpower - Computes power metrics
+    fty_metric_tpower_server - Actor generating new metrics
 
     Copyright (C) 2014 - 2020 Eaton
 
@@ -19,12 +19,11 @@
     =========================================================================
 */
 
-#ifndef AGENT_TPOWER_H_H_INCLUDED
-#define AGENT_TPOWER_H_H_INCLUDED
+#pragma once
+#include <czmq.h>
 
-//  Include the project library file
-#include "fty_metric_tpower_library.h"
+class MetricInfo;
 
-//  Add your own public definitions here, if you need them
-
-#endif
+//  Metric tpower server actor
+void fty_metric_tpower_server(zsock_t* pipe, void* args);
+bool send_metrics(const MetricInfo& M);

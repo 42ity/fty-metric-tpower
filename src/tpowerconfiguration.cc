@@ -19,25 +19,19 @@
     =========================================================================
 */
 
-/*
-@header
-    tpowerconfiguration - Configuration
-@discuss
-@end
-*/
-
-#include "fty_metric_tpower_classes.h"
-#include <stdio.h>
-#include <iostream>
-#include <string>
-#include <exception>
+#include "tpowerconfiguration.h"
+#include "calc_power.h"
+#include <algorithm>
 #include <errno.h>
+#include <exception>
+#include <fty_common.h>
 #include <fty_common_db_asset.h>
 #include <fty_common_db_dbpath.h>
 #include <fty_common_str_defs.h>
-#include <fty_common.h>
-#include <algorithm>
+#include <iostream>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string>
 
 #define ANSI_COLOR_BOLD  "\x1b[1;39m"
 #define ANSI_COLOR_RED   "\x1b[1;31m"
@@ -45,7 +39,7 @@
 
 bool TotalPowerConfiguration::configure(void)
 {
-    log_info ("loading power topology");
+    log_info("loading power topology");
 
     // TODO should be rewritten, for usinf messages
     try {
@@ -59,34 +53,34 @@ bool TotalPowerConfiguration::configure(void)
         tntdb::Connection connection = tntdb::connectCached(DBConn::url);
 
         // reading racks
-        auto ret = select_devices_total_power_racks (connection); //calc_power.cc
-        if( ret.status ) {
+        auto ret = select_devices_total_power_racks(connection); // calc_power.cc
+        if (ret.status) {
             log_info("reading racks (count: %lu)...", ret.item.size());
-            for( auto &rack: ret.item ) {
+            for (auto& rack : ret.item) {
                 std::string aux;
-                auto &devices = rack.second;
-                for( auto &device: devices ) {
-                    addDeviceToMap(_racks, _affectedRacks, rack.first, device );
+                auto&       devices = rack.second;
+                for (auto& device : devices) {
+                    addDeviceToMap(_racks, _affectedRacks, rack.first, device);
                     aux += (aux.empty() ? "" : ", ") + device;
                 }
-                log_info(ANSI_COLOR_BOLD "rack '%s' powerdevices: %s" ANSI_COLOR_RESET,
-                    rack.first.c_str(), aux.empty() ? "<empty>" : aux.c_str() );
+                log_info(ANSI_COLOR_BOLD "rack '%s' powerdevices: %s" ANSI_COLOR_RESET, rack.first.c_str(),
+                    aux.empty() ? "<empty>" : aux.c_str());
             }
         }
 
         // reading DCs
-        ret = select_devices_total_power_dcs (connection); //calc_power.cc
-        if( ret.status ) {
+        ret = select_devices_total_power_dcs(connection); // calc_power.cc
+        if (ret.status) {
             log_info("reading DCs (count: %lu)...", ret.item.size());
-            for( auto &dc: ret.item ) {
+            for (auto& dc : ret.item) {
                 std::string aux;
-                auto &devices = dc.second;
-                for( auto &device: devices ) {
-                    addDeviceToMap(_DCs, _affectedDCs, dc.first, device );
+                auto&       devices = dc.second;
+                for (auto& device : devices) {
+                    addDeviceToMap(_DCs, _affectedDCs, dc.first, device);
                     aux += ((!aux.empty()) ? ", " : "") + device;
                 }
-                log_info(ANSI_COLOR_BOLD "DC '%s' powerdevices: %s" ANSI_COLOR_RESET,
-                    dc.first.c_str(), aux.empty() ? "<empty>" : aux.c_str() );
+                log_info(ANSI_COLOR_BOLD "DC '%s' powerdevices: %s" ANSI_COLOR_RESET, dc.first.c_str(),
+                    aux.empty() ? "<empty>" : aux.c_str());
             }
         }
 
@@ -95,73 +89,63 @@ bool TotalPowerConfiguration::configure(void)
         // no reconfiguration should be scheduled
         _reconfigPending = 0;
 
-        log_info ("topology loaded with success");
+        log_info("topology loaded with success");
         return true;
-    }
-    catch (const std::exception &e) {
-        log_error("Failed to read configuration from database. Excepton caught: '%s'.", e.what ());
-    }
-    catch (...) {
-        log_error ("Failed to read configuration from database. Unknown exception caught.");
+    } catch (const std::exception& e) {
+        log_error("Failed to read configuration from database. Excepton caught: '%s'.", e.what());
+    } catch (...) {
+        log_error("Failed to read configuration from database. Unknown exception caught.");
     }
 
     _reconfigPending = ::time(NULL) + 60; // retry later
     return false;
 }
 
-void TotalPowerConfiguration::addDeviceToMap(
-    std::map< std::string, TPUnit > &elements, // owners map
-    std::map< std::string, std::string > &reverseMap, // device -> owner
-    const std::string & owner, // datacenter-3, rack-5, ... (asset name)
-    const std::string & device ) // ups-xx, epdu-yy, ... (asset name)
+void TotalPowerConfiguration::addDeviceToMap(std::map<std::string, TPUnit>& elements,   // owners map
+    std::map<std::string, std::string>&                                     reverseMap, // device -> owner
+    const std::string& owner,  // datacenter-3, rack-5, ... (asset name)
+    const std::string& device) // ups-xx, epdu-yy, ... (asset name)
 {
     auto element = elements.find(owner);
-    if( element == elements.end() ) {
+    if (element == elements.end()) {
         auto box = TPUnit();
         box.name(owner);
         box.addPowerDevice(device);
         elements[owner] = box;
-    }
-    else {
+    } else {
         element->second.addPowerDevice(device);
     }
     reverseMap[device] = owner;
 }
 
-void TotalPowerConfiguration::
-    processAsset(fty_proto_t *message)
+void TotalPowerConfiguration::processAsset(fty_proto_t* message)
 {
     std::string operation(fty_proto_operation(message));
-    if (operation != FTY_PROTO_ASSET_OP_CREATE &&
-        operation != FTY_PROTO_ASSET_OP_UPDATE &&
-        operation != FTY_PROTO_ASSET_OP_DELETE &&
-        operation != FTY_PROTO_ASSET_OP_RETIRE) {
+    if (operation != FTY_PROTO_ASSET_OP_CREATE && operation != FTY_PROTO_ASSET_OP_UPDATE &&
+        operation != FTY_PROTO_ASSET_OP_DELETE && operation != FTY_PROTO_ASSET_OP_RETIRE) {
         return;
     }
 
     // something is beeing reconfigured, let things to settle down
-    if( _reconfigPending == 0 ) {
+    if (_reconfigPending == 0) {
         log_info("Reconfiguration scheduled");
         _reconfigPending = ::time(NULL) + 60; // in 60[s]
     }
     _timeout = getPollInterval();
-    log_info("ASSET %s, %s operation processed",
-        fty_proto_name(message), operation.c_str());
+    log_info("ASSET %s, %s operation processed", fty_proto_name(message), operation.c_str());
 }
 
-bool TotalPowerConfiguration::isRackQuantity(const std::string &quantity) const
+bool TotalPowerConfiguration::isRackQuantity(const std::string& quantity) const
 {
-    return std::find(_rackQuantities.begin(), _rackQuantities.end(),
-            quantity) != _rackQuantities.end();
+    return std::find(_rackQuantities.begin(), _rackQuantities.end(), quantity) != _rackQuantities.end();
 }
 
-bool TotalPowerConfiguration::isDCQuantity(const std::string &quantity) const
+bool TotalPowerConfiguration::isDCQuantity(const std::string& quantity) const
 {
-    return std::find(_dcQuantities.begin(), _dcQuantities.end(),
-            quantity) != _dcQuantities.end();
+    return std::find(_dcQuantities.begin(), _dcQuantities.end(), quantity) != _dcQuantities.end();
 }
 
-void TotalPowerConfiguration::processMetric (const MetricInfo &M, const std::string &topic)
+void TotalPowerConfiguration::processMetric(const MetricInfo& M, const std::string& topic)
 {
     // topic: <quantity>@<asset_name>
     // ex.: 'realpower.input.L3@epdu-42'
@@ -173,94 +157,86 @@ void TotalPowerConfiguration::processMetric (const MetricInfo &M, const std::str
     // ASSUMPTION: one device can affect only one ASSET of each type ( Datacenter or Rack )
 
     if (isRackQuantity(quantity)) {
-        auto affected_it = _affectedRacks.find( M.getElementName() );
-        if( affected_it != _affectedRacks.end() ) {
+        auto affected_it = _affectedRacks.find(M.getElementName());
+        if (affected_it != _affectedRacks.end()) {
             // the metric affects some total rack power
-            log_trace("%s is interesting for rack %s",
-                topic.c_str(), affected_it->second.c_str() );
+            log_trace("%s is interesting for rack %s", topic.c_str(), affected_it->second.c_str());
 
-            auto rack = _racks.find( affected_it->second ); // < std::string, TPUnit > &rack;
-            if( rack != _racks.end() ) {
+            auto rack = _racks.find(affected_it->second); // < std::string, TPUnit > &rack;
+            if (rack != _racks.end()) {
                 // affected rack found, handle the new metric
-                rack->second.setMeasurement(M); // register the measure
+                rack->second.setMeasurement(M);                     // register the measure
                 rackMeasureSent = sendMeasurement(*rack, quantity); // compute + send conditionally
-                used = true;
+                used            = true;
             }
         }
     }
 
     if (isDCQuantity(quantity)) {
-        auto affected_it = _affectedDCs.find( M.getElementName() );
-        if( affected_it != _affectedDCs.end() ) {
+        auto affected_it = _affectedDCs.find(M.getElementName());
+        if (affected_it != _affectedDCs.end()) {
             // the metric affects some total DC power
-            log_trace("%s is interesting for DC %s",
-                topic.c_str(), affected_it->second.c_str() );
+            log_trace("%s is interesting for DC %s", topic.c_str(), affected_it->second.c_str());
 
-            auto dc = _DCs.find( affected_it->second ); // < std::string, TPUnit > &dc;
-            if( dc != _DCs.end() ) {
+            auto dc = _DCs.find(affected_it->second); // < std::string, TPUnit > &dc;
+            if (dc != _DCs.end()) {
                 // affected dc found, handle the new metric
-                dc->second.setMeasurement(M); // register the measure
+                dc->second.setMeasurement(M);                   // register the measure
                 dcMeasureSent = sendMeasurement(*dc, quantity); // compute + send conditionally
-                used = true;
+                used          = true;
             }
         }
     }
 
-    log_trace("processMetric %s was %s (rack measure %s, DC measure %s)",
-        topic.c_str(),
-        (used ? "used" : "ignored"),
-        (rackMeasureSent ? "sent" : "not sent"),
-        (dcMeasureSent ? "sent" : "not sent"));
+    log_trace("processMetric %s was %s (rack measure %s, DC measure %s)", topic.c_str(), (used ? "used" : "ignored"),
+        (rackMeasureSent ? "sent" : "not sent"), (dcMeasureSent ? "sent" : "not sent"));
 }
 
-bool TotalPowerConfiguration::sendMeasurement (std::pair<const std::string, TPUnit > &element, const std::string &quantity)
+bool TotalPowerConfiguration::sendMeasurement(
+    std::pair<const std::string, TPUnit>& element, const std::string& quantity)
 {
     bool isSent = false;
 
     // renaming for better reading
-    auto &powerUnit = element.second; //TPUnit
+    auto& powerUnit = element.second; // TPUnit
 
     // calculate quantity for element.first (rack or dc)
-    powerUnit.calculate( quantity );
+    powerUnit.calculate(quantity);
 
-    if( powerUnit.advertise(quantity) ) {
+    if (powerUnit.advertise(quantity)) {
         try {
             MetricInfo M = powerUnit.getMetricInfo(quantity);
-            isSent = _sendingFunction(M);
-            if( isSent ) {
+            isSent       = _sendingFunction(M);
+            if (isSent) {
                 powerUnit.advertised(quantity);
             }
-        }
-        catch (...) {
-            log_error (ANSI_COLOR_RED "Some unexpected error during sending new measurement" ANSI_COLOR_RESET);
+        } catch (...) {
+            log_error(ANSI_COLOR_RED "Some unexpected error during sending new measurement" ANSI_COLOR_RESET);
         };
-    }
-    else {
+    } else {
         // log something from time to time if device calculation is unknown
         auto devices = powerUnit.devicesInUnknownState(quantity);
-        if( ! devices.empty() ) {
+        if (!devices.empty()) {
             std::string aux;
-            for( auto &it: devices ) {
+            for (auto& it : devices) {
                 aux += (aux.empty() ? "" : ", ") + it;
             }
 
             log_info(ANSI_COLOR_BOLD "%zd devices preventing total %s calculation for %s: %s" ANSI_COLOR_RESET,
-                devices.size(), quantity.c_str(), element.first.c_str(), aux.c_str() );
+                devices.size(), quantity.c_str(), element.first.c_str(), aux.c_str());
         }
     }
 
     return isSent;
 }
 
-void TotalPowerConfiguration::
-    sendMeasurement(
-        std::map< std::string, TPUnit > &elements,
-        const std::vector<std::string> &quantities)
+void TotalPowerConfiguration::sendMeasurement(
+    std::map<std::string, TPUnit>& elements, const std::vector<std::string>& quantities)
 {
-    for( auto &element : elements ) {
+    for (auto& element : elements) {
         // XXX: This overload is called by onPoll() periodically, hence the purging
         element.second.dropOldMetricInfos();
-        for (auto &quantity : quantities) {
+        for (auto& quantity : quantities) {
             sendMeasurement(element, quantity);
         }
     }
@@ -271,24 +247,28 @@ int64_t TotalPowerConfiguration::getPollInterval()
     int64_t T = TPOWER_MEASUREMENT_REPEAT_AFTER; // default, seconds
     int64_t Tx;
 
-    for( auto &rack : _racks ) {
-        for( auto &q : _rackQuantities ) {
+    for (auto& rack : _racks) {
+        for (auto& q : _rackQuantities) {
             Tx = rack.second.timeToAdvertisement(q);
-            if( (Tx > 0) && (Tx < T) ) T = Tx;
+            if ((Tx > 0) && (Tx < T))
+                T = Tx;
         }
     }
 
-    for( auto &dc : _DCs ) {
-        for( auto &q : _dcQuantities ) {
+    for (auto& dc : _DCs) {
+        for (auto& q : _dcQuantities) {
             Tx = dc.second.timeToAdvertisement(q);
-            if( (Tx > 0) && (Tx < T) ) T = Tx;
+            if ((Tx > 0) && (Tx < T))
+                T = Tx;
         }
     }
 
-    if( _reconfigPending != 0 ) {
+    if (_reconfigPending != 0) {
         Tx = _reconfigPending - ::time(NULL) + 1;
-        if( Tx <= 0 ) Tx = 1;
-        if( Tx < T ) T = Tx;
+        if (Tx <= 0)
+            Tx = 1;
+        if (Tx < T)
+            T = Tx;
     }
 
     return T * 1000; // ms
@@ -296,10 +276,10 @@ int64_t TotalPowerConfiguration::getPollInterval()
 
 void TotalPowerConfiguration::onPoll()
 {
-    sendMeasurement( _racks, _rackQuantities );
-    sendMeasurement( _DCs, _dcQuantities );
+    sendMeasurement(_racks, _rackQuantities);
+    sendMeasurement(_DCs, _dcQuantities);
 
-    if( ( _reconfigPending != 0 ) && ( _reconfigPending <= ::time(NULL) ) ) {
+    if ((_reconfigPending != 0) && (_reconfigPending <= ::time(NULL))) {
         configure();
     }
 
@@ -308,16 +288,5 @@ void TotalPowerConfiguration::onPoll()
 
 void TotalPowerConfiguration::setPollInterval()
 {
-  _timeout = getPollInterval();
-}
-
-
-//  --------------------------------------------------------------------------
-//  Self test of this class
-
-void
-tpowerconfiguration_test (bool verbose)
-{
-    printf (" * tpowerconfiguration: ");
-    printf ("OK\n");
+    _timeout = getPollInterval();
 }

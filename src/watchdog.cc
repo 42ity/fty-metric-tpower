@@ -19,18 +19,11 @@
     =========================================================================
 */
 
-/*
-@header
-    watchdog - Watchdog
-@discuss
-@end
-*/
-
 #include "watchdog.h"
 #include <fty_log.h>
 
 #define WATCHDOG_INTERVAL 60
-#define WATCHDOG_LIMIT 600
+#define WATCHDOG_LIMIT    600
 
 Watchdog::Watchdog()
     : thread_(0)
@@ -42,17 +35,17 @@ Watchdog::~Watchdog()
     zactor_destroy(&thread_);
 }
 
-static void watchdog_thread(zsock_t *pipe, void* args)
+static void watchdog_thread(zsock_t* pipe, void* args)
 {
-    Watchdog *wd = static_cast<Watchdog*>(args);
+    Watchdog* wd = static_cast<Watchdog*>(args);
 
     zsock_signal(pipe, 0);
-    zpoller_t *poller = zpoller_new(pipe, NULL);
+    zpoller_t* poller = zpoller_new(pipe, NULL);
     while (!zsys_interrupted) {
-        void *which = zpoller_wait(poller, WATCHDOG_INTERVAL);
+        void* which = zpoller_wait(poller, WATCHDOG_INTERVAL);
         if (which == pipe) {
-            zmsg_t *msg = zmsg_recv(pipe);
-            char *cmd = zmsg_popstr(msg);
+            zmsg_t* msg = zmsg_recv(pipe);
+            char*   cmd = zmsg_popstr(msg);
             if (streq(cmd, "$TERM")) {
                 zstr_free(&cmd);
                 zmsg_destroy(&msg);
@@ -64,14 +57,13 @@ static void watchdog_thread(zsock_t *pipe, void* args)
         } else if (wd->check()) {
             continue;
         }
-        log_error ("watchdog expired");
+        log_error("watchdog expired");
 
-        int rv = kill (getpid (), SIGTERM);
-        zclock_sleep (1000);
+        int rv = kill(getpid(), SIGTERM);
+        zclock_sleep(1000);
 
         if (rv != 0)
-            rv = kill (getpid (), SIGKILL);
-
+            rv = kill(getpid(), SIGKILL);
     }
     zpoller_destroy(&poller);
 }

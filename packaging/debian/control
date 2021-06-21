@@ -25,8 +25,6 @@ Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
     cmake (>=3.0),
     fty-cmake-dev,
-    pkg-config,
-    libsodium-dev,
     libczmq-dev (>= 3.0.2),
     libmlm-dev (>= 1.0.0),
     libcxxtools-dev,
@@ -35,12 +33,7 @@ Build-Depends: debhelper (>= 9),
     libfty-common-mlm-dev,
     libfty-common-db-dev,
     libfty-shm-dev,
-    libtntdb-dev,
-    gcc (>= 4.9.0), g++ (>= 4.9.0),
-    systemd,
-    dh-systemd,
-    asciidoc-base | asciidoc, xmlto,
-    dh-autoreconf
+    libtntdb-dev
 
 Package: fty-metric-tpower
 Architecture: any
