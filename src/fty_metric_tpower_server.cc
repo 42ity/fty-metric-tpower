@@ -127,7 +127,10 @@ static void fty_metric_tpower_metric_pull(zsock_t* pipe, void* args)
             }
             if (zpoller_expired(poller)) {
                 const std::string    assetFilter(".*");
-                const std::string    typeFilter("realpower\\.(default|((output|input)\\.L(1|2|3)))");
+                // No current, voltage and VA for location
+                const std::string    typeFilter("realpower\\.(default|((output|input)\\.L(1|2|3)))"
+                                                "|current\\.(output|input)\\.L(1|2|3)"
+                                                "|voltage\\.(output|input)\\.L(1|2|3)-N");
                 fty::shm::shmMetrics result;
                 fty::shm::read_metrics(assetFilter.c_str(), typeFilter.c_str(), result);
 
