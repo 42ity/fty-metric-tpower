@@ -64,7 +64,7 @@ etn_test_target(${PROJECT_NAME}-lib
 
 #install resources files
 set(AGENT_SETTINGS_DIR "${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/lib/fty/${PROJECT_NAME}")
-set(AGENT_CONF_FILE "${CMAKE_INSTALL_FULL_SYSCONFDIR}/${PROJECT_NAME}/fty-metric-store.cfg")
+set(AGENT_CONF_FILE "${CMAKE_INSTALL_FULL_SYSCONFDIR}/${PROJECT_NAME}/${PROJECT_NAME}.cfg")
 set(AGENT_USER "bios")
 
 configure_file("${PROJECT_SOURCE_DIR}/resources/${PROJECT_NAME}.cfg.in" "${PROJECT_BINARY_DIR}/resources/${PROJECT_NAME}.cfg" @ONLY)
