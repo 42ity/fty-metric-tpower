@@ -113,7 +113,7 @@ static void fty_metric_tpower_metric_pull(zsock_t* pipe, void* args)
     assert(pipe);
     assert(args);
 
-    zpoller_t* poller = zpoller_new(pipe, NULL);
+    ZpollerGuard poller(zpoller_new(pipe, NULL));
     zsock_signal(pipe, 0);
 
     TotalPowerConfiguration* totalpower_conf = reinterpret_cast<TotalPowerConfiguration*>(args);
