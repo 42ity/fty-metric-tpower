@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <errno.h>
 #include <exception>
+#include <fty_log.h>
 #include <fty_common.h>
 #include <fty_common_db_asset.h>
 #include <fty_common_db_dbpath.h>
