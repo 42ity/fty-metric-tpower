@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     }
 
     if (verbose) {
-        ManageFtyLog::getInstanceFtylog()->setVeboseMode();
+        ManageFtyLog::getInstanceFtylog()->setVerboseMode();
     }
     //  Accept and print any message back from server
     //  copy from src/malamute.c under MPL license
