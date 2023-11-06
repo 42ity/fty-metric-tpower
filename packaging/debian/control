@@ -20,7 +20,7 @@
 Source:         fty-metric-tpower
 Section:        net
 Priority:       optional
-Maintainer:     fty-metric-tpower Developers <eatonipcopensource@eaton.com>
+Maintainer:     fty-metric-tpower Developers <opensource@eaton.com>
 Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
     cmake (>=3.0),
