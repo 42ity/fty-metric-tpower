@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 
-/// class representing total power calculation unit (rack or DC)
+/// class representing total power calculation for a unit (rack or DC)
 class TPUnit
 {
 public:
@@ -39,7 +39,7 @@ public:
     void calculate(const std::string& quantity);
 
     /// discard obsolete measurements
-    void dropOldMetricInfos();
+    void removeDeprecatedMetrics();
 
     /// get value of particular quantity. Method throws an exception if quantity is unknown.
     double get(const std::string& quantity) const;
@@ -50,19 +50,10 @@ public:
     /// Metric Info per particular quantity.
     MetricInfo getMetricInfo(const std::string& quantity) const;
 
-    /// get set unit name
-    std::string name() const
-    {
-        return _name;
-    };
-    void name(const std::string& name)
-    {
-        _name = name;
-    };
-    void name(const char* name)
-    {
-        _name = name ? name : "";
-    };
+    /// get/set unit name
+    std::string name() const { return _name; }
+    void name(const std::string& name) { _name = name; }
+    void name(const char* name) { _name = name ? name : ""; }
 
     /// returns true if at least one measurement of all included powerdevices is unknown
     bool quantityIsUnknown(const std::string& quantity) const;
@@ -79,7 +70,7 @@ public:
     void addPowerDevice(const std::string& device);
 
     /// save new received measurement
-    void setMeasurement(const MetricInfo& M);
+    void updateMeasurement(const MetricInfo& metricInfo);
 
     /// returns true if measurement is changend and we should advertised
     bool changed(const std::string& quantity) const;
@@ -124,14 +115,7 @@ protected:
     /// unit name
     std::string _name;
 
-    /// replace not present measurement with another
-    static const std::map<std::string, std::string> _emergencyReplacements;
-
-    /// replace not present measurement with some algorithm
-    static const std::map<std::string, int> _calculations;
-
-    double getMetricValue(
-        const MetricList& measurements, const std::string& quantity, const std::string& deviceName) const;
+    double getMetricValue(const MetricList& measurements, const std::string& quantity, const std::string& deviceName) const;
 
     /// calculate simple sum over devices considering the replacement table
     MetricInfo simpleSummarize(const std::string& quantity) const;
@@ -145,5 +129,8 @@ private:
 
     /// time to live of the generated metrics [s]
     static const uint64_t TTL = 6 * 60;
+
+    /// replace not present measurement with some algorithm
+    static const std::map<std::string, int> _calculations;
 };
 

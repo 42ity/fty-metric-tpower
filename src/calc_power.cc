@@ -17,27 +17,30 @@
  */
 
 #include "calc_power.h"
+
 #include <fty_common_asset_types.h>
 #include <fty_common_db.h>
 #include <fty_log.h>
+
 #include <functional>
 #include <set>
 #include <tntdb/result.h>
 #include <tntdb/row.h>
 
-bool is_epdu(const device_info_t& device)
+/// A type for storing basic information about powerlink.
+/// First  -- src_id: asset element id of the source device.
+/// Second -- src_out: output port on the source device.
+/// Third  -- dest_id: asset element id of the destination device.
+/// Fourth -- dest_in: input port on the destination device.
+
+typedef std::tuple<uint32_t, std::string, std::string, uint32_t> device_info_t;
+
+static bool is_epdu(const device_info_t& device)
 {
     return persist::is_epdu(int(std::get<3>(device)));
 }
 
-
-bool is_pdu(const device_info_t& device)
-{
-    return persist::is_pdu(int(std::get<3>(device)));
-}
-
-
-bool is_ups(const device_info_t& device)
+static bool is_ups(const device_info_t& device)
 {
     return persist::is_ups(int(std::get<3>(device)));
 }
@@ -49,46 +52,54 @@ static std::set<uint32_t> find_dests(const std::set<std::pair<uint32_t, uint32_t
 {
     std::set<uint32_t> dests;
 
-    for (auto& one_link : links) {
-        if (std::get<0>(one_link) == element_id)
-            dests.insert(std::get<1>(one_link));
+    for (const auto& link : links) {
+        if (std::get<0>(link) == element_id) {
+            dests.insert(std::get<1>(link));
+        }
     }
     return dests;
 }
 
-
 /// An implementation of looking for a "border" devices
 ///
 ///  A border device is a device, that should be taken as a power source device at first turn
-static void update_border_devices(const std::map<uint32_t, device_info_t>& container_devices,
-    const std::set<std::pair<uint32_t, uint32_t>>& links, std::set<device_info_t>& border_devices)
+static void update_border_devices(
+    const std::map<uint32_t, device_info_t>& container_devices,
+    const std::set<std::pair<uint32_t, uint32_t>>& links,
+    std::set<device_info_t>& border_devices
+)
 {
     std::set<device_info_t> new_border_devices;
-    for (auto& border_device : border_devices) {
+
+    for (const auto& border_device : border_devices) {
         auto adevice_dests = find_dests(links, std::get<0>(border_device));
-        for (auto& adevice : adevice_dests) {
+        for (const auto& adevice : adevice_dests) {
             auto it = container_devices.find(adevice);
-            if (it != container_devices.cend())
+            if (it != container_devices.cend()) {
                 new_border_devices.insert(it->second);
+            }
             else {
-                log_error(
-                    "DB can be in inconsistant state or some device "
-                    "has power source in the other container");
+                log_error("DB can be in inconsistent state or some device has power source in the other container");
                 log_error("device(as element) %" PRIu32 " is not in container", adevice);
                 // do nothing in this case
             }
         }
     }
+
     border_devices.clear();
     border_devices.insert(new_border_devices.begin(), new_border_devices.end());
 }
 
-
-bool is_powering_other_rack(const device_info_t& border_device,
-    const std::map<uint32_t, device_info_t>& devices_in_container, const std::set<std::pair<uint32_t, uint32_t>>& links)
+///
+bool is_powering_other_rack(
+    const device_info_t& border_device,
+    const std::map<uint32_t, device_info_t>& devices_in_container,
+    const std::set<std::pair<uint32_t, uint32_t>>& links
+)
 {
     auto adevice_dests = find_dests(links, std::get<0>(border_device));
-    for (auto& adevice : adevice_dests) {
+
+    for (const auto& adevice : adevice_dests) {
         auto it = devices_in_container.find(adevice);
         if (it == devices_in_container.cend()) {
             // it means, that destination device is out of the container
@@ -98,25 +109,30 @@ bool is_powering_other_rack(const device_info_t& border_device,
     return false;
 }
 
-
 /// An implementation of the algorithm.
 ///
-/// Take a first "smart" device in every powerchain thatis closest to "main" If device is not smart, try to look at
-/// upper level. Repeat until chain ends or until all chains are processed
-static std::vector<std::string> compute_total_power_v2(const std::map<uint32_t, device_info_t>& devices_in_container,
-    const std::set<std::pair<uint32_t, uint32_t>>& links, std::set<device_info_t> border_devices)
+/// Take a first "smart" device in every powerchain that is closest to "main".
+/// If device is not smart, try to look at upper level. Repeat until chain ends or until all chains are processed
+static std::vector<std::string> compute_total_power_v2(
+    const std::map<uint32_t, device_info_t>& devices_in_container,
+    const std::set<std::pair<uint32_t, uint32_t>>& links,
+    std::set<device_info_t> border_devices
+)
 {
-    std::vector<std::string> dvc{};
+    if (border_devices.empty()) {
+        return {};
+    }
 
-    if (border_devices.empty())
-        return dvc;
+    std::vector<std::string> devices;
+
     // it is not a good idea to delete from collection while iterating it
-    std::set<device_info_t> todelete{};
+    std::set<device_info_t> todelete;
     while (!border_devices.empty()) {
-        for (auto& border_device : border_devices) {
-            if ((is_epdu(border_device)) ||
-                (is_ups(border_device) && (!is_powering_other_rack(border_device, devices_in_container, links)))) {
-                dvc.push_back(std::get<1>(border_device));
+        for (const auto& border_device : border_devices) {
+            if ((is_epdu(border_device))
+                || (is_ups(border_device) && (!is_powering_other_rack(border_device, devices_in_container, links)))
+            ) {
+                devices.push_back(std::get<1>(border_device));
                 // remove from border
                 todelete.insert(border_device);
                 continue;
@@ -128,22 +144,25 @@ static std::vector<std::string> compute_total_power_v2(const std::map<uint32_t, 
             //    // add to ipmi
             //}
         }
-        for (auto& todel : todelete)
+        for (const auto& todel : todelete) {
             border_devices.erase(todel);
+        }
         update_border_devices(devices_in_container, links, border_devices);
     }
-    return dvc;
-}
 
+    return devices;
+}
 
 /// For every container returns a list of its power sources
 static db_reply<std::map<std::string, std::vector<std::string>>> select_devices_total_power_container(
-    tntdb::Connection& conn, int8_t container_type_id)
+    tntdb::Connection& conn,
+    int8_t container_type_id
+)
 {
-    log_trace("  container_type_id = %" PRIi8, container_type_id);
+    log_trace("== container_type_id = %" PRIi8, container_type_id);
 
     // name of the container is mapped onto the vector of names of its power sources
-    std::map<std::string, std::vector<std::string>>           item{};
+    std::map<std::string, std::vector<std::string>> item;
     db_reply<std::map<std::string, std::vector<std::string>>> ret = db_reply_new(item);
 
     // there is no need to do all in one select, so let's do it by steps
@@ -164,50 +183,54 @@ static db_reply<std::map<std::string, std::vector<std::string>>> select_devices_
         ret.msg        = "there is no containers of requested type";
         ret.errtype    = DB_ERR;
         ret.errsubtype = DB_ERROR_NOTFOUND;
-        log_warning(ret.msg.c_str());
+        log_warning("%s", ret.msg.c_str());
         return ret;
     }
 
     // go through every container and "compute" what should be summed up
-    for (auto& container : allContainers.item) {
+    for (const auto& container : allContainers.item) {
+        log_debug("== processing %s...", container.name.c_str());
+
         // select all devices in the container
-        std::map<uint32_t, device_info_t>      container_devices{};
+        std::map<uint32_t, device_info_t> container_devices;
+
+        // updates container_devices from row
         std::function<void(const tntdb::Row&)> func = [&container_devices](const tntdb::Row& row) {
             uint16_t type_id = 0;
             row["type_id"].get(type_id);
 
-            if (type_id == persist::asset_type::DEVICE) {
-                std::string device_name = "";
-                row["name"].get(device_name);
-
-                uint32_t asset_id = 0;
-                row["asset_id"].get(asset_id);
-
-                uint16_t device_type_id = 0;
-                row["subtype_id"].get(device_type_id);
-
-                std::string device_type_name = "";
-                row["subtype_name"].get(device_type_name);
-
-                container_devices.emplace(
-                    asset_id, std::make_tuple(asset_id, device_name, device_type_name, device_type_id));
+            if (type_id != persist::asset_type::DEVICE) {
+                return; // not a device
             }
+
+            std::string device_name;
+            uint32_t asset_id = 0;
+            uint16_t device_type_id = 0;
+            std::string device_type_name;
+
+            row["name"].get(device_name);
+            row["asset_id"].get(asset_id);
+            row["subtype_id"].get(device_type_id);
+            row["subtype_name"].get(device_type_name);
+
+            auto device_info = std::make_tuple(asset_id, device_name, device_type_name, device_type_id);
+            container_devices.emplace(asset_id, device_info);
         };
 
-        auto rv = DBAssets::select_assets_by_container(conn, container.id, func, "active");
+        // get active devices owned by container
+        int r = DBAssets::select_assets_by_container(conn, container.id, func, "active");
 
         // here would be placed names of devices to sum up
-        std::vector<std::string> result(0);
-        if (rv != 0) {
+        if (r != 0) {
             log_warning("'%s': problems appeared in selecting devices", container.name.c_str());
             // so return an empty set of power devices
-            ret.item.insert(std::pair<std::string, std::vector<std::string>>(container.name, result));
+            ret.item.insert(std::pair<std::string, std::vector<std::string>>(container.name, {}));
             continue;
         }
         if (container_devices.empty()) {
             log_warning("'%s': has no devices", container.name.c_str());
             // so return an empty set of power devices
-            ret.item.insert(std::pair<std::string, std::vector<std::string>>(container.name, result));
+            ret.item.insert(std::pair<std::string, std::vector<std::string>>(container.name, {}));
             continue;
         }
 
@@ -215,21 +238,22 @@ static db_reply<std::map<std::string, std::vector<std::string>>> select_devices_
         if (links.status == 0) {
             log_warning("'%s': internal problems in links detecting", container.name.c_str());
             // so return an empty set of power devices
-            ret.item.insert(std::pair<std::string, std::vector<std::string>>(container.name, result));
+            ret.item.insert(std::pair<std::string, std::vector<std::string>>(container.name, {}));
             continue;
         }
 
         if (links.item.empty()) {
             log_warning("'%s': has no power links", container.name.c_str());
             // so return an empty set of power devices
-            ret.item.insert(std::pair<std::string, std::vector<std::string>>(container.name, result));
+            ret.item.insert(std::pair<std::string, std::vector<std::string>>(container.name, {}));
             continue;
         }
 
         // the set of all border devices ("starting points")
         std::set<device_info_t> border_devices;
         // the set of all destination devices in selected links
-        std::set<uint32_t> dest_dvcs{};
+        std::set<uint32_t> dest_devices;
+
         //  from (first)   to (second)
         //           +--------------+
         //  B________|______A__C    |
@@ -239,22 +263,27 @@ static db_reply<std::map<std::string, std::vector<std::string>>> select_devices_
         //   A is in the Container
         //   then A is border device
         for (auto& oneLink : links.item) {
-            log_trace("  cur_link: %d->%d", oneLink.first, oneLink.second);
+            log_trace("== cur_link: %d->%d", oneLink.first, oneLink.second);
+
             auto it1 = container_devices.find(oneLink.first);
             auto it2 = container_devices.find(oneLink.second);
-            if (it1 == container_devices.end())
-            // if in the link first point is out of the Container,
-            // the second definitely should be in Container,
-            // otherwise it is not a "container"-link
-            {
-                if (it2 == container_devices.end())
+
+            if (it1 == container_devices.end()) {
+                // if in the link first point is out of the Container,
+                // the second definitely should be in Container,
+                // otherwise it is not a "container"-link
+                if (it2 == container_devices.end()) {
                     log_warning("Trying to insert non-container link %d->%d", oneLink.first, oneLink.second);
-                else
+                }
+                else {
                     border_devices.insert(container_devices.find(oneLink.second)->second);
+                }
             }
-            if (it2 != container_devices.end())
-                dest_dvcs.insert(oneLink.second);
+            if (it2 != container_devices.end()) {
+                dest_devices.insert(oneLink.second);
+            }
         }
+
         //  from (first)   to (second)
         //           +-----------+
         //           |A_____C    |
@@ -268,13 +297,15 @@ static db_reply<std::map<std::string, std::vector<std::string>>> select_devices_
         //   select only those that don't have an incoming links
         //   (they are not a destination device for any link)
         for (auto& oneDevice : container_devices) {
-            if (dest_dvcs.find(oneDevice.first) == dest_dvcs.end())
+            if (dest_devices.find(oneDevice.first) == dest_devices.end()) {
                 border_devices.insert(oneDevice.second);
+            }
         }
 
-        result = compute_total_power_v2(container_devices, links.item, border_devices);
-        ret.item.insert(std::pair<std::string, std::vector<std::string>>(container.name, result));
+        auto devices = compute_total_power_v2(container_devices, links.item, border_devices);
+        ret.item.insert(std::pair<std::string, std::vector<std::string>>(container.name, devices));
     }
+
     return ret;
 }
 

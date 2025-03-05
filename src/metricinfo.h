@@ -43,60 +43,61 @@ public:
         , _units(units)
         , _value(value)
         , _timestamp(timestamp)
-        , _ttl(ttl){};
+        , _ttl(ttl)
+    {}
 
-    std::string getElementName(void) const
+    std::string getElementName() const
     {
         return _element_name;
-    };
+    }
 
-    std::string getSource(void) const
+    std::string getSource() const
     {
         return _source;
-    };
+    }
 
-    std::string getUnits(void) const
+    std::string getUnits() const
     {
         return _units;
-    };
+    }
 
-    double getValue(void) const
+    double getValue() const
     {
         return _value;
-    };
+    }
 
-    uint64_t getTimestamp(void) const
+    uint64_t getTimestamp() const
     {
         return _timestamp;
-    };
+    }
 
-    uint64_t getTtl(void) const
+    uint64_t getTtl() const
     {
         return _ttl;
-    };
+    }
 
-    std::string generateTopic(void) const
+    std::string generateTopic() const
     {
         return _source + "@" + _element_name;
-    };
+    }
 
-    bool isUnknown(void) const
+    bool isUnknown() const
     {
         if (_element_name.empty() || _source.empty() || _units.empty()) {
             return true;
         }
         return false;
-    };
+    }
 
     void setUnits(const std::string& units)
     {
         _units = units;
-    };
+    }
 
-    void setTime(void)
+    void setTime()
     {
-        _timestamp = uint64_t(std::time(NULL));
-    }; // timetamp = now
+        _timestamp = uint64_t(std::time(NULL)); // timetamp = now
+    }
 
     friend inline bool operator==(const MetricInfo& lhs, const MetricInfo& rhs);
     friend inline bool operator!=(const MetricInfo& lhs, const MetricInfo& rhs);
@@ -108,9 +109,9 @@ private:
     std::string _element_name; // 'epdu-42'
     std::string _source;       // 'realpower.input.L3'  (as fty_proto_t METRIC type, or quantity)
     std::string _units;
-    double      _value;
-    uint64_t    _timestamp; // [s]
-    uint64_t    _ttl;       // time to live [s]
+    double      _value{0.0};
+    uint64_t    _timestamp{0}; // [s]
+    uint64_t    _ttl{0};       // time to live [s]
 
     std::string _element_destination_name;
 };

@@ -12,30 +12,29 @@ find_package(fty-cmake PATHS ${CMAKE_BINARY_DIR}/fty-cmake)
 
 etn_target(static ${PROJECT_NAME}-lib
     SOURCES
-        src/calc_power.cc
-        src/calc_power.h
-        src/fty_metric_tpower_server.cc
-        src/fty_metric_tpower_server.h
+        src/termColors.h
         src/metricinfo.h
         src/metriclist.cc
         src/metriclist.h
-        src/tpowerconfiguration.cc
-        src/tpowerconfiguration.h
+        src/calc_power.cc
+        src/calc_power.h
         src/tp_unit.cc
         src/tp_unit.h
-        src/watchdog.cc
-        src/watchdog.h
+        src/tpowerconfiguration.cc
+        src/tpowerconfiguration.h
+        src/fty_metric_tpower_server.cc
+        src/fty_metric_tpower_server.h
     USES
         czmq
         mlm
+        tntdb
         cxxtools
+        fty_shm
+        fty_proto
         fty_common
         fty_common_logging
-        fty_proto
         fty_common_mlm
         fty_common_db
-        fty_shm
-        tntdb
     PRIVATE
 )
 

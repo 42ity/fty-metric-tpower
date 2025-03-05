@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 /// @file   metriclist.h
 /// @author Alena Chernikava <AlenaChernikava@Eaton.com>
 /// @brief  This class is intended to handle set of current known metrics
+
 #pragma once
 
 #include "metricinfo.h"
@@ -26,23 +27,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <string>
 
 /// This class is intended to handle set of current known metrics.
-///
-/// You can create it, add new metrics, find known metrics by topic, and remove metrics that are not valid.
+/// You can create it, add new metrics, find known metrics by topic,
+/// and remove metrics that are not valid.
+
 class MetricList
 {
 public:
-    /// Constructs the empty list
-    MetricList(){};
-
-    /// Destroys the list
-    ~MetricList(){};
+    MetricList() {}
+    ~MetricList() {}
 
     /// Adds new metric
     ///
     /// This will add new metric if it isn't known to the listand update the value if it is known already.
     /// Also it will update value of last added Metric.
-    /// @param[in] metricInfo - metric to add
-    void addMetricInfo(const MetricInfo& metricInfo);
+    /// @param[in] metricInfo - the metric
+    void updateMetricInfo(const MetricInfo& metricInfo);
 
     /// Gets metric by the topic
     ///
@@ -59,8 +58,8 @@ public:
     /// @return NAN - if metric is not present in the list, value - otherwise
     double find(const std::string& topic) const;
 
-    /// Removes old metrics from the list (related to ttl of metrics)
-    void removeOldMetrics(void);
+    /// Removes time deprecated metrics from the list (related to timestamp/ttl of metrics)
+    void removeDeprecatedMetrics();
 
 private:
     /// Metric list <topic, MetricInfo>

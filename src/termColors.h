@@ -1,6 +1,4 @@
 /*  =========================================================================
-    watchdog - Watchdog
-
     Copyright (C) 2014 - 2020 Eaton
 
     This program is free software; you can redistribute it and/or modify
@@ -21,24 +19,10 @@
 
 #pragma once
 
-#include <atomic>
-#include <czmq.h>
-#include <sys/types.h>
+#define TC_BOLD         "\x1b[1;39m"
+#define TC_RED          "\x1b[1;31m"
+#define TC_LIGHTMAGENTA "\x1b[1;95m"
+#define TC_YELLOW       "\x1b[1;93m"
+#define TC_BLUE         "\x1b[1;34m"
 
-/// Band-aid for malamute going AWOL
-class Watchdog
-{
-public:
-    Watchdog();
-    ~Watchdog();
-    void start();
-    void tick()
-    {
-        last_tick_.store(zclock_mono() / 1000);
-    }
-    bool check();
-
-private:
-    std::atomic<time_t> last_tick_;
-    zactor_t*           thread_;
-};
+#define TC0 "\x1b[0m" //RESET
