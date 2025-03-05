@@ -187,7 +187,7 @@ MetricInfo TPUnit::realpowerOutput(const std::string& quantity) const
             }
 
             if (mixedPhaseOuput) {
-                log_debug(TC_LIGHTMAGENTA "%s calculation: avoid mixed phases (%s@%s, phases: %d)" TC0,
+                log_debug(TC_MAGENTA "%s calculation: avoid mixed phases (%s@%s, phases: %d)" TC0,
                     topic.c_str(), quantity.c_str(), it.first.c_str(), phases);
 
                 throw std::runtime_error("avoid mixed phases output (phases: " + std::to_string(phases) + ", device: " + it.first + ")");

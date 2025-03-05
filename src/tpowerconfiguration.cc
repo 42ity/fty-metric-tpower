@@ -36,6 +36,57 @@
 #include <stdlib.h>
 #include <string>
 
+// handle multi-cards power devices (Hercule UPS)
+// NOTICE: devices can be changed
+static void sanitizeDevices(tntdb::Connection& conn, std::vector<std::string>& devices)
+{
+    // list (comm. cards) assets related to real devices (set realDevices)
+    std::map<std::string, std::set<std::string>> realDevices; // <serial_no, <iname,...>>
+    {
+        // select serial_no ext. attribute of devices
+        std::function<void(const tntdb::Row&)> cb = [&realDevices](const tntdb::Row& row) {
+            uint32_t asset_id = 0;
+            row["id_asset_element"].get(asset_id);
+            std::string iname = DBAssets::id_to_name_ext_name(asset_id).first;
+            if (iname.empty()) { log_debug("iname empty (asset_id: %d)", asset_id); return; }
+
+            std::string serial_no;
+            row["value"].get(serial_no);
+            if (serial_no.empty()) { log_debug("serial_no empty (iname: %s)", iname.c_str()); return; }
+
+            if (realDevices.count(serial_no) == 0) { realDevices[serial_no] = {iname}; }
+            else { realDevices[serial_no].insert(iname); }
+        };
+
+        int r = DBAssets::select_asset_ext_attribute_by_keytag(conn, "serial_no", {}, cb);
+        if (r != 0) { log_error("select_asset_ext_attribute_by_keytag serial_no failed"); return; }
+    }
+
+    for (const auto& realDevice : realDevices) {
+        if (realDevice.second.size() < 2) { continue; }
+
+        // real device as Hercule UPS with at least 2 comm. cards/assets
+        // get the asset (iname) representavice of the ups in devices
+        std::string iname; //empty
+        for (const auto& xname : realDevice.second) {
+            if (std::find(devices.begin(), devices.end(), xname) != devices.end())
+                { iname = xname; break; } // first found
+        }
+        if (iname.empty()) { continue; }
+
+        // remove from devices any other representavies of the ups (except iname)
+        for (const auto& xname : realDevice.second) {
+            if (xname == iname) { continue; }
+            if (std::find(devices.begin(), devices.end(), xname) != devices.end()) {
+                // devices changed (remove xname that represents iname in devices)
+                log_debug(TC_MAGENTA "Device %s (serial: %s) duplicated by %s" TC0,
+                    iname.c_str(), realDevice.first.c_str(), xname.c_str());
+                devices.erase(std::remove(devices.begin(), devices.end(), xname), devices.end());
+            }
+        }
+    }
+}
+
 bool TotalPowerConfiguration::configure()
 {
     log_info("loading power topology");
@@ -57,9 +108,10 @@ bool TotalPowerConfiguration::configure()
             log_info("reading racks (count: %lu)...", ret.item.size());
 
             for (const auto& rack : ret.item) {
+                auto devices = rack.second;
+                sanitizeDevices(connection, devices);
                 std::string aux;
-                auto& devices = rack.second;
-                for (auto& device : devices) {
+                for (const auto& device : devices) {
                     addDeviceToMap(_racks, _affectedRacks, rack.first, device);
                     aux += (aux.empty() ? "" : ", ") + device;
                 }
@@ -74,9 +126,10 @@ bool TotalPowerConfiguration::configure()
             log_info("reading DCs (count: %lu)...", ret.item.size());
 
             for (const auto& dc : ret.item) {
+                auto devices = dc.second;
+                sanitizeDevices(connection, devices);
                 std::string aux;
-                auto& devices = dc.second;
-                for (auto& device : devices) {
+                for (const auto& device : devices) {
                     addDeviceToMap(_DCs, _affectedDCs, dc.first, device);
                     aux += (aux.empty() ? "" : ", ") + device;
                 }
@@ -245,7 +298,7 @@ bool TotalPowerConfiguration::exportMeasurement(std::pair<const std::string, TPU
                 aux += (aux.empty() ? "" : ", ") + it;
             }
 
-            log_info(TC_BOLD "%zd device(s) **preventing** total %s calculation for %s: %s" TC0,
+            log_info(TC_BOLD "%zd device(s) preventing total %s calculation for %s: %s" TC0,
                 devices.size(), quantity.c_str(), element.first.c_str(), aux.c_str());
         }
     }

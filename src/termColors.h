@@ -19,10 +19,10 @@
 
 #pragma once
 
-#define TC_BOLD         "\x1b[1;39m"
-#define TC_RED          "\x1b[1;31m"
-#define TC_LIGHTMAGENTA "\x1b[1;95m"
-#define TC_YELLOW       "\x1b[1;93m"
-#define TC_BLUE         "\x1b[1;34m"
+#define TC_BOLD    "\x1b[1;39m"
+#define TC_RED     "\x1b[1;31m"
+#define TC_MAGENTA "\x1b[1;95m"
+#define TC_YELLOW  "\x1b[1;93m"
+#define TC_BLUE    "\x1b[1;34m"
 
 #define TC0 "\x1b[0m" //RESET
