@@ -40,11 +40,20 @@
 // NOTICE: devices can be changed
 static void sanitizeDevices(tntdb::Connection& conn, std::vector<std::string>& devices)
 {
+    if (devices.size() < 2) { return; } // nothing to do
+
+    // set devices ids (used for db select)
+    std::set<uint32_t> devicesIds;
+    for (const auto& iname : devices) {
+        int64_t id = DBAssets::name_to_asset_id(iname);
+        if (id > 0) { devicesIds.insert(uint32_t(id)); }
+    }
+
     // list (comm. cards) assets related to real devices (set realDevices)
     std::map<std::string, std::set<std::string>> realDevices; // <serial_no, <iname,...>>
     {
         // select serial_no ext. attribute of devices
-        std::function<void(const tntdb::Row&)> cb = [&realDevices](const tntdb::Row& row) {
+        std::function<void(const tntdb::Row&)> cb = [&realDevices] (const tntdb::Row& row) {
             uint32_t asset_id = 0;
             row["id_asset_element"].get(asset_id);
             std::string iname = DBAssets::id_to_name_ext_name(asset_id).first;
@@ -54,34 +63,36 @@ static void sanitizeDevices(tntdb::Connection& conn, std::vector<std::string>& d
             row["value"].get(serial_no);
             if (serial_no.empty()) { log_debug("serial_no empty (iname: %s)", iname.c_str()); return; }
 
-            if (realDevices.count(serial_no) == 0) { realDevices[serial_no] = {iname}; }
-            else { realDevices[serial_no].insert(iname); }
+            if (realDevices.count(serial_no) == 0) { realDevices[serial_no] = {}; }
+            realDevices[serial_no].insert(iname);
         };
 
-        int r = DBAssets::select_asset_ext_attribute_by_keytag(conn, "serial_no", {}, cb);
+        // walk on all "serial_no" ext. attributes of devices
+        int r = DBAssets::select_asset_ext_attribute_by_keytag(conn, "serial_no", devicesIds, cb);
         if (r != 0) { log_error("select_asset_ext_attribute_by_keytag serial_no failed"); return; }
     }
 
     for (const auto& realDevice : realDevices) {
-        if (realDevice.second.size() < 2) { continue; }
+        if (realDevice.second.size() < 2) { continue; } // mono-card device ignored
 
         // real device as Hercule UPS with at least 2 comm. cards/assets
-        // get the asset (iname) representavice of the ups in devices
-        std::string iname; //empty
-        for (const auto& xname : realDevice.second) {
-            if (std::find(devices.begin(), devices.end(), xname) != devices.end())
-                { iname = xname; break; } // first found
+        // get the asset (xname) representative of the ups in devices
+        std::string xname; //empty
+        for (const auto& iname : realDevice.second) {
+            if (std::find(devices.begin(), devices.end(), iname) != devices.end())
+                { xname = iname; break; } // first found
         }
-        if (iname.empty()) { continue; }
+        if (xname.empty()) { continue; } // not contributing
 
-        // remove from devices any other representavies of the ups (except iname)
-        for (const auto& xname : realDevice.second) {
-            if (xname == iname) { continue; }
-            if (std::find(devices.begin(), devices.end(), xname) != devices.end()) {
-                // devices changed (remove xname that represents iname in devices)
-                log_debug(TC_MAGENTA "Device %s (serial: %s) duplicated by %s" TC0,
-                    iname.c_str(), realDevice.first.c_str(), xname.c_str());
-                devices.erase(std::remove(devices.begin(), devices.end(), xname), devices.end());
+        // remove from devices any asset representative of the ups that is not xname
+        for (const auto& iname : realDevice.second) {
+            if (iname == xname) { continue; }
+            if (std::find(devices.begin(), devices.end(), iname) != devices.end()) {
+                // remove iname from devices (devices changed)
+                devices.erase(std::remove(devices.begin(), devices.end(), iname), devices.end());
+
+                log_debug(TC_MAGENTA "Removes %s which duplicates %s (serial: %s)" TC0,
+                    iname.c_str(), xname.c_str(), realDevice.first.c_str());
             }
         }
     }
@@ -91,7 +102,6 @@ bool TotalPowerConfiguration::configure()
 {
     log_info("loading power topology");
 
-    // TODO should be rewritten, for usinf messages
     try {
         // remove old topology
         _racks.clear();
@@ -110,11 +120,13 @@ bool TotalPowerConfiguration::configure()
             for (const auto& rack : ret.item) {
                 auto devices = rack.second;
                 sanitizeDevices(connection, devices);
+
                 std::string aux;
                 for (const auto& device : devices) {
                     addDeviceToMap(_racks, _affectedRacks, rack.first, device);
                     aux += (aux.empty() ? "" : ", ") + device;
                 }
+
                 log_info(TC_BOLD "rack '%s' powerdevices: %s" TC0,
                     rack.first.c_str(), aux.empty() ? "<empty>" : aux.c_str());
             }
@@ -128,6 +140,7 @@ bool TotalPowerConfiguration::configure()
             for (const auto& dc : ret.item) {
                 auto devices = dc.second;
                 sanitizeDevices(connection, devices);
+
                 std::string aux;
                 for (const auto& device : devices) {
                     addDeviceToMap(_DCs, _affectedDCs, dc.first, device);
