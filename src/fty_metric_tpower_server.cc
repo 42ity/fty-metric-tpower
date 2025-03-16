@@ -162,9 +162,6 @@ void fty_metric_tpower_server(zsock_t* pipe, void* args)
         return;
     }
 
-    // Signal need to be send as it is required by "actor_new"
-    zsock_signal(pipe, 0);
-
     mlm_client_t* client = mlm_client_new();
     if (!client) {
         log_error("mlm_client_new () failed");
@@ -174,6 +171,7 @@ void fty_metric_tpower_server(zsock_t* pipe, void* args)
     int r = mlm_client_connect(client, endpoint, 1000, AGENT_NAME);
     if (r != 0) {
         log_error("%s: can't connect to endpoint '%s'", AGENT_NAME, endpoint);
+        mlm_client_destroy(&client);
         return;
     }
 
@@ -213,6 +211,8 @@ void fty_metric_tpower_server(zsock_t* pipe, void* args)
 
     log_info("fty_metric_tpower_server started");
 
+    zsock_signal(pipe, 0);
+
     uint64_t last = uint64_t(zclock_mono());
 
     while (!zsys_interrupted) {
@@ -239,7 +239,7 @@ void fty_metric_tpower_server(zsock_t* pipe, void* args)
             zmsg_t* msg = zmsg_recv(pipe);
             char* cmd = msg ? zmsg_popstr(msg) : NULL;
             log_debug("Cmd: %s", cmd);
-            bool term{cmd && streq(cmd,"$TERM")};
+            bool term{cmd && streq(cmd, "$TERM")};
             zstr_free(&cmd);
             zmsg_destroy(&msg);
             if (term) {

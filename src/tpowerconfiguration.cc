@@ -88,7 +88,7 @@ static void sanitizeDevices(tntdb::Connection& conn, std::vector<std::string>& d
         for (const auto& iname : realDevice.second) {
             if (iname == xname) { continue; }
             if (std::find(devices.begin(), devices.end(), iname) != devices.end()) {
-                // remove iname from devices (devices changed)
+                // remove iname from devices (devices is changed)
                 devices.erase(std::remove(devices.begin(), devices.end(), iname), devices.end());
 
                 log_debug(TC_MAGENTA "Removes %s which duplicates %s (serial: %s)" TC0,

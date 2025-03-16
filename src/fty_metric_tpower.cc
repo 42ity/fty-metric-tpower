@@ -101,5 +101,5 @@ int main(int argc, char* argv[])
 
     log_info("fty_metric_tpower ended");
 
-    return 0;
+    return EXIT_SUCCESS;
 }
