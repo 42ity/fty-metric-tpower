@@ -19,54 +19,13 @@
 /// @author Alena Chernikava <AlenaChernikava@Eaton.com>
 /// @author Michal Vyskocil  <MichalVyskocil@Eaton.com>
 
-
 #pragma once
 
-#include <czmq.h>
 #include <fty_common_db.h>
-#include <map>
 #include <tntdb/connect.h>
+#include <map>
 #include <vector>
-
-/// A type for storing basic information about powerlink.
-///
-/// First  -- src_id
-///              asset element id of the source device.
-/// Second -- src_out
-///              output port on the source device.
-/// Third  -- dest_id
-///              asset element id of the destination device.
-/// Fourth -- dest_in
-///              input port on the destination device.
-typedef std::tuple<uint32_t, std::string, std::string, uint32_t> device_info_t;
-
-// ===========================================================================
-// Device type check functions
-// ===========================================================================
-
-/// Checks the type of device.
-///
-/// @param device - a device to be checked.
-///
-/// @return true  if it is an epdu.
-///         false if it is not an epdu.
-bool is_epdu(const device_info_t& device);
-
-/// Checks the type of device.
-///
-/// @param device - a device to be checked.
-///
-/// @return true  if it is a pdu.
-///         false if it is not a pdu.
-bool is_pdu(const device_info_t& device);
-
-/// Checks the type of device.
-///
-/// @param device - a device to be checked.
-///
-/// @return true  if it is a ups.
-///         false if it is not a ups.
-bool is_ups(const device_info_t& device);
+#include <string>
 
 // ===========================================================================
 // Functions that find power sources

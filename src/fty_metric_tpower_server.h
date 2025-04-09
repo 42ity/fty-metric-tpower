@@ -26,4 +26,6 @@ class MetricInfo;
 
 //  Metric tpower server actor
 void fty_metric_tpower_server(zsock_t* pipe, void* args);
-bool send_metrics(const MetricInfo& M);
+
+// write metric in shared memory
+bool write_metric(const MetricInfo& metricInfo);

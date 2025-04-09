@@ -17,19 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "metriclist.h"
-#include <cassert>
-#include <cmath> // NAN is here
+#include <cmath> //std::nan()
 
-void MetricList::addMetricInfo(const MetricInfo& metricInfo)
+void MetricList::updateMetricInfo(const MetricInfo& metricInfo)
 {
-    std::string topic = metricInfo.generateTopic();
-
     // find topic; if found -> replace metric, else add it
+    const std::string topic{metricInfo.generateTopic()};
     auto it = _knownMetrics.find(topic);
-    if (it != _knownMetrics.cend())
+    if (it != _knownMetrics.cend()) {
         it->second = metricInfo;
-    else
+    }
+    else {
         _knownMetrics.emplace(topic, metricInfo);
+    }
 }
 
 MetricInfo MetricList::getMetricInfo(const std::string& topic) const
@@ -44,15 +44,16 @@ double MetricList::find(const std::string& topic) const
     return (it != _knownMetrics.cend()) ? it->second._value : std::nan("");
 }
 
-void MetricList::removeOldMetrics()
+void MetricList::removeDeprecatedMetrics()
 {
     uint64_t now = uint64_t(::time(NULL));
 
     std::map<std::string, MetricInfo>::iterator iter = _knownMetrics.begin();
     while (iter != _knownMetrics.end()) {
-        if ((now - iter->second._timestamp) > iter->second.getTtl()) {
+        if (now > (iter->second._timestamp + iter->second.getTtl())) {
             _knownMetrics.erase(iter++);
-        } else {
+        }
+        else {
             ++iter;
         }
     }

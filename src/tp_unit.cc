@@ -19,7 +19,9 @@
  */
 
 #include "tp_unit.h"
-#include "tpowerconfiguration.h"
+#include "tpowerconfiguration.h" //TPOWER_MEASUREMENT_REPEAT_AFTER
+#include "termColors.h"
+
 #include <cmath>
 #include <ctime>
 #include <exception>
@@ -69,77 +71,73 @@ void TPUnit::set(const std::string& quantity, const MetricInfo& measurement)
 {
     double currentValue = _lastValue.find(generateTopic(quantity));
 
-    if (std::isnan(currentValue) || (abs(currentValue - measurement.getValue()) > 0.00001)) {
-        _lastValue.addMetricInfo(measurement);
-        _changed[quantity]         = true;
+    if (std::isnan(currentValue) || (std::abs(currentValue - measurement.getValue()) > 0.00001)) {
+        _lastValue.updateMetricInfo(measurement);
+        _changed[quantity] = true;
         _changetimestamp[quantity] = measurement.getTimestamp();
     }
 }
 
 MetricInfo TPUnit::simpleSummarize(const std::string& quantity) const
 {
-    log_trace("simpleSummarize %s", generateTopic(quantity).c_str());
+    log_debug("[simpleSummarize] %s", generateTopic(quantity).c_str());
 
-    double sum = 0;
+    double sum = 0.0;
     for (const auto& it : _powerdevices) // std::map< std::string, MetricList> it
     {
         double value = getMetricValue(it.second, quantity, it.first);
         if (std::isnan(value)) {
-            log_debug(ANSI_COLOR_LIGHTMAGENTA "%s@%s is NAN" ANSI_COLOR_RESET, quantity.c_str(), it.first.c_str());
+            log_debug("%s@%s is NAN", quantity.c_str(), it.first.c_str());
 
             throw std::runtime_error(quantity + "@" + it.first + " is missing");
-        } else {
-            sum += value;
         }
+        sum += value;
     }
 
-    MetricInfo result(_name, quantity, "W", sum, uint64_t(::time(NULL)), TTL);
-    return result;
+    return MetricInfo(_name, quantity, "W", sum, uint64_t(::time(NULL)), TTL);
 }
 
 MetricInfo TPUnit::realpowerDefault(const std::string& quantity) const
 {
-    std::string topic = generateTopic(quantity);
-    log_trace("realpowerDefault %s", topic.c_str());
+    const std::string topic = generateTopic(quantity);
+    log_debug("[realpowerDefault] %s", topic.c_str());
 
-    double sum = 0;
-    for (const auto& it : _powerdevices) {
+    double sum = 0.0;
+    for (const auto& it : _powerdevices)
+    {
         double value = getMetricValue(it.second, quantity, it.first);
         if (std::isnan(value)) {
-            // ZZZ continue; // ignore NAN values
-
             // realpower.default not present, try to sum the phases
-            log_debug(ANSI_COLOR_LIGHTMAGENTA "%s calculation: %s@%s is NAN" ANSI_COLOR_RESET, topic.c_str(),
-                quantity.c_str(), it.first.c_str());
+            log_debug("%s calculation: %s@%s is NAN", topic.c_str(), quantity.c_str(), it.first.c_str());
 
             for (int phase = 1; phase <= 3; ++phase) {
                 const std::string quant = "realpower.output.L" + std::to_string(phase);
-                value                   = getMetricValue(it.second, quant, it.first);
+                value = getMetricValue(it.second, quant, it.first);
                 if (std::isnan(value)) {
-                    log_debug(ANSI_COLOR_LIGHTMAGENTA "%s calculation: %s@%s is NAN" ANSI_COLOR_RESET, topic.c_str(),
-                        quant.c_str(), it.first.c_str());
+                    log_debug("%s calculation: %s@%s is NAN", topic.c_str(), quant.c_str(), it.first.c_str());
 
                     throw std::runtime_error(quant + "@" + it.first + " is missing");
                 }
                 sum += value;
             }
-        } else {
+        }
+        else {
             sum += value;
         }
     }
 
-    MetricInfo result(_name, quantity, "W", sum, uint64_t(::time(NULL)), TTL);
-    return result;
+    return MetricInfo(_name, quantity, "W", sum, uint64_t(::time(NULL)), TTL);
 }
 
 MetricInfo TPUnit::realpowerOutput(const std::string& quantity) const
 {
-    std::string topic = generateTopic(quantity);
-    log_trace("realpowerOutput %s", topic.c_str());
+    const std::string topic{generateTopic(quantity)};
 
-    double sum    = 0;
-    int    devCnt = 0;
-    int    phases = 0;
+    log_debug("[realpowerOutput] %s", topic.c_str());
+
+    double sum = 0.0;
+    int devCnt = 0;
+    int phases = 0;
 
     for (const auto& it : _powerdevices) {
         double value = getMetricValue(it.second, quantity, it.first);
@@ -152,46 +150,47 @@ MetricInfo TPUnit::realpowerOutput(const std::string& quantity) const
             double roL3 = getMetricValue(it.second, "realpower.output.L3", it.first);
             if (std::isnan(roL3)) {
                 double roL2 = getMetricValue(it.second, "realpower.output.L2", it.first);
-                if (std::isnan(roL2))
-                    phases = 1; // 1-phase
-                else
-                    phases = 2; // 2-phase
-            } else
+                phases = (std::isnan(roL2)) ? 1 : 2; // 1- or 2- phase
+            }
+            else {
                 phases = 3; // 3-phase
+            }
 
-            log_debug("%s calculation: choose %d phases output (%s@%s)", topic.c_str(), phases, quantity.c_str(),
-                it.first.c_str());
-        } else {
+            log_trace("%s calculation: choose %d phases output (%s@%s)",
+                topic.c_str(), phases, quantity.c_str(), it.first.c_str());
+        }
+        else {
             bool mixedPhaseOuput = false;
             switch (phases) {
                 case 1: { // 1-phase
                     double roL2 = getMetricValue(it.second, "realpower.output.L2", it.first);
-                    if (!std::isnan(roL2))
+                    if (!std::isnan(roL2)) {
                         mixedPhaseOuput = true;
+                    }
                     break;
                 }
                 case 2: { // 2-phase
                     double roL3 = getMetricValue(it.second, "realpower.output.L3", it.first);
-                    if (!std::isnan(roL3))
+                    if (!std::isnan(roL3)) {
                         mixedPhaseOuput = true;
+                    }
                     break;
                 }
                 case 3: // 3-phase
                 default: {
                     double roL3 = getMetricValue(it.second, "realpower.output.L3", it.first);
-                    if (std::isnan(roL3))
+                    if (std::isnan(roL3)) {
                         mixedPhaseOuput = true;
+                    }
                     break;
                 }
             }
 
             if (mixedPhaseOuput) {
-                log_debug(ANSI_COLOR_LIGHTMAGENTA
-                    "%s calculation: avoid mixed phases (%s@%s, phases: %d)" ANSI_COLOR_RESET,
+                log_debug(TC_MAGENTA "%s calculation: avoid mixed phases (%s@%s, phases: %d)" TC0,
                     topic.c_str(), quantity.c_str(), it.first.c_str(), phases);
 
-                throw std::runtime_error(
-                    "avoid mixed phases output (phases: " + std::to_string(phases) + ", device: " + it.first + ")");
+                throw std::runtime_error("avoid mixed phases output (phases: " + std::to_string(phases) + ", device: " + it.first + ")");
             }
         }
 
@@ -205,11 +204,12 @@ MetricInfo TPUnit::realpowerOutput(const std::string& quantity) const
 void TPUnit::calculate(const std::string& quantity)
 {
     const std::string topic = generateTopic(quantity);
-    log_trace(ANSI_COLOR_BOLD "%s calculate" ANSI_COLOR_RESET, topic.c_str());
+
+    log_trace(TC_BOLD "%s calculate" TC0, topic.c_str());
 
     try {
-        const auto it         = _calculations.find(quantity);
-        int        calcMethod = (it != _calculations.cend()) ? it->second : TPOWER_REALPOWER_UNDEFINED;
+        const auto it = _calculations.find(quantity);
+        int calcMethod = (it != _calculations.cend()) ? it->second : TPOWER_REALPOWER_UNDEFINED;
 
         MetricInfo result;
         switch (calcMethod) {
@@ -229,37 +229,39 @@ void TPUnit::calculate(const std::string& quantity)
 
         set(quantity, result);
 
-        log_trace("%s calculate " ANSI_COLOR_BOLD "succeeded" ANSI_COLOR_RESET, topic.c_str());
-    } catch (std::exception& e) {
-        log_debug(ANSI_COLOR_RED "%s calculate failed on exception (%s)" ANSI_COLOR_RESET, topic.c_str(), e.what());
-    } catch (...) {
-        log_debug(ANSI_COLOR_RED "%s calculate failed" ANSI_COLOR_RESET, topic.c_str());
+        log_trace("%s calculate " TC_BOLD "succeeded" TC0, topic.c_str());
+    }
+    catch (const std::exception& e) {
+        log_debug(TC_RED "%s calculate failed on exception (%s)" TC0, topic.c_str(), e.what());
+    }
+    catch (...) {
+        log_debug(TC_RED "%s calculate failed" TC0, topic.c_str());
     }
 }
 
 void TPUnit::calculate(const std::vector<std::string>& quantities)
 {
-    dropOldMetricInfos();
-    for (const auto& it : quantities) {
-        calculate(it);
+    removeDeprecatedMetrics();
+
+    for (const auto& quantity : quantities) {
+        calculate(quantity);
     }
 }
 
-double TPUnit::getMetricValue(
-    const MetricList& measurements, const std::string& quantity, const std::string& deviceName) const
+double TPUnit::getMetricValue(const MetricList& measurements, const std::string& quantity, const std::string& deviceName) const
 {
-    std::string topic = quantity + "@" + deviceName;
+    const std::string topic{quantity + "@" + deviceName};
     return measurements.find(topic);
 }
 
 // TODO setup max life time metric
-void TPUnit::dropOldMetricInfos()
+void TPUnit::removeDeprecatedMetrics()
 {
     for (auto& device : _powerdevices) {
-        auto& measurements = device.second;
-        measurements.removeOldMetrics();
+        device.second.removeDeprecatedMetrics();
     }
-    _lastValue.removeOldMetrics();
+
+    _lastValue.removeDeprecatedMetrics();
 }
 
 std::string TPUnit::generateTopic(const std::string& quantity) const
@@ -281,41 +283,45 @@ std::vector<std::string> TPUnit::devicesInUnknownState(const std::string& quanti
     }
 
     uint64_t now = uint64_t(::time(NULL));
+
     for (const auto& device : _powerdevices) {
+        const std::string topic = quantity + "@" + device.first;
         const auto& deviceMetrics = device.second; // TPUnit
-        std::string topic         = quantity + "@" + device.first;
-        auto        measurement   = deviceMetrics.getMetricInfo(topic);
-        if ((std::isnan(measurement.getValue())) || ((now - measurement.getTimestamp()) > (measurement.getTtl() * 2))) {
+
+        auto measurement = deviceMetrics.getMetricInfo(topic);
+        if ((std::isnan(measurement.getValue()))
+            || (now > (measurement.getTimestamp() + (measurement.getTtl() * 2)))
+        ) {
             result.push_back(device.first);
         }
     }
+
     return result;
 }
 
 void TPUnit::addPowerDevice(const std::string& device)
 {
-    _powerdevices[device] = {};
+    _powerdevices[device] = MetricList();
 }
 
-void TPUnit::setMeasurement(const MetricInfo& M)
+void TPUnit::updateMeasurement(const MetricInfo& metricInfo)
 {
-    auto device = _powerdevices.find(M.getElementName());
-    if (device != _powerdevices.end()) // std::map< std::string, MetricList> device
-        device->second.addMetricInfo(M);
+    auto device = _powerdevices.find(metricInfo.getElementName());
+    if (device != _powerdevices.end()) { // std::map< std::string, MetricList> device
+        device->second.updateMetricInfo(metricInfo);
+    }
 }
 
 bool TPUnit::changed(const std::string& quantity) const
 {
     auto it = _changed.find(quantity);
-    if (it == _changed.end())
-        return false;
-    return it->second;
+    return (it != _changed.end()) ? it->second : false;
 }
 
 void TPUnit::changed(const std::string& quantity, bool newStatus)
 {
     if (changed(quantity) != newStatus) {
-        _changed[quantity]         = newStatus;
+        _changed[quantity] = newStatus;
         _changetimestamp[quantity] = uint64_t(::time(NULL));
         if (_advertisedtimestamp.find(quantity) == _advertisedtimestamp.end()) {
             _advertisedtimestamp[quantity] = 0;
@@ -326,9 +332,7 @@ void TPUnit::changed(const std::string& quantity, bool newStatus)
 uint64_t TPUnit::timestamp(const std::string& quantity) const
 {
     auto it = _changetimestamp.find(quantity);
-    if (it == _changetimestamp.end())
-        return 0;
-    return it->second;
+    return (it != _changetimestamp.end()) ? it->second : 0;
 }
 
 int64_t TPUnit::timeToAdvertisement(const std::string& quantity) const
@@ -338,11 +342,13 @@ int64_t TPUnit::timeToAdvertisement(const std::string& quantity) const
         // if quantity didn't change and it is still unknown
         return TPOWER_MEASUREMENT_REPEAT_AFTER;
     }
+
     uint64_t dt = uint64_t(::time(NULL)) - quantityTimestamp;
     if (dt > TPOWER_MEASUREMENT_REPEAT_AFTER) {
         // no time left for waiting -> Need to advertise
         return 0;
     }
+
     // we should wait a little bit, before advertising
     return int64_t(TPOWER_MEASUREMENT_REPEAT_AFTER - dt);
 }
@@ -354,10 +360,11 @@ bool TPUnit::advertise(const std::string& quantity) const
         return false;
     }
 
-    uint64_t now_timestamp = uint64_t(::time(NULL));
+    uint64_t now = uint64_t(::time(NULL));
+
     // find the time, when quantity was advertised last time
     const auto it = _advertisedtimestamp.find(quantity);
-    if ((it != _advertisedtimestamp.end()) && (it->second == now_timestamp)) {
+    if ((it != _advertisedtimestamp.end()) && (it->second == now)) {
         // if time is known and
         //    time is just now was advertised -> nothing to advertise
         return false;
@@ -366,13 +373,20 @@ bool TPUnit::advertise(const std::string& quantity) const
     // advertise if
     // * value changed or
     // * we should advertise according schedule
-    return (changed(quantity) || ((now_timestamp - timestamp(quantity)) > TPOWER_MEASUREMENT_REPEAT_AFTER));
+    if (changed(quantity)
+        || (now > (timestamp(quantity) + TPOWER_MEASUREMENT_REPEAT_AFTER))
+    ) {
+        return true;
+    }
+
+    return false;
 }
 
 void TPUnit::advertised(const std::string& quantity)
 {
+    uint64_t now = uint64_t(::time(NULL));
+
     changed(quantity, false);
-    int64_t now_timestamp          = ::time(NULL);
-    _changetimestamp[quantity]     = uint64_t(now_timestamp);
-    _advertisedtimestamp[quantity] = uint64_t(now_timestamp);
+    _changetimestamp[quantity] = now;
+    _advertisedtimestamp[quantity] = now;
 }

@@ -1,5 +1,5 @@
 [Unit]
-Description=Total power agent for 42ITy project
+Description=@PROJECT_NAME@ service
 After=malamute.service fty-db.target
 Requires=malamute.service fty-db.target
 PartOf=bios.target
@@ -18,8 +18,7 @@ EnvironmentFile=-/etc/default/fty
 EnvironmentFile=-/etc/default/fty__%n.conf
 Environment="prefix=/usr"
 EnvironmentFile=/etc/default/bios-db-ro
-ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/@PROJECT_NAME@ @AGENT_CONF_FILE@
-Restart=always
+ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/@PROJECT_NAME@ -c @AGENT_CONF_FILE@
 
 [Install]
 WantedBy=bios.target

@@ -24,26 +24,15 @@
 #include "fty_metric_tpower_server.h"
 #include "metricinfo.h"
 #include "tpowerconfiguration.h"
-#include "watchdog.h"
-#include <fty_common_mlm_guards.h>
+#include "termColors.h"
+
 #include <fty_log.h>
 #include <fty_shm.h>
+#include <czmq.h>
+#include <malamute.h>
 #include <mutex>
-#include <string>
 
-#define ANSI_COLOR_REDTHIN       "\x1b[0;31m"
-#define ANSI_COLOR_WHITE_ON_BLUE "\x1b[44;97m"
-#define ANSI_COLOR_BOLD          "\x1b[1;39m"
-#define ANSI_COLOR_RED           "\x1b[1;31m"
-#define ANSI_COLOR_GREEN         "\x1b[1;32m"
-#define ANSI_COLOR_YELLOW        "\x1b[1;33m"
-#define ANSI_COLOR_BLUE          "\x1b[1;34m"
-#define ANSI_COLOR_MAGENTA       "\x1b[1;35m"
-#define ANSI_COLOR_CYAN          "\x1b[1;36m"
-#define ANSI_COLOR_LIGHTMAGENTA  "\x1b[1;95m"
-#define ANSI_COLOR_RESET         "\x1b[0m"
-
-std::mutex mtx_tpowerConf;
+static std::mutex mtx_tpowerConf;
 
 // agent's name ### DO NOT CHANGE! as other agents can rely on this name
 static const char* AGENT_NAME = "agent-tpower";
@@ -52,18 +41,27 @@ static const char* AGENT_NAME = "agent-tpower";
 //         Functionality for METRIC processing and publishing
 // ============================================================
 
-bool send_metrics(const MetricInfo& M)
+// write metric in shared memory
+bool write_metric(const MetricInfo& metricInfo)
 {
-    log_debug(ANSI_COLOR_YELLOW "SHM metric sent: %s (value: %s [%s], timestamp: %s, ttl: %s)" ANSI_COLOR_RESET,
-        M.generateTopic().c_str(), std::to_string(M.getValue()).c_str(),
-        (M.getUnits().empty() ? "<no_unit>" : M.getUnits().c_str()), std::to_string(M.getTimestamp()).c_str(),
-        std::to_string(M.getTtl()).c_str());
+    log_debug(TC_YELLOW "SHM write: %s (value: %s [%s], timestamp: %s, ttl: %s)" TC0,
+        metricInfo.generateTopic().c_str(),
+        std::to_string(metricInfo.getValue()).c_str(),
+        (metricInfo.getUnits().empty() ? "<no_unit>" : metricInfo.getUnits().c_str()),
+        std::to_string(metricInfo.getTimestamp()).c_str(),
+        std::to_string(metricInfo.getTtl()).c_str()
+    );
 
     int r = fty::shm::write_metric(
-        M.getElementName(), M.getSource(), std::to_string(M.getValue()), M.getUnits(), int(M.getTtl()));
-    if (r == -1) {
-        log_error(
-            ANSI_COLOR_RED "shm::write_metric() failed (%s, r: %d)" ANSI_COLOR_RESET, M.generateTopic().c_str(), r);
+        metricInfo.getElementName(),
+        metricInfo.getSource(),
+        std::to_string(metricInfo.getValue()),
+        metricInfo.getUnits(),
+        int(metricInfo.getTtl())
+    );
+    if (r != 0) {
+        log_error(TC_RED "shm::write_metric() failed (%s, r: %d)" TC0,
+            metricInfo.generateTopic().c_str(), r);
         return false;
     }
 
@@ -72,7 +70,7 @@ bool send_metrics(const MetricInfo& M)
 
 static void s_processMetrics(TotalPowerConfiguration& config, fty::shm::shmMetrics& metrics)
 {
-    for (auto& metric : metrics) {
+    for (const auto& metric : metrics) {
         const char* asset_name = fty_proto_name(metric);
         const char* type       = fty_proto_type(metric);
         const char* value_s    = fty_proto_value(metric);
@@ -80,22 +78,21 @@ static void s_processMetrics(TotalPowerConfiguration& config, fty::shm::shmMetri
         uint64_t    timestamp  = fty_proto_time(metric);
         uint32_t    ttl        = fty_proto_ttl(metric); // time-to-live
 
-        std::string topic = type + std::string("@") + asset_name;
+        const std::string topic = type + std::string("@") + asset_name;
 
         log_trace("process metric %s (value: %s, unit: %s)", topic.c_str(), value_s, unit);
 
-        char* end    = NULL;
-        errno        = 0;
+        char* end = NULL;
         double value = strtod(value_s, &end);
-        if (errno == ERANGE || end == value_s || *end != '\0') {
+        if (errno == ERANGE || end == value_s || (end && (*end  != 0))) {
             log_error("cannot convert %s value '%s' to double, ignored...", topic.c_str(), value_s);
             fty_proto_print(metric);
             continue;
         }
 
-        MetricInfo m(asset_name, type, unit, value, timestamp, ttl);
+        MetricInfo metricInfo(asset_name, type, unit, value, timestamp, ttl);
         mtx_tpowerConf.lock();
-        config.processMetric(m, topic);
+        config.processMetric(metricInfo, topic);
         mtx_tpowerConf.unlock();
 
         log_trace("process %s metric done", topic.c_str());
@@ -110,80 +107,93 @@ static void s_processMetrics(TotalPowerConfiguration& config, fty::shm::shmMetri
 // regularly read and process 'power' metrics coming from shm
 static void fty_metric_tpower_metric_pull(zsock_t* pipe, void* args)
 {
-    assert(pipe);
-    assert(args);
+    TotalPowerConfiguration* totalpower_conf = reinterpret_cast<TotalPowerConfiguration*>(args);
+    if (!totalpower_conf) {
+        log_error("totalpower_conf is NULL");
+        return;
+    }
 
-    ZpollerGuard poller(zpoller_new(pipe, NULL));
+    zpoller_t* poller = zpoller_new(pipe, NULL);
+    if (!poller) {
+        log_error("poller is NULL");
+        return;
+    }
+
+    log_info("fty_metric_tpower_metric_pull started");
+
     zsock_signal(pipe, 0);
 
-    TotalPowerConfiguration* totalpower_conf = reinterpret_cast<TotalPowerConfiguration*>(args);
-    uint64_t                 timeout         = uint64_t(fty_get_polling_interval() * 1000);
+    const std::string assetFilter(".*");
+
+    // No current, voltage and VA for location
+    const std::string typeFilter("realpower\\.(default|((output|input)\\.L(1|2|3)))"
+                                    "|current\\.(output|input)\\.L(1|2|3)"
+                                    "|voltage\\.(output|input)\\.L(1|2|3)-N");
 
     while (!zsys_interrupted) {
-        void* which = zpoller_wait(poller, int(timeout));
+        void* which = zpoller_wait(poller, fty_get_polling_interval() * 1000);
         if (which == NULL) {
             if (zpoller_terminated(poller) || zsys_interrupted) {
                 break;
             }
             if (zpoller_expired(poller)) {
-                const std::string    assetFilter(".*");
-                // No current, voltage and VA for location
-                const std::string    typeFilter("realpower\\.(default|((output|input)\\.L(1|2|3)))"
-                                                "|current\\.(output|input)\\.L(1|2|3)"
-                                                "|voltage\\.(output|input)\\.L(1|2|3)-N");
-                fty::shm::shmMetrics result;
-                fty::shm::read_metrics(assetFilter.c_str(), typeFilter.c_str(), result);
+                fty::shm::shmMetrics metrics;
+                fty::shm::read_metrics(assetFilter.c_str(), typeFilter.c_str(), metrics);
 
-                log_debug(ANSI_COLOR_BLUE "Polling: read metrics (assets: %s, types: %s, size: %d)" ANSI_COLOR_RESET,
-                    assetFilter.c_str(), typeFilter.c_str(), result.size());
+                log_debug(TC_BLUE "Polling: read metrics (assets: %s, types: %s, size: %d)" TC0,
+                    assetFilter.c_str(), typeFilter.c_str(), metrics.size());
 
-                s_processMetrics(*totalpower_conf, result);
+                s_processMetrics(*totalpower_conf, metrics);
             }
         }
-        timeout = uint64_t(fty_get_polling_interval() * 1000);
     }
+
+    zpoller_destroy(&poller);
+
+    log_info("fty_metric_tpower_metric_pull ended");
 }
 
 // main actor
 void fty_metric_tpower_server(zsock_t* pipe, void* args)
 {
-    assert(pipe);
-    assert(args);
-
     const char* endpoint = static_cast<const char*>(args);
+    if (!endpoint) {
+        log_error("endpoint is NULL");
+        return;
+    }
 
-    // Setup the watchdog
-    Watchdog watchdog;
-    watchdog.start();
-
-    // Signal need to be send as it is required by "actor_new"
-    zsock_signal(pipe, 0);
-
-    MlmClientGuard client(mlm_client_new());
+    mlm_client_t* client = mlm_client_new();
     if (!client) {
         log_error("mlm_client_new () failed");
         return;
     }
 
-    if (mlm_client_connect(client, endpoint, 1000, AGENT_NAME) < 0) {
-        log_error("%s: can't connect to malamute endpoint '%s'", AGENT_NAME, endpoint);
-        zstr_send(pipe, "$TERM");
+    int r = mlm_client_connect(client, endpoint, 1000, AGENT_NAME);
+    if (r != 0) {
+        log_error("%s: can't connect to endpoint '%s'", AGENT_NAME, endpoint);
+        mlm_client_destroy(&client);
         return;
     }
 
-    if (mlm_client_set_consumer(client, FTY_PROTO_STREAM_ASSETS, ".*") < 0) {
+    r = mlm_client_set_consumer(client, FTY_PROTO_STREAM_ASSETS, ".*");
+    if (r != 0) {
         log_error("%s: can't set consumer on stream '%s', '%s'", AGENT_NAME, FTY_PROTO_STREAM_ASSETS, ".*");
-        zstr_send(pipe, "$TERM");
+        mlm_client_destroy(&client);
         return;
     }
 
-    ZpollerGuard poller(zpoller_new(pipe, mlm_client_msgpipe(client), NULL));
+    zpoller_t* poller = zpoller_new(pipe, mlm_client_msgpipe(client), NULL);
+    if (!poller) {
+        log_error("poller is NULL");
+        mlm_client_destroy(&client);
+        return;
+    }
 
     // Such trick with function is used, because tpower_configuration
     // wants itself to control "advertise time".
     // But We want to separate logic from messaging -> use function as parameter
-    std::function<bool(const MetricInfo&)> tpower_conf_callback = [](const MetricInfo& M) -> bool {
-        return send_metrics(M);
+    std::function<bool(const MetricInfo&)> tpower_conf_callback = [](const MetricInfo& metricInfo) -> bool {
+        return write_metric(metricInfo);
     };
 
     // initial set up
@@ -192,88 +202,91 @@ void fty_metric_tpower_server(zsock_t* pipe, void* args)
 
     // run 'power' metrics poller actor
     zactor_t* tpower_metrics_pull = zactor_new(fty_metric_tpower_metric_pull, &tpower_conf);
-
-    uint64_t last = uint64_t(zclock_mono());
-    while (!zsys_interrupted) {
-        void* which = zpoller_wait(poller, int(tpower_conf.getTimeout()));
-
-        uint64_t now = uint64_t(zclock_mono());
-        if ((now - last) >= static_cast<uint64_t>(tpower_conf.getTimeout())) {
-            last = now;
-            log_debug("Periodic polling");
-            mtx_tpowerConf.lock();
-            tpower_conf.onPoll();
-            mtx_tpowerConf.unlock();
-        }
-
-        if (zpoller_expired(poller)) {
-            continue;
-        }
-        if (zpoller_terminated(poller)) {
-            log_info("poller was terminated");
-            break;
-        }
-
-        if (which == pipe) {
-            ZmsgGuard msg(zmsg_recv(pipe));
-            ZstrGuard cmd(zmsg_popstr(msg));
-            log_trace("Got command '%s'", cmd.get());
-
-            if (streq(cmd, "$TERM")) {
-                log_info("Terminate...");
-                break;
-            } else {
-                log_info("unhandled command %s", cmd.get());
-            }
-            continue;
-        }
-
-        // This agent is a reactive agent, it reacts only on messages
-        // and doesn't do anything if there is no messages
-        zmsg_t* zmessage = mlm_client_recv(client);
-        if (zmessage == NULL) {
-            continue;
-        }
-
-        std::string topic = mlm_client_subject(client);
-        log_trace("Got message '%s'", topic.c_str());
-
-        // What is going on???
-        //
-        // Listen on metrics +
-        // Listen on assets
-        //
-        // Produce metrics +
-        //
-        // Current iplementation: read topology from DB
-        // TODO: move it to asset agent and receive this info
-        // as message
-
-        if (fty_proto_is(zmessage)) {
-            fty_proto_t* bmessage = fty_proto_decode(&zmessage);
-            if (!bmessage) {
-                log_error("cannot decode fty_proto message, ignore it");
-                zmsg_destroy(&zmessage);
-                continue;
-            }
-            // As long as we are receiving metrics from malamute, everything
-            // is fine
-            watchdog.tick();
-            if (fty_proto_id(bmessage) == FTY_PROTO_ASSET) {
-                mtx_tpowerConf.lock();
-                tpower_conf.processAsset(bmessage);
-                mtx_tpowerConf.unlock();
-            } else {
-                log_error("it is not an asset message, ignore it");
-            }
-            fty_proto_destroy(&bmessage);
-        } else {
-            log_error("not a fty_proto message");
-        }
-
-        zmsg_destroy(&zmessage);
+    if (!tpower_metrics_pull) {
+        log_error("tpower_metrics_pull creation failed");
+        zpoller_destroy(&poller);
+        mlm_client_destroy(&client);
+        return;
     }
 
-    // TODO:  save info to persistence before I die
+    log_info("fty_metric_tpower_server started");
+
+    zsock_signal(pipe, 0);
+
+    uint64_t last = uint64_t(zclock_mono());
+
+    while (!zsys_interrupted) {
+
+        void* which = zpoller_wait(poller, int(tpower_conf.getTimeout()));
+
+        if (!(zpoller_terminated(poller) || zsys_interrupted)) {
+            uint64_t now = uint64_t(zclock_mono());
+            if ((now - last) >= static_cast<uint64_t>(tpower_conf.getTimeout())) {
+                last = now;
+                log_debug("Periodic polling");
+                mtx_tpowerConf.lock();
+                tpower_conf.onPoll();
+                mtx_tpowerConf.unlock();
+            }
+        }
+
+        if (which == NULL) {
+            if (zpoller_terminated(poller) || zsys_interrupted) {
+                break;
+            }
+        }
+        else if (which == pipe) {
+            zmsg_t* msg = zmsg_recv(pipe);
+            char* cmd = msg ? zmsg_popstr(msg) : NULL;
+            log_debug("Cmd: %s", cmd);
+            bool term{cmd && streq(cmd, "$TERM")};
+            zstr_free(&cmd);
+            zmsg_destroy(&msg);
+            if (term) {
+                break;
+            }
+        }
+        else if (which == mlm_client_msgpipe(client)) {
+            zmsg_t* msg = mlm_client_recv(client);
+            const char* cmd = mlm_client_command(client);
+            const char* subject = mlm_client_subject(client);
+            const char* sender = mlm_client_sender(client);
+            log_debug("Got message %s/%s from %s", cmd, subject, sender);
+
+            if (streq(cmd, "STREAM DELIVER")) {
+                if (msg && fty_proto_is(msg)) {
+                    fty_proto_t* proto = fty_proto_decode(&msg);
+                    if (proto) {
+                        if (fty_proto_id(proto) == FTY_PROTO_ASSET) {
+                            mtx_tpowerConf.lock();
+                            tpower_conf.processAsset(proto);
+                            mtx_tpowerConf.unlock();
+                        }
+                        else {
+                            log_debug("it is not an asset message, ignore it");
+                        }
+                    }
+                    else {
+                        log_debug("cannot decode fty_proto message");
+                    }
+                    fty_proto_destroy(&proto);
+                }
+                else {
+                    log_debug("it is not a proto message");
+                }
+            }
+            else if (streq(cmd, "MAILBOX DELIVER")) {
+                log_debug("Unexpected mailbox message");
+                //if (msg) { zmsg_print(msg); }
+            }
+
+            zmsg_destroy(&msg);
+        }
+    }
+
     zactor_destroy(&tpower_metrics_pull);
+    zpoller_destroy(&poller);
+    mlm_client_destroy(&client);
+
+    log_info("fty_metric_tpower_server ended");
 }

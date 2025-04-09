@@ -27,60 +27,62 @@
 
 #include "tp_unit.h"
 #include <fty_proto.h>
+
 #include <functional>
 #include <map>
 #include <string>
 #include <vector>
 
-// TODO: read this from configuration (once in 5 minutes now (300s)) in [s]
+// configuration in [s]
 #define TPOWER_MEASUREMENT_REPEAT_AFTER 300
-// TODO: read this from configuration (check with upsd ever 5s) in [ms]
+// configuration in [ms]
 #define TPOWER_POLLING_INTERVAL 5000
-
 
 class TotalPowerConfiguration
 {
 public:
+    TotalPowerConfiguration() = delete;
+
     TotalPowerConfiguration(std::function<bool(const MetricInfo&)> f)
         : _timeout{TPOWER_POLLING_INTERVAL}
-    {
-        _sendingFunction = f;
-    };
+        , _exportMetric{f}
+    {}
 
     void processMetric(const MetricInfo& M, const std::string& topic);
     void processAsset(fty_proto_t* message);
     void onPoll();
     void setPollInterval();
+
     /// read configuration from database
     bool configure();
 
     /// in[ms]
-    int64_t getTimeout(void)
-    {
-        return _timeout;
-    };
+    int64_t getTimeout() const { return _timeout; }
 
 private:
-    /// Function that is responsible for sending the message
-    /// @param M - MetricInfo represents a metric to be sent
-    /// @return true is metric was sent successfully
-    std::function<bool(const MetricInfo&)> _sendingFunction;
-
     /// in [ms]
-    int64_t _timeout;
+    int64_t _timeout = TPOWER_POLLING_INTERVAL;
+
+    /// Function that is responsible for export a metric
+    /// @param M - MetricInfo represents the metric
+    /// @return true is metric was exported successfully
+    std::function<bool(const MetricInfo&)> _exportMetric;
+
     /// list of racks
     std::map<std::string, TPUnit> _racks;
-    /// list of interested units
+
+    /// list of interested rack quantities
     const std::vector<std::string> _rackQuantities = {
         "realpower.default",
     };
     bool isRackQuantity(const std::string& quantity) const;
+
     /// list of racks, affected by powerdevice
     std::map<std::string, std::string> _affectedRacks;
 
     /// list of datacenters
     std::map<std::string, TPUnit> _DCs;
-    /// list of interested units
+    /// list of interested DC quantities
     const std::vector<std::string> _dcQuantities = {
         "realpower.default",
         "realpower.input.L1",
@@ -91,22 +93,22 @@ private:
         "realpower.output.L3",
     };
     bool isDCQuantity(const std::string& quantity) const;
+
     /// list of DCs, affected by powerdevice
     std::map<std::string, std::string> _affectedDCs;
 
     /// timestamp, when we should re-read configuration
     int64_t _reconfigPending = 0;
 
-
-    /// send measurement message if needed
-    void sendMeasurement(std::map<std::string, TPUnit>& elements, const std::vector<std::string>& quantities);
-    /// send measurement message for a single unit if needed
-    bool sendMeasurement(std::pair<const std::string, TPUnit>& element, const std::string& quantity);
+    /// export measurement if needed
+    void exportMeasurement(std::map<std::string, TPUnit>& elements, const std::vector<std::string>& quantities);
+    /// export measurement for a single unit if needed
+    bool exportMeasurement(std::pair<const std::string, TPUnit>& element, const std::string& quantity);
 
     /// powerdevice to DC or rack and put it also in _affected* map
     void addDeviceToMap(std::map<std::string, TPUnit>& elements, std::map<std::string, std::string>& reverseMap,
         const std::string& owner, const std::string& device);
 
     /// calculete polling interval (not to wake up every 5s)
-    int64_t getPollInterval();
+    int64_t getPollInterval() const;
 };
