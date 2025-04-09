@@ -38,7 +38,7 @@ public:
 
     /// Adds new metric
     ///
-    /// This will add new metric if it isn't known to the listand update the value if it is known already.
+    /// This will add new metric if it isn't known to the list and update the value if it is known already.
     /// Also it will update value of last added Metric.
     /// @param[in] metricInfo - the metric
     void updateMetricInfo(const MetricInfo& metricInfo);
