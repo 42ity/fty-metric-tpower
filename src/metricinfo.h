@@ -22,6 +22,7 @@
 
 #include <ctime>
 #include <string>
+#include <cstdint>
 
 /// @file   metricinfo.h
 /// @author Alena Chernikava <AlenaChernikava@Eaton.com>

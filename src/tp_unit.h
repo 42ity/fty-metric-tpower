@@ -28,6 +28,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 /// class representing total power calculation for a unit (rack or DC)
 class TPUnit
